@@ -28,7 +28,7 @@ This project came out of an assignment in the November 2011 Advanced Javascript 
 
 ## License
 
-Licenses for Pedro's original work and also for excanvas.js (by Google) can be found in the appropriate folders. The rest is:
+Licenses for Pedro Ha's original version of this app and also for excanvas.js (by Google) can be found in the appropriate folders. The rest is:
 
 (MIT License)
 
