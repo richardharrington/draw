@@ -1,0 +1,40 @@
+/* Need a CSS Reset: meyer? */
+body {
+    text-align: center;
+}
+
+/* My CSS classes. Notice no ID-based selector for styling! */
+
+.page {
+    margin: 0 auto; /* align: for the rest */ 
+    width: 700px;
+}
+
+.color-container {
+    margin: auto;
+}
+
+.color-panel {
+    background-color: #486D57;
+    width: 90px;
+    height: 45px;
+    padding: 5px;
+    margin: 10px;
+    border: solid 10px #ccc;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    float: left;
+}
+
+.color-panel.selected {
+    border: solid 10px #d37;
+}
+
+.drawing {
+    margin-top: 20px;
+    border: solid #2c7 16px;
+    -webkit-border-radius: 16px;
+    -moz-border-radius: 16px;
+    border-radius: 16px;
+}

@@ -1,0 +1,183 @@
+body {
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+    padding: 0px;
+    margin: 0px;
+}
+
+.page {
+    margin: auto;
+}
+
+.left-column {
+    float: left;
+    width: 220px;
+    margin-left: 25px;
+    display: none;
+}
+
+#paletteList {
+	  font-size: 1em;
+    margin-top: 20px;
+    height: 700px;
+    overflow: auto;
+}
+
+.palette-container {
+    margin-top: 40px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding: 0px;
+    cursor: pointer;
+}
+
+.palette-container:nth-child(1) {
+    margin-top: 0px;
+}
+
+.palette-container img {
+  border: solid 3px #ccc;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  
+}
+
+.palette-container img.selected {
+  border: solid 3px #d37;
+}
+
+.palette-container p {
+    margin: 0px;
+    padding-right: 4px;
+}
+
+.palette-title {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.palette-info {
+    padding-top: 1px;
+}
+
+.palette-description {
+    padding-top: 10px;
+}
+
+.main-box {
+    text-align: center;
+    margin-left: 300px;
+    width: 700px;
+    height: 700px;
+}
+
+.header {
+    margin-bottom: 15px;
+}
+
+h1 {
+    font-size: 2.5em;
+    font-weight: bold;
+}
+
+#searchLabel {
+    font-size: 1em;
+}
+#searchField {
+    width: 150px;
+}
+#palettesFound {
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+    display: none;
+}
+#successfulKeywords {
+    font-weight: bold;
+}
+#statusReport {
+    color: red;
+    font-weight: bold;
+    padding-bottom: 0px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+.canvas-container {
+}
+
+#currentPalette {
+  font-weight: bold;
+}
+
+#colorPanelHeader {
+    margin-top: 20px;
+    font-size: 1.2em;
+}
+
+.color-container {
+    margin: auto;
+}
+
+.color-panel {
+    background-color: #486D57;
+    width: 90px;
+    height: 45px;
+    padding: 5px;
+    margin: 10px;
+    border: solid 10px #ccc;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    float: left;
+    cursor: pointer;
+
+	/*
+		-webkit-transition: background-color .7s ease, width .7s ease, -webkit-border-radius .7s ease, margin-left .7s ease, padding-right .7s ease;
+		-webkit-transition-property: background-color, width, -webkit-border-radius, margin-left, padding-right;
+		-webkit-transition-duration: 0.7s, 0.7s, 0.7s, 0.7s, 0.7s;
+		-webkit-transition-timing-function: ease, ease, ease, ease, ease;
+		-webkit-transition-delay: initial, initial, initial, initial, initial;
+	*/
+		-webkit-transition: background-color .7s ease;
+		-webkit-transition-property: background-color;
+		-webkit-transition-duration: 0.7s
+		-webkit-transition-timing-function: ease;
+		-webkit-transition-delay: initial;
+
+		/* FF4+ */
+		-moz-transition: background-color .7s ease;
+		-moz-transition-property: background-color;
+		-moz-transition-duration: 0.7s
+		-moz-transition-timing-function: ease;
+		-moz-transition-delay: initial;
+
+		/* Opera 10.5 */
+		-o-transition: background-color .7s ease;
+		-o-transition-property: background-color;
+		-o-transition-duration: 0.7s
+		-o-transition-timing-function: ease;
+		-o-transition-delay: initial;
+
+}
+
+.color-panel.selected {
+    border: solid 10px #d37;
+}
+
+.drawing {
+    margin-top: 20px;
+    border: solid #2c7 16px;
+    -webkit-border-radius: 16px;
+    -moz-border-radius: 16px;
+    border-radius: 16px;
+}
+
+#brushSizeLabel {
+    font-size: 0.8em;
+}
+
+#clearCanvas {
+    margin-top: 15px;
+    margin-bottom: 50px;
+}
+
