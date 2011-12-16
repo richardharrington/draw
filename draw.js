@@ -1,6 +1,125 @@
-var DRAW = (typeof DRAW !== 'undefined') ? DRAW : 
+var APP = (typeof APP !== 'undefined') ? APP : {};
+APP.util = (typeof APP.util !== 'undefined') ? APP.util : {};
+APP.model = (typeof APP.model !== 'undefined') ? APP.model : {};
+APP.view = (typeof APP.view !== 'undefined') ? APP.view : {};
+APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller : {};
 
-(function() {
+APP.util = (function() {
+    
+    // PRIVATE METHODS
+    
+    var isArray = function( obj ) {
+        return Object.prototype.toString.call( obj ) === "[object Array]";
+    }
+
+    // keyList returns an array of all property names in an object.
+
+    var keyList = function( obj ) {
+        var k, obj;
+        var list = [];
+        for (k in obj) {
+            if (obj.hasOwnProperty( k )) {
+                list.push( k );
+            }
+        }
+        return list;
+    }
+
+    // PUBLIC METHODS
+    
+    // copyProps is like jQuery.extend, except that it lacks 
+    // jQuery.extend's ability to copy from more than one object. 
+    // Also, it has an ability that jQuery.extend doesn't have, 
+    // which is to select a list of properties from the source object,
+    // instead of automatically copying all of them.
+
+    // The target argument is mandatory, just like in jQuery.extend.
+
+    // The array in the arguments list contains the list of properties to be
+    // copied from the source to the target. This array is only for selecting a subset
+    // of the top-level primitives and object references in the source object.
+    // If the copying is deep (the default), once the recursive calls begin, 
+    // objects and arrays are copied with all of their properties, 
+    // just as jQuery.extend would do. 
+
+    // The last two arguments, deep and arrayOfProps, are optional and can
+    // be in any order.
+
+    var copy = function copy( target, source /* optional args: arrayOfProps, deep */ ) {
+        var key, value;
+        var toStr = Object.prototype.toString;
+        var i;
+        var arrayOfProps = []; // optional argument 
+        var deep;              // optional argument
+
+        // Assign the optional arguments arrayOfProps and deep.
+
+        deep = (typeof arguments[2] === "boolean") ? arguments[2] :
+            (typeof arguments[3] === "boolean") ? arguments[3] : 
+            true; // default is deep copy
+
+        arrayOfProps = (isArray( arguments[2] )) ? arguments[2] :
+            (isArray( arguments[3] )) ? arguments[3] :
+            keyList( source ); // default is copy all of source's properties
+
+        i = arrayOfProps.length;
+
+        while (i) {
+            i -= 1;
+            key = arrayOfProps[i];
+            if (deep && (typeof source[key] === "object")) {
+                target[key] = (isArray( source[key] )) ? [] : {};
+                copy( target[key], source[key] );
+            } else {
+                target[key] = source[key];
+            }
+        }
+    }
+
+    var parseSQLDate = function( str ) {
+        
+        // Split timestamp into [ Y, M, D, h, m, s ]
+        var t = str.split(/[- :]/);
+
+        // Apply each element to the Date function
+        var d = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
+
+        return d;
+    }
+
+    // object is an object inheritor function. 
+
+    var object = function ( o, vals ) {
+        function F() {};
+        F.prototype = o;
+        var instance = new F();            
+        for (var p in vals) {
+            instance[p] = vals[p];
+        }
+        return instance;
+    }
+
+    // ------------ Module interface ------------------------
+
+    return {
+        copy: copy,
+        parseSQLDate: parseSQLDate,
+        object: object,
+    };
+})();
+
+
+
+
+
+
+
+
+
+
+APP.model = (function() {
+    
+    var util = APP.util;
     
     var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 
                   'July', 'August', 'September', 'October', 'November', 'December'];
@@ -112,11 +231,11 @@ var DRAW = (typeof DRAW !== 'undefined') ? DRAW :
     
         for (i = 0, len = colors.length; i < len; i++) {
             color = '#' + colors[i];
-            small = object( brushChildrenProto, {
+            small = util.object( brushChildrenProto, {
                 color: color,
                 width: SMALL_BRUSH_WIDTH
             });
-            large = object( brushChildrenProto, {
+            large = util.object( brushChildrenProto, {
        	        color: color,
        	        width: LARGE_BRUSH_WIDTH
        	    });
@@ -139,7 +258,7 @@ var DRAW = (typeof DRAW !== 'undefined') ? DRAW :
         $( 'div.color-container' ).empty();
         $( '#currentPalette' ).text( title );
 
-        $( "#colorPanelsTemplate" ).
+        $( "#currentPaletteTemplate" ).
                 tmpl( elementIds ).
                 appendTo( "div.color-container" ).
                 each( function( elementIndex ) {
@@ -401,7 +520,7 @@ var DRAW = (typeof DRAW !== 'undefined') ? DRAW :
             encodedKeywords = keywords.replace( /\s+/g, '+' );
             colourLoversScript.setAttribute( 'src', 
                     'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
-                    '&jsonCallback=DRAW.paletteData.load' );
+                    '&jsonCallback=APP.model.paletteData.load' );
         }
         return false;
     }
@@ -427,17 +546,18 @@ var DRAW = (typeof DRAW !== 'undefined') ? DRAW :
 
                     entry = data[idx];
 
-                    copy( newPalette, entry, ["colors", 
-                                              "imageUrl", 
-                                              "title", 
-                                              "userName", 
-                                              "description", 
-                                              "dateCreated"] ); // omitting last argument
-                                                                // makes it a deep copy
+                    util.copy( newPalette, entry, [
+                        "colors", 
+                        "imageUrl", 
+                        "title", 
+                        "userName", 
+                        "description", 
+                        "dateCreated"] ); // omitting last argument
+                                          // makes it a deep copy
                                               
                     // Now make "dateCreated" a more readable string.
                 
-                    date = parseSQLDate( newPalette.dateCreated );
+                    date = util.parseSQLDate( newPalette.dateCreated );
                     newPalette.dateCreated = MONTHS[date.getMonth()] + " " + 
                                              date.getDate() + ", " + 
                                              date.getFullYear();
@@ -511,123 +631,142 @@ var DRAW = (typeof DRAW !== 'undefined') ? DRAW :
     // their browser, and the other one for every time a new instance of 
     // the drawing app is created on the page.
 
-    initApp = function() {
-    
-        var brushSizeElement = document.getElementById( 'brushSize' );
-        var canvasElement = document.getElementById( "canvas" );
-    
-        var code;
-    
-        // Initialize status reporting for this app.
-    
-        stat = new Stat( document.getElementById( 'statusReport' ) );
-    
-        // Initialize currentPalette, currentBrush, and canvas.
-    
-        currentPalette = new CurrentPalette();
-        currentPalette.select( DEFAULT_PALETTE_TITLE, DEFAULT_PALETTE_COLORS );
-    
-        currentBrush = new CurrentBrush();
-        currentBrush.style( DEFAULT_BRUSH_SIZE, DEFAULT_COLOR_PANEL_INDEX );
-
-        canvas = new Canvas( canvasElement );
-        canvas.applyStyle( currentBrush.style(), DEFAULT_COLOR_PANEL_INDEX );
-
-        // need to manually set brush size HTML select element, 
-        // because Firefox preserves state even when it's refreshed.
-
-        $( brushSizeElement ).val( currentBrush.size() );  
-
-        // bind the event handlers for clearing the screen, 
-        // toggling the brush size and entering search keywords.
-    
-        $( '#clearCanvas' ).click( function() {
-            canvas.clear( CANVAS_BACKGROUND_COLOR );
-        });
-    
-        $( brushSizeElement ).change( function() {
-            currentBrush.style( this.value );
-            canvas.applyStyle( currentBrush.style(), currentBrush.colorPanelIdx() );
-        });        
-
-        $( '#searchButton' ).click( paletteData.request );
-        $( '#searchField' ).keydown( function( event ) {
-
-            // cross-browser compliance for different keydown event key code property names
+    init = function() {
         
-            code = event.keyCode || event.which;
-            if (code == 13) {
-                event.preventDefault();
-                paletteData.request();
-            }
-        });
+        $(document).ready( function () {
+    
+            var brushSizeElement = document.getElementById( 'brushSize' );
+            var canvasElement = document.getElementById( "canvas" );
+    
+            var code;
+    
+            // Initialize status reporting for this app.
+    
+            stat = new Stat( document.getElementById( 'statusReport' ) );
+    
+            // Initialize currentPalette, currentBrush, and canvas.
+    
+            currentPalette = new CurrentPalette();
+            currentPalette.select( DEFAULT_PALETTE_TITLE, DEFAULT_PALETTE_COLORS );
+    
+            currentBrush = new CurrentBrush();
+            currentBrush.style( DEFAULT_BRUSH_SIZE, DEFAULT_COLOR_PANEL_INDEX );
 
-        // Set up error handlers for all current and future cases of 
-        // the manual script tag that downloads the data from colourlovers
-        // (using jQuery .delegate()).
-        // Also, for the specialized case of when the error handler cannot
-        // be bound to the script element (it seems to work on all browsers, but many
-        // fairly recent posts on the Internet say this handler can only be bound
-        // to the window object or to an img element), we have as a fallback a
-        // generic error handler on the window object if anything goes wrong on the page at all.
+            canvas = new Canvas( canvasElement );
+            canvas.applyStyle( currentBrush.style(), DEFAULT_COLOR_PANEL_INDEX );
 
-        try {
-            $( document ).delegate('#colourLoversUrl', 'error', function () {
+            // need to manually set brush size HTML select element, 
+            // because Firefox preserves state even when it's refreshed.
 
-                // extract the search string from the colourlovers.com request url.
-                var keywords = $(this).attr('src').replace(/(.*?keywords=search+)(.*?)(&.*)/, '$2');
-                stat.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
+            $( brushSizeElement ).val( currentBrush.size() );  
+
+            // bind the event handlers for clearing the screen, 
+            // toggling the brush size and entering search keywords.
+    
+            $( '#clearCanvas' ).click( function() {
+                canvas.clear( CANVAS_BACKGROUND_COLOR );
             });
+    
+            $( brushSizeElement ).change( function() {
+                currentBrush.style( this.value );
+                canvas.applyStyle( currentBrush.style(), currentBrush.colorPanelIdx() );
+            });        
+
+            $( '#searchButton' ).click( paletteData.request );
+            $( '#searchField' ).keydown( function( event ) {
+
+                // cross-browser compliance for different keydown event key code property names
         
-        } catch ( e ) {
+                code = event.keyCode || event.which;
+                if (code == 13) {
+                    event.preventDefault();
+                    paletteData.request();
+                }
+            });
 
-            if (window.addEventListener) {
-                window.addEventListener('error', function () {
-                    stat.report( "There's been a nebulous problem of some sort." );
-                }, false);
+            // Set up error handlers for all current and future cases of 
+            // the manual script tag that downloads the data from colourlovers
+            // (using jQuery .delegate()).
+            // Also, for the specialized case of when the error handler cannot
+            // be bound to the script element (it seems to work on all browsers, but many
+            // fairly recent posts on the Internet say this handler can only be bound
+            // to the window object or to an img element), we have as a fallback a
+            // generic error handler on the window object if anything goes wrong on the page at all.
 
-            } else if (window.attachEvent) {
-                window.attachEvent('error', function () {
-                    stat.report( "There's been a nebulous problem of some sort, probably IE-related." );
+            try {
+                $( document ).delegate('#colourLoversUrl', 'error', function () {
+
+                    // extract the search string from the colourlovers.com request url.
+                    var keywords = $(this).attr('src').replace(/(.*?keywords=search+)(.*?)(&.*)/, '$2');
+                    stat.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
                 });
+        
+            } catch ( e ) {
+
+                if (window.addEventListener) {
+                    window.addEventListener('error', function () {
+                        stat.report( "There's been a nebulous problem of some sort." );
+                    }, false);
+
+                } else if (window.attachEvent) {
+                    window.attachEvent('error', function () {
+                        stat.report( "There's been a nebulous problem of some sort, probably IE-related." );
+                    });
+                }
             }
-        }
     
-        //========== Canvas events ==============
+            //========== Canvas events ==============
 
-        canvas.DOMElement.onmousedown = function( event ) {
-            var p = canvas.getMousePos( event );
-            canvas.startStroke( p.x, p.y );
-            canvas.drawing = true;
-        };
+            canvas.DOMElement.onmousedown = function( event ) {
+                var p = canvas.getMousePos( event );
+                canvas.startStroke( p.x, p.y );
+                canvas.drawing = true;
+            };
 
-        canvas.DOMElement.onmousemove = function( event ) {
-            var p = canvas.getMousePos( event );
+            canvas.DOMElement.onmousemove = function( event ) {
+                var p = canvas.getMousePos( event );
 
-            if (canvas.drawing) {
-                canvas.stroke( p.x, p.y );
-            }
-        };
+                if (canvas.drawing) {
+                    canvas.stroke( p.x, p.y );
+                }
+            };
 
-        canvas.DOMElement.onmouseup = function( event ) {
+            canvas.DOMElement.onmouseup = function( event ) {
+                canvas.drawing = false;
+            };
+    
+            canvas.clear( CANVAS_BACKGROUND_COLOR );
             canvas.drawing = false;
-        };
-    
-        canvas.clear( CANVAS_BACKGROUND_COLOR );
-        canvas.drawing = false;
 
-    } // end init code
+        }); // end $(document).ready code
+
+    };  // end init code
 
 
-    $(document).ready( function () {
-        initApp();
-    });  
-    
-    ///// INTERFACE FOR THE JSONP CALLBACK FUNCTION //////
+    ///// MODULE INTERFACE (paletteData is for the JSONP callback function)//////
     
     return {
-        paletteData: paletteData
-    };
-
+        paletteData: paletteData,
+        init: init
+    };  
 })();
+
+APP.view = (function() {
+    var init = function() {};
+    return {
+        init: init
+    };
+})();
+
+APP.controller = (function() {
+    var init = function() {
+        APP.model.init();
+        APP.view.init();
+    };
+    return {
+        init: init
+    };
+})();
+
+APP.controller.init();
 
