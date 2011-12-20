@@ -405,17 +405,17 @@ APP.model = (function() {
         return true;
     };
     
-    init = (function() {
+    init = function( paletteTitle, paletteColors, maxColors, brushSize, colorPanelIdx ) {
         
         // Initialize palettes.
         palettes = new Palettes();
 
         // Initialize currentPalette.
-        currentPalette = new CurrentPalette( config.DEFAULT_PALETTE_TITLE, config.DEFAULT_PALETTE_COLORS, config.MAX_COLORS );
+        currentPalette = new CurrentPalette( paletteTitle, paletteColors, maxColors );
 
         // Initialize currentBrush.
-        currentBrush = new CurrentBrush( config.DEFAULT_BRUSH_SIZE, config.DEFAULT_COLOR_PANEL_INDEX );
-    })();
+        currentBrush = new CurrentBrush( brushSize, colorPanelIdx );
+    };
 
 
     //----------- MODULE INTERFACE ----------------
@@ -550,7 +550,6 @@ APP.view = (function() {
         this.DOMcolorContainer = DOMcolorContainer;
         this.DOMtitleSpan = DOMtitleSpan;
         this.populate( title, colors );
-        $( DOMcolorContainer ).find( )
     };
     
     ColorPanels.prototype.populate = function( title, colors ) {
@@ -560,19 +559,17 @@ APP.view = (function() {
         
         var jQcolorContainer = $( this.DOMcolorContainer );
         var jQtitleSpan = $( this.DOMtitleSpan );
-    
+        
         for (i = 0, len = colors.length; i < len; i++) {
             elementIds.push( {id: 'color-' + (i + 1)} );
         }
 
         // Now empty the old color panels, then load the new ones 
         // into the DOM. Create the div tags with the 
-        // jQuery template, then add background colors and 
-        // click handlers.
+        // jQuery template, then add background colors.
         
         // THIS SHOULD BE CHANGED TO RE-BACKGROUND-COLORING
         // WHAT WAS ALREADY THERE, INSTEAD OF EMPTYING AND RE-DRAWING. 
-        // THAT WAY WE DON'T HAVE TO RESELECT THE ONE WITH THE PINK BORDER.
 
         jQcolorContainer.empty();
         jQtitleSpan.text( title );
@@ -582,28 +579,12 @@ APP.view = (function() {
                 appendTo( jQcolorContainer ).
                 each( function( elementIndex ) {
                     this.style.backgroundColor = '#' + colors[elementIndex];
-
-                    this.onclick = (function( i ) {
-                        return function() {
-                                                        
-                            var jQElement = jQcolorContainer.find( '#color-' + (i + 1) );
-
-                            // Highlight color panel
-                            jQElement.addClass( 'selected' );
-
-                            // Un-highlight all others
-                            jQElement.siblings().removeClass( 'selected' );
-                            
-                            // Update currentBrush and canvas.
-                            model.currentBrush.style( i );
-                            canvas.applyStyle( model.currentBrush.style(), i );
-                        };
-                    })( elementIndex );
                 });
-                
-        // Now make the selected one pink.
-        
-        jQcolorContainer.find( '#color-' + (model.currentBrush.colorPanelIdx() + 1) ).addClass( 'selected' );
+            
+    };
+    
+    ColorPanels.prototype.getId = function( colorPanelIdx ) {
+        return '#color-' + (colorPanelIdx + 1);
     };
     
     // -------------------- wrapper for DOM palettes column --------------------------
@@ -658,23 +639,23 @@ APP.view = (function() {
         jQcontainer.show();
     };
     
-    init = (function() {
+    init = function( canvasWidth, canvasHeight, canvasBackgroundColor, 
+                     brushStyle, colorPanelIdx, paletteTitle, paletteColors ) {
         
         // Initialize status reporting.
         theStatus = new TheStatus( document.getElementById( 'statusReport' ) );
         
         // Initialize canvas.
-        canvas = new Canvas( document.getElementById( 'canvas' ), config.CANVAS_WIDTH, config.CANVAS_HEIGHT, 
-                             config.CANVAS_BACKGROUND_COLOR, model.currentBrush.style(), config.DEFAULT_COLOR_PANEL_INDEX );
+        canvas = new Canvas( document.getElementById( 'canvas' ), canvasWidth, canvasHeight, 
+                             canvasBackgroundColor, brushStyle, colorPanelIdx );
         
         // Load the colors into the DOM.
         colorPanels = new ColorPanels ( $( 'div.color-container' )[0], $( '#currentPaletteTitle' )[0], 
-                                           config.DEFAULT_PALETTE_TITLE, config.DEFAULT_PALETTE_COLORS );
+                                           paletteTitle, paletteColors );
                                            
         // Initialize empty palettesColumn object.
         palettesColumn = new PalettesColumn( $( 'div.left-column' ) );
-        
-    })();
+    };
     
     // ---- Module interface -----
 
@@ -697,17 +678,15 @@ APP.controller = (function() {
         model = APP.model,
         view = APP.view;
 
-    var currentPalette = model.currentPalette,
-        currentBrush = model.currentBrush,
-        palettes = model.palettes,
-
-        theStatus = view.theStatus,
-        canvas = view.canvas,
-        colorPanels = view.colorPanels,
-        palettesColumn = view.palettesColumn;
-        
     var requestFromColourloversAPI;
     var loadPalettes;
+    
+    var setUserControls;
+    var setErrorControls;
+    var setCanvasControls;
+    
+    var colorPanelsController;
+    var palettesColumnController;
     
     var init;
     
@@ -720,16 +699,13 @@ APP.controller = (function() {
 
         // if the user typed anything
         if (keywords) {
+            model.palettes.keywords = keywords;
             $( '#searchField' ).val( '' );
                         
-            theStatus.report( "Loading..." );
+            view.theStatus.report( "Loading..." );
 
-            // Create the script tag that makes the http request to Colourlovers.com. 
-            // But first overwrite any previous script tags 
-            // with the id 'colourLoversUrl', after checking to see whether they exist.
-            // We do this tag replacement (instead of adding new tags every time) 
-            // partly just to keep the tags from piling up,
-            // and partly to prevent the DOM from having tags with the same id.
+            // First overwrite any previous script tags with the id 'colourLoversUrl',
+            // than create the new one that makes the next http request to colourlovers.com.
       
             if ( $( '#colourLoversUrl' ).length > 0 ) {
                 $( '#colourLoversUrl' ).remove();
@@ -751,47 +727,36 @@ APP.controller = (function() {
     };
     
     loadPalettes = function( data ) {
-        if (palettes.load( data )) {
-            theStatus.report();   // no arguments means all clear, no errors to report.  
-            palettesColumn.populate( palettes );
+        if (model.palettes.load( data )) {
+            view.theStatus.report();   // no arguments means all clear, no errors to report.  
+            view.palettesColumn.populate( model.palettes );
         } else {
-            theStatus.report( 'No palettes matched the keyword or keywords "' + this.keywords + '." Try again.' );
+            view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
+                                    model.palettes.keywords + '." Try again.' );
         };
-        
     };
 
-
-    // the init will eventually be broken up into two parts: one for everything
-    // that gets executed only once when the user goes to this URL or refreshes 
-    // their browser, and the other one for every time a new instance of 
-    // the drawing app is created on the page.
-
-    init = function() {
+    setUserControls = function( model, view ) {
         var code;
-        var colors;
-        var i, len;
-        
         
         // Set brush size HTML select element, 
         // because Firefox preserves state even when it's refreshed.
         $( '#brushSize' ).val( currentBrush.size() );  
 
-        // ------ EVENT HANDLERS. ---------------------        
-        
         // bind the event handlers for clearing the screen, 
         // toggling the brush size and entering search keywords.
 
         $( '#clearCanvas' ).click( function() {
-            canvas.clear( config.CANVAS_BACKGROUND_COLOR );
+            view.canvas.clear( config.CANVAS_BACKGROUND_COLOR );
         });
 
         $( '#brushSize' ).change( function() {
-            currentBrush.style( this.value );
-            canvas.applyStyle( currentBrush.style(), currentBrush.colorPanelIdx() );
+            model.currentBrush.style( this.value );
+            view.canvas.applyStyle( model.currentBrush.style(), model.currentBrush.colorPanelIdx() );
         });        
 
         $( '#searchButton' ).click( function() {
-            requestFromColourloversAPI( palettes );
+            requestFromColourloversAPI( model.palettes );
         });
         $( '#searchField' ).keydown( function( event ) {
 
@@ -803,7 +768,9 @@ APP.controller = (function() {
                 requestFromColourloversAPI( palettes );
             }
         });
-
+    };
+    
+    setErrorControls = function( model, view ) {
         // Set up error handlers for all current and future cases of 
         // the manual script tag that downloads the data from colourlovers
         // (using jQuery .delegate()).
@@ -834,7 +801,9 @@ APP.controller = (function() {
                 });
             }
         }
-
+    };
+    
+    setCanvasControls = function( canvas ) {
         //========== Canvas events ==============
 
         canvas.DOMElement.onmousedown = function( event ) {
@@ -854,18 +823,104 @@ APP.controller = (function() {
         canvas.DOMElement.onmouseup = function( event ) {
             canvas.drawing = false;
         };
+    };
+
+    colorPanelsController = {
+        self: this,
         
+        highlightColor: function( selectedPanel ) {
+            selectedPanel.addClass( 'selected' );
+            selectedPanel.siblings.removeClass( 'selected' );
+        },
+        
+        addEventListeners: function( model, view ) {
+            $( view.colorPanels.DOMcolorContainer ).children().each( function( elementIndex ) {
+                this.onclick = (function( i ) {
+                    return function() {
+                        self.highlightColor( this );
+                        
+                        // Update currentBrush and canvas.
+                        model.currentBrush.style( i );
+                        view.canvas.applyStyle( model.currentBrush.style(), i );
+                    };
+                })( elementIndex );
+            });
+        },
+        
+        init: function( model, view ) {
+            // Populate the color panels.
+            view.colorPanels.populate(); 
+
+            // Now make the selected one pink.
+            var selectedPanel = $( view.colorPanels.getId( model.currentBrush.colorPanelIdx()));
+            this.highlightColor( selectedPanel );
+
+            // Add the event handlers.
+            this.addEventListeners( model, view );
+        }
+    };
+    
+    palettesColumnController = {
+        self: this,
+        
+        highlightPalette: function( selectedPalette ) {
+            selectedPalette.addClass( 'selected' );
+            selectedPalette.siblings.removeClass( 'selected' );
+        },
+        
+        addEventListeners: function( model, view ) {
+            
+        }
+    }
+    
+    // the init will eventually be broken up into two parts: one for everything
+    // that gets executed only once when the user goes to this URL or refreshes 
+    // their browser, and the other one for every time a new instance of 
+    // the drawing app is created on the page.
+
+    init = function() {
+
+        model.init( config.DEFAULT_PALETTE_TITLE, 
+                    config.DEFAULT_PALETTE_COLORS, 
+                    config.MAX_COLORS,
+                    config.DEFAULT_BRUSH_SIZE, 
+                    config.DEFAULT_COLOR_PANEL_INDEX );
+                    
+        view.init(  config.CANVAS_WIDTH, 
+                    config.CANVAS_HEIGHT, 
+                    config.CANVAS_BACKGROUND_COLOR, 
+                    model.currentBrush.style(), 
+                    config.DEFAULT_COLOR_PANEL_INDEX,
+                    config.DEFAULT_PALETTE_TITLE, 
+                    config.DEFAULT_PALETTE_COLORS );
+            
+        setUserControls( model, view );
+        setErrorControls( model, view );
+        setCanvasControls( view.canvas );
+        colorPanelsController.init( model, view );
+        palettesColumnController.init( model, view );
     };
     
     //----------- module interface -----------------
     
     return {
+        // We might need this stuff in a later version of this app.
+
+        requestFromColourloversAPI: requestFromColourloversAPI,
         loadPalettes: loadPalettes,
+
+        setUserControls: setUserControls,
+        setErrorControls: setErrorControls,
+        setCanvasControls: setCanvasControls,
+
+        colorPanelsController: colorPanelsController,
+        palettesColumnController: palettesColumnController,
+
         init: init
     };
 })();
 
-$( document ).ready( function () {
+$( function () {
     APP.controller.init();
 });
 
