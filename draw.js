@@ -822,8 +822,8 @@ APP.controller = (function() {
     palettesColumnController = {
         
         highlightPalette: function( selectedPalette ) {
-            $( selectedPalette ).addClass( 'selected' );
-            $( selectedPalette ).siblings().removeClass( 'selected' );
+            $( selectedPalette ).children( '.palette-image').addClass( 'selected' );
+            $( selectedPalette ).siblings().children( '.palette-image').removeClass( 'selected' );
         },
         
         addEventListeners: function( model, view ) {
