@@ -675,52 +675,6 @@ APP.controller = (function() {
     
     var init;
     
-    // -- the event handler for requesting data from colourlovers.com
-    
-    requestFromColourloversAPI = function() {
-        var encodedKeywords;
-        var colourLoverScript;
-        var keywords = $( '#searchField' ).val();
-
-        // if the user typed anything
-        if (keywords) {
-            model.palettes.keywords = keywords;
-            $( '#searchField' ).val( '' );
-                        
-            view.theStatus.report( "Loading..." );
-
-            // First overwrite any previous script tags with the id 'colourLoversUrl',
-            // than create the new one that makes the next http request to colourlovers.com.
-      
-            if ( $( '#colourLoversUrl' ).length > 0 ) {
-                $( '#colourLoversUrl' ).remove();
-            }
-            colourLoversScript = document.createElement( 'script' );
-        	colourLoversScript.id = 'colourLoversUrl';
-            document.getElementsByTagName( 'head' )[0].appendChild( colourLoversScript );
-      
-            // Change spaces to plus signs for insertion into search query.
-            // This query string tells colourlovers.com to pass back the data wrapped
-            // in our callback function, palettes.load()
-        
-            encodedKeywords = keywords.replace( /\s+/g, '+' );
-            colourLoversScript.setAttribute( 'src', 
-                    'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
-                    '&jsonCallback=APP.controller.loadPalettes' );
-        }
-        return false;
-    };
-    
-    loadPalettes = function( data ) {
-        if (model.palettes.load( data )) {
-            view.theStatus.report();   // no arguments means all clear, no errors to report.  
-            view.palettesColumn.populate( model.palettes, $( '#successfulKeywords' ) );
-        } else {
-            view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
-                                    model.palettes.keywords + '." Try again.' );
-        };
-    };
-
     setUserControls = function( model, view ) {
         var code;
         
@@ -866,7 +820,6 @@ APP.controller = (function() {
     };
 
     palettesColumnController = {
-        self: this,
         
         highlightPalette: function( selectedPalette ) {
             $( selectedPalette ).addClass( 'selected' );
@@ -879,8 +832,8 @@ APP.controller = (function() {
                     return function() {
                         palettesColumnController.highlightPalette( this );
                         
-                        var title = model.palettes.data[paletteIndex].title;
-                        var colors = model.palettes.data[paletteIndex].colors;
+                        var title = model.palettes.data[i].title;
+                        var colors = model.palettes.data[i].colors;
 
                         model.currentPalette.init( title, colors );
                         
@@ -905,6 +858,53 @@ APP.controller = (function() {
         }
     };
     
+    // -- the event handler for requesting data from colourlovers.com
+    
+    requestFromColourloversAPI = function() {
+        var encodedKeywords;
+        var colourLoverScript;
+        var keywords = $( '#searchField' ).val();
+
+        // if the user typed anything
+        if (keywords) {
+            model.palettes.keywords = keywords;
+            $( '#searchField' ).val( '' );
+                        
+            view.theStatus.report( "Loading..." );
+
+            // First overwrite any previous script tags with the id 'colourLoversUrl',
+            // than create the new one that makes the next http request to colourlovers.com.
+      
+            if ( $( '#colourLoversUrl' ).length > 0 ) {
+                $( '#colourLoversUrl' ).remove();
+            }
+            colourLoversScript = document.createElement( 'script' );
+        	colourLoversScript.id = 'colourLoversUrl';
+            document.getElementsByTagName( 'head' )[0].appendChild( colourLoversScript );
+      
+            // Change spaces to plus signs for insertion into search query.
+            // This query string tells colourlovers.com to pass back the data wrapped
+            // in our callback function, palettes.load()
+        
+            encodedKeywords = keywords.replace( /\s+/g, '+' );
+            colourLoversScript.setAttribute( 'src', 
+                    'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
+                    '&jsonCallback=APP.controller.loadPalettes' );
+        }
+        return false;
+    };
+    
+    loadPalettes = function( data ) {
+        if (model.palettes.load( data )) {
+            palettesColumnController.init( model, view );
+            view.theStatus.report();   // no arguments means all clear, no errors to report.  
+        } else {
+            view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
+                                    model.palettes.keywords + '." Try again.' );
+        };
+    };
+
+
     // the init will eventually be broken up into two parts: one for everything
     // that gets executed only once when the user goes to this URL or refreshes 
     // their browser, and the other one for every time a new instance of 
@@ -930,12 +930,12 @@ APP.controller = (function() {
         setErrorControls( model, view );
         setCanvasControls( view.canvas );
         colorPanelsController.init( model, view );
-        palettesColumnController.init( model, view );
     };
     
     //----------- module interface -----------------
     
     return {
+        
         // We need init right now.
         // We might need the rest of this stuff in a later version of this app.
 
