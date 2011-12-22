@@ -16,7 +16,7 @@ APP.config = {
     DEFAULT_BRUSH_SIZE: "large",
     CANVAS_WIDTH: 1000,
     CANVAS_HEIGHT: 1000,
-    CANVAS_BACKGROUND_COLOR: "#eee"
+    CANVAS_BACKGROUND_COLOR: "EEE"
 };
 
 APP.util = (function() {
@@ -132,9 +132,13 @@ APP.model = (function() {
     var BrushStyle,
         brushChildrenProto;
 
-    var Palettes, palettes,
-        CurrentPalette, currentPalette,
-        CurrentBrush, currentBrush;
+    var Palettes,
+        CurrentPalette,
+        CurrentBrush;
+        
+    var palettes,
+        currentPalette,
+        currentBrush;
         
     var init;
 
@@ -153,7 +157,7 @@ APP.model = (function() {
     //
 
     BrushStyle = function( color, width ) {
-        this.color = '#' + color;
+        this.color = color;
         this.width = width || config.DEFAULT_BRUSH_WIDTH;
         this.lineCap = 'round';
         this.lineJoin = 'round';
@@ -195,7 +199,7 @@ APP.model = (function() {
         colors = colors.slice( 0, maxColors );
     
         for (i = 0, len = colors.length; i < len; i++) {
-            color = '#' + colors[i];
+            color = colors[i];
             small = util.object( brushChildrenProto, {
                 color: color,
                 width: config.SMALL_BRUSH_WIDTH
@@ -415,18 +419,20 @@ APP.model = (function() {
 
         // Initialize currentBrush.
         currentBrush = new CurrentBrush( brushSize, colorPanelIdx );
+        
+        //----------- MODULE INTERFACE ----------------
+
+        this.Palettes = Palettes;
+        this.CurrentPalette = CurrentPalette;
+        this.CurrentBrush = CurrentBrush;
+        
+        this.palettes = palettes;
+        this.currentPalette = currentPalette;
+        this.currentBrush = currentBrush;
     };
 
 
-    //----------- MODULE INTERFACE ----------------
-    
     return {
-        Palettes: Palettes,
-        palettes: palettes,
-        CurrentPalette: CurrentPalette,
-        currentPalette: currentPalette,
-        CurrentBrush: CurrentBrush,
-        currentBrush: currentBrush,
         init: init
     };  
 })();
@@ -440,11 +446,17 @@ APP.view = (function() {
     var model = APP.model;
     var config = APP.config;
     
-    var TheStatus, theStatus,
-        Canvas, canvas,
-        ColorPanels, colorPanels,
-        PalettesColumn, palettesColumn,
-        init;
+    var TheStatus,
+        Canvas,
+        ColorPanels,
+        PalettesColumn;
+        
+    var theStatus,
+        canvas,
+        colorPanels,
+        palettesColumn;
+        
+    var init;
 
     // ------------------ Status reporting mechanism. --------------------------
     
@@ -484,7 +496,7 @@ APP.view = (function() {
         this.border = (borderLeftPx) ? parseInt(borderLeftPx, 10) : 16;
         this.drawing = false;
         
-        this.applyStyle( brushStyle, colorPanelIdx );
+        this.applyStyle( brushStyle );
         this.clear();
     }
 
@@ -499,11 +511,11 @@ APP.view = (function() {
         return coords;
     }
 
-    Canvas.prototype.applyStyle = function( brushStyle, colorPanelIdx ) {
+    Canvas.prototype.applyStyle = function( brushStyle ) {
         var c = this.context;
         
         c.lineWidth = brushStyle.width;
-        c.strokeStyle = brushStyle.color;
+        c.strokeStyle = "#" + brushStyle.color;
         c.lineCap = brushStyle.lineCap;
         c.lineJoin = brushStyle.lineJoin;
     }
@@ -540,14 +552,14 @@ APP.view = (function() {
         var c = this.context;
         color = color || this.backgroundColor;
 
-        c.fillStyle = color;
+        c.fillStyle = "#" + color;
         c.fillRect( 0, 0, this.width, this.height );
     };
     
     // -------------------- wrapper for DOM color panels --------------------------
     
-    ColorPanels = function( DOMcolorContainer, DOMtitleSpan, title, colors ) {
-        this.DOMcolorContainer = DOMcolorContainer;
+    ColorPanels = function( DOMcontainer, DOMtitleSpan, title, colors ) {
+        this.DOMcontainer = DOMcontainer;
         this.DOMtitleSpan = DOMtitleSpan;
         this.populate( title, colors );
     };
@@ -557,7 +569,7 @@ APP.view = (function() {
         var color;
         var elementIds = [];
         
-        var jQcolorContainer = $( this.DOMcolorContainer );
+        var jQcontainer = $( this.DOMcontainer );
         var jQtitleSpan = $( this.DOMtitleSpan );
         
         for (i = 0, len = colors.length; i < len; i++) {
@@ -571,12 +583,12 @@ APP.view = (function() {
         // THIS SHOULD BE CHANGED TO RE-BACKGROUND-COLORING
         // WHAT WAS ALREADY THERE, INSTEAD OF EMPTYING AND RE-DRAWING. 
 
-        jQcolorContainer.empty();
+        jQcontainer.empty();
         jQtitleSpan.text( title );
 
         $( "#currentPaletteTemplate" ).
                 tmpl( elementIds ).
-                appendTo( jQcolorContainer ).
+                appendTo( jQcontainer ).
                 each( function( elementIndex ) {
                     this.style.backgroundColor = '#' + colors[elementIndex];
                 });
@@ -584,13 +596,14 @@ APP.view = (function() {
     };
     
     ColorPanels.prototype.getId = function( colorPanelIdx ) {
-        return '#color-' + (colorPanelIdx + 1);
+        return 'color-' + (colorPanelIdx + 1);
     };
     
     // -------------------- wrapper for DOM palettes column --------------------------
     
-    PalettesColumn = function( DOMcontainer ) {
+    PalettesColumn = function( DOMcontainer, DOMtitleSpan ) {
         this.DOMcontainer = DOMcontainer;
+        this.DOMtitleSpan = DOMtitleSpan;
     };
     
     PalettesColumn.prototype.populate = function( palettes ) {
@@ -600,41 +613,11 @@ APP.view = (function() {
     
         var jQcontainer = $( this.DOMcontainer );
     
-        jQcontainer.find( '#successfulKeywords' ).text( palettes.keywords );
+        $( this.DOMtitleSpan ).text( palettes.keywords );
         jQcontainer.find( '#palettesFound' ).show();
     
-        jQcontainer.find( '#paletteList' ).empty();
-        $( '#palettesTemplate' ).
-                tmpl( palettes.data ).
-                appendTo( jQcontainer.find( '#paletteList' )).
-                each( function( paletteIndex ) {
-                    this.onclick = function() {
-                    
-                        var title = model.palettes.data[paletteIndex].title;
-                        var colors = model.palettes.data[paletteIndex].colors;
-                    
-                        var style, colorPanelIdx;
-                    
-                        model.currentPalette.init( title, colors );
-                        colorPanels.populate( title, colors );
-                    
-                        // Now that we have loaded currentPalette
-                        // with the new colors, invoking currentBrush.style()
-                        // will give access to the correct style information
-                        // in currentPalette.
-                    
-                        style = model.currentBrush.style();
-                        colorPanelIdx = model.currentBrush.colorPanelIdx();
-                    
-                        canvas.applyStyle( style, colorPanelIdx );
-                    
-                        // turn the palette thumbnail pink
-                    
-                        jQcontainer.find( '#paletteList .selected' ).removeClass( 'selected' );
-                        $( this ).find( 'img' ).addClass( 'selected' );
-                     
-                    };
-                });
+        jQcontainer.empty();
+        $( '#palettesTemplate' ).tmpl( palettes.data ).appendTo( jQcontainer );
     
         jQcontainer.show();
     };
@@ -654,20 +637,22 @@ APP.view = (function() {
                                            paletteTitle, paletteColors );
                                            
         // Initialize empty palettesColumn object.
-        palettesColumn = new PalettesColumn( $( 'div.left-column' ) );
+        palettesColumn = new PalettesColumn( $( '#paletteList' )[0], $( '#successfulKeywords' )[0] );
+
+        //----------- MODULE INTERFACE ----------------
+
+        this.TheStatus = TheStatus;
+        this.Canvas = Canvas;
+        this.ColorPanels = ColorPanels;
+        this.PalettesColumn = PalettesColumn;
+        
+        this.theStatus = theStatus;
+        this.canvas = canvas;
+        this.colorPanels = colorPanels;
+        this.palettesColumn = palettesColumn;
     };
     
-    // ---- Module interface -----
-
     return {
-        TheStatus: TheStatus,
-        theStatus: theStatus,
-        Canvas: Canvas,
-        canvas: canvas,
-        ColorPanels: ColorPanels,
-        colorPanels: colorPanels,
-        PalettesColumn: PalettesColumn,
-        palettesColumn: palettesColumn,
         init: init
     };
 })();
@@ -729,7 +714,7 @@ APP.controller = (function() {
     loadPalettes = function( data ) {
         if (model.palettes.load( data )) {
             view.theStatus.report();   // no arguments means all clear, no errors to report.  
-            view.palettesColumn.populate( model.palettes );
+            view.palettesColumn.populate( model.palettes, $( '#successfulKeywords' ) );
         } else {
             view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
                                     model.palettes.keywords + '." Try again.' );
@@ -741,7 +726,7 @@ APP.controller = (function() {
         
         // Set brush size HTML select element, 
         // because Firefox preserves state even when it's refreshed.
-        $( '#brushSize' ).val( currentBrush.size() );  
+        $( '#brushSize' ).val( model.currentBrush.size() );  
 
         // bind the event handlers for clearing the screen, 
         // toggling the brush size and entering search keywords.
@@ -752,7 +737,7 @@ APP.controller = (function() {
 
         $( '#brushSize' ).change( function() {
             model.currentBrush.style( this.value );
-            view.canvas.applyStyle( model.currentBrush.style(), model.currentBrush.colorPanelIdx() );
+            view.canvas.applyStyle( model.currentBrush.style() );
         });        
 
         $( '#searchButton' ).click( function() {
@@ -765,7 +750,7 @@ APP.controller = (function() {
             code = event.keyCode || event.which;
             if (code == 13) {
                 event.preventDefault();
-                requestFromColourloversAPI( palettes );
+                requestFromColourloversAPI( model.palettes );
             }
         });
     };
@@ -804,7 +789,6 @@ APP.controller = (function() {
     };
     
     setCanvasControls = function( canvas ) {
-        //========== Canvas events ==============
 
         canvas.DOMElement.onmousedown = function( event ) {
             var p = canvas.getMousePos( event );
@@ -824,54 +808,102 @@ APP.controller = (function() {
             canvas.drawing = false;
         };
     };
+    
+/*
+    var ElementsController = new function( wrapper, title, eventHandler ){
+        var self = this;
+        this.refresh( wrapper, title, eventHandler );        
+    };
+    
+    ElementsController.prototype.highlightElement = function( element ) {
+        $( element ).addClass( 'selected' );
+        $( element ).siblings.removeClass( 'selected' );
+    };
+    
+    ElementsController.prototype.addEventListeners( eventHandler )
+    
+*/    
 
     colorPanelsController = {
-        self: this,
         
         highlightColor: function( selectedPanel ) {
-            selectedPanel.addClass( 'selected' );
-            selectedPanel.siblings.removeClass( 'selected' );
+            $( selectedPanel ).addClass( 'selected' );
+            $( selectedPanel ).siblings().removeClass( 'selected' );
         },
         
         addEventListeners: function( model, view ) {
-            $( view.colorPanels.DOMcolorContainer ).children().each( function( elementIndex ) {
+            $( view.colorPanels.DOMcontainer ).children().each( function( elementIndex ) {
                 this.onclick = (function( i ) {
                     return function() {
-                        self.highlightColor( this );
+                        colorPanelsController.highlightColor( this );
                         
                         // Update currentBrush and canvas.
                         model.currentBrush.style( i );
-                        view.canvas.applyStyle( model.currentBrush.style(), i );
+                        view.canvas.applyStyle( model.currentBrush.style() );
                     };
                 })( elementIndex );
             });
         },
         
         init: function( model, view ) {
+            
             // Populate the color panels.
-            view.colorPanels.populate(); 
+            view.colorPanels.populate( model.currentPalette.title, model.currentPalette.colors ); 
+            
+            // Set the canvas to the right style.
+            view.canvas.applyStyle( model.currentBrush.style() );
 
-            // Now make the selected one pink.
-            var selectedPanel = $( view.colorPanels.getId( model.currentBrush.colorPanelIdx()));
-            this.highlightColor( selectedPanel );
+            // Now make the already selected one pink.
+            console.log(view.colorPanels.getId( model.currentBrush.colorPanelIdx()) );
+            
+            var panel = document.getElementById( view.colorPanels.getId( model.currentBrush.colorPanelIdx()));
+            console.log(panel.toString());
+            this.highlightColor( panel );
 
             // Add the event handlers.
             this.addEventListeners( model, view );
         }
     };
-    
+
     palettesColumnController = {
         self: this,
         
         highlightPalette: function( selectedPalette ) {
-            selectedPalette.addClass( 'selected' );
-            selectedPalette.siblings.removeClass( 'selected' );
+            $( selectedPalette ).addClass( 'selected' );
+            $( selectedPalette ).siblings().removeClass( 'selected' );
         },
         
         addEventListeners: function( model, view ) {
+            $( view.palettesColumn.DOMcontainer ).children().each( function( elementIndex ) {
+                this.onclick = (function( i ) {
+                    return function() {
+                        palettesColumnController.highlightPalette( this );
+                        
+                        var title = model.palettes.data[paletteIndex].title;
+                        var colors = model.palettes.data[paletteIndex].colors;
+
+                        model.currentPalette.init( title, colors );
+                        
+                        // Now that we have loaded currentPalette
+                        // with the new colors, invoking colorPanelsController.init()
+                        // will give access to the correct style information
+                        // in currentPalette.
+                        
+                        colorPanelsController.init( model, view );
+                    };
+                })( elementIndex );
+            });
+        },
+        
+        init: function( model, view ) {
             
+            // Populate the palettes column.
+            view.palettesColumn.populate( model.palettes );
+            
+            // Add the event handlers.
+            this.addEventListeners( model, view );
         }
-    }
+    };
     
     // the init will eventually be broken up into two parts: one for everything
     // that gets executed only once when the user goes to this URL or refreshes 
@@ -904,7 +936,8 @@ APP.controller = (function() {
     //----------- module interface -----------------
     
     return {
-        // We might need this stuff in a later version of this app.
+        // We need init right now.
+        // We might need the rest of this stuff in a later version of this app.
 
         requestFromColourloversAPI: requestFromColourloversAPI,
         loadPalettes: loadPalettes,
