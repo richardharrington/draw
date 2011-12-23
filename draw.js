@@ -625,18 +625,18 @@ APP.view = (function() {
     init = function( args ) {
         
         // Initialize status reporting.
-        theStatus = new TheStatus( document.getElementById( 'statusReport' ) );
+        theStatus = new TheStatus( args.statusReportElement );
         
         // Initialize canvas.
-        canvas = new Canvas( document.getElementById( 'canvas' ), args.canvasWidth, args.canvasHeight, 
+        canvas = new Canvas( args.canvasElement, args.canvasWidth, args.canvasHeight, 
                              args.canvasBackgroundColor, args.brushStyle, args.colorPanelIdx );
         
         // Load the colors into the DOM.
-        colorPanels = new ColorPanels ( $( 'div.color-container' )[0], $( '#currentPaletteTitle' )[0], 
-                                           args.paletteTitle, args.paletteColors );
+        colorPanels = new ColorPanels ( args.colorPanelsElement, args.colorsTitleElement, 
+                                        args.paletteTitle, args.paletteColors );
                                            
         // Initialize empty palettesColumn object.
-        palettesColumn = new PalettesColumn( $( '#paletteList' )[0], $( '#successfulKeywords' )[0] );
+        palettesColumn = new PalettesColumn( args.palettesColumnElement, args.palettesTitleElement );
 
         //----------- MODULE INTERFACE ----------------
 
@@ -901,14 +901,22 @@ APP.controller = (function() {
             colorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX 
         });
 
-        view.init({ 
-            canvasWidth:           config.CANVAS_WIDTH, 
-            canvasHeight:          config.CANVAS_HEIGHT, 
-            canvasBackgroundColor: config.CANVAS_BACKGROUND_COLOR, 
-            brushStyle:            model.currentBrush.style(), 
-            colorPanelIdx:         config.DEFAULT_COLOR_PANEL_INDEX,
-            paletteTitle:          config.DEFAULT_PALETTE_TITLE, 
-            paletteColors:         config.DEFAULT_PALETTE_COLORS 
+        view.init({  
+            canvasWidth:             config.CANVAS_WIDTH, 
+            canvasHeight:            config.CANVAS_HEIGHT, 
+            canvasBackgroundColor:   config.CANVAS_BACKGROUND_COLOR, 
+            colorPanelIdx:           config.DEFAULT_COLOR_PANEL_INDEX,
+            paletteTitle:            config.DEFAULT_PALETTE_TITLE, 
+            paletteColors:           config.DEFAULT_PALETTE_COLORS,
+            
+            statusReportElement:     document.getElementById( 'statusReport' ), 
+            canvasElement:           document.getElementById( 'canvas' ),
+            colorPanelsElement:      $( 'div.color-container' )[0],
+            colorsTitleElement:      document.getElementById( 'currentPaletteTitle' ),
+            palettesColumnElement:   document.getElementById( 'paletteList' ),
+            palettesTitleElement:    document.getElementById( 'successfulKeywords' ),
+            
+            brushStyle:              model.currentBrush.style() 
         });
             
         setMiscellaneousUserControls( model, view );
