@@ -27,7 +27,7 @@ APP.util = (function() {
         return Object.prototype.toString.call( obj ) === "[object Array]";
     };
 
-    // keyList returns an array of all property names in an object.
+    // keyList returns an array of all own property names in an object.
 
     var keyList = function( obj ) {
         var k, obj;
@@ -409,16 +409,16 @@ APP.model = (function() {
         return true;
     };
     
-    init = function( paletteTitle, paletteColors, maxColors, brushSize, colorPanelIdx ) {
+    init = function( args ) {
         
         // Initialize palettes.
         palettes = new Palettes();
 
         // Initialize currentPalette.
-        currentPalette = new CurrentPalette( paletteTitle, paletteColors, maxColors );
+        currentPalette = new CurrentPalette( args.paletteTitle, args.paletteColors, args.maxColors );
 
         // Initialize currentBrush.
-        currentBrush = new CurrentBrush( brushSize, colorPanelIdx );
+        currentBrush = new CurrentBrush( args.brushSize, args.colorPanelIdx );
         
         //----------- MODULE INTERFACE ----------------
 
@@ -622,19 +622,18 @@ APP.view = (function() {
         jQcontainer.show();
     };
     
-    init = function( canvasWidth, canvasHeight, canvasBackgroundColor, 
-                     brushStyle, colorPanelIdx, paletteTitle, paletteColors ) {
+    init = function( args ) {
         
         // Initialize status reporting.
         theStatus = new TheStatus( document.getElementById( 'statusReport' ) );
         
         // Initialize canvas.
-        canvas = new Canvas( document.getElementById( 'canvas' ), canvasWidth, canvasHeight, 
-                             canvasBackgroundColor, brushStyle, colorPanelIdx );
+        canvas = new Canvas( document.getElementById( 'canvas' ), args.canvasWidth, args.canvasHeight, 
+                             args.canvasBackgroundColor, args.brushStyle, args.colorPanelIdx );
         
         // Load the colors into the DOM.
         colorPanels = new ColorPanels ( $( 'div.color-container' )[0], $( '#currentPaletteTitle' )[0], 
-                                           paletteTitle, paletteColors );
+                                           args.paletteTitle, args.paletteColors );
                                            
         // Initialize empty palettesColumn object.
         palettesColumn = new PalettesColumn( $( '#paletteList' )[0], $( '#successfulKeywords' )[0] );
@@ -723,7 +722,7 @@ APP.controller = (function() {
             $( document ).delegate('#colourLoversUrl', 'error', function () {
 
                 // extract the search string from the colourlovers.com request url.
-                var keywords = $(this).attr('src').replace(/(.*?keywords=search+)(.*?)(&.*)/, '$2');
+                var keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search+)(.*?)(&.*)/, '$2' );
                 theStatus.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
             });
     
@@ -781,6 +780,8 @@ APP.controller = (function() {
     colorPanelsController = {
         
         highlightColor: function( selectedPanel ) {
+            console.log(view.colorPanels.getId( model.currentBrush.colorPanelIdx()) );
+
             $( selectedPanel ).addClass( 'selected' );
             $( selectedPanel ).siblings().removeClass( 'selected' );
         },
@@ -789,11 +790,12 @@ APP.controller = (function() {
             $( view.colorPanels.DOMcontainer ).children().each( function( elementIndex ) {
                 this.onclick = (function( i ) {
                     return function() {
-                        colorPanelsController.highlightColor( this );
                         
                         // Update currentBrush and canvas.
                         model.currentBrush.style( i );
                         view.canvas.applyStyle( model.currentBrush.style() );
+                        
+                        colorPanelsController.highlightColor( this );
                     };
                 })( elementIndex );
             });
@@ -808,10 +810,8 @@ APP.controller = (function() {
             view.canvas.applyStyle( model.currentBrush.style() );
 
             // Now make the already selected one pink.
-            console.log(view.colorPanels.getId( model.currentBrush.colorPanelIdx()) );
             
             var panel = document.getElementById( view.colorPanels.getId( model.currentBrush.colorPanelIdx()));
-            console.log(panel.toString());
             this.highlightColor( panel );
 
             // Add the event handlers.
@@ -912,19 +912,23 @@ APP.controller = (function() {
 
     init = function() {
 
-        model.init( config.DEFAULT_PALETTE_TITLE, 
-                    config.DEFAULT_PALETTE_COLORS, 
-                    config.MAX_COLORS,
-                    config.DEFAULT_BRUSH_SIZE, 
-                    config.DEFAULT_COLOR_PANEL_INDEX );
-                    
-        view.init(  config.CANVAS_WIDTH, 
-                    config.CANVAS_HEIGHT, 
-                    config.CANVAS_BACKGROUND_COLOR, 
-                    model.currentBrush.style(), 
-                    config.DEFAULT_COLOR_PANEL_INDEX,
-                    config.DEFAULT_PALETTE_TITLE, 
-                    config.DEFAULT_PALETTE_COLORS );
+        model.init({ 
+            paletteTitle:   config.DEFAULT_PALETTE_TITLE, 
+            paletteColors: config.DEFAULT_PALETTE_COLORS, 
+            maxColors:     config.MAX_COLORS,
+            brushSize:     config.DEFAULT_BRUSH_SIZE, 
+            colorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX 
+        });
+
+        view.init({ 
+            canvasWidth:           config.CANVAS_WIDTH, 
+            canvasHeight:          config.CANVAS_HEIGHT, 
+            canvasBackgroundColor: config.CANVAS_BACKGROUND_COLOR, 
+            brushStyle:            model.currentBrush.style(), 
+            colorPanelIdx:         config.DEFAULT_COLOR_PANEL_INDEX,
+            paletteTitle:          config.DEFAULT_PALETTE_TITLE, 
+            paletteColors:         config.DEFAULT_PALETTE_COLORS 
+        });
             
         setUserControls( model, view );
         setErrorControls( model, view );
