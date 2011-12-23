@@ -669,12 +669,13 @@ APP.controller = (function() {
     var setErrorControls;
     var setCanvasControls;
     
+    var ElementsController;
     var colorPanelsController;
     var palettesColumnController;
     
     var init;
     
-    setUserControls = function( model, view ) {
+    setMiscellaneousUserControls = function( model, view ) {
         var code;
         
         // Set brush size HTML select element, 
@@ -762,100 +763,80 @@ APP.controller = (function() {
         };
     };
     
-/*
-    var ElementsController = new function( wrapper, title, eventHandler ){
-        var self = this;
-        this.refresh( wrapper, title, eventHandler );        
+    // Now set up the controllers for the color panels and the palettes column,
+    // which are quite similar so we're going to re-use the code.
+
+    ElementsController = function() {};
+    
+    // highlightElement operates on either an element and its siblings,
+    // or descendants of the top-level element and all the corresponding 
+    // descendants of the siblings of the top-level element.
+    
+    ElementsController.prototype.highlightElement = function( element, descendant ) {
+        if (arguments.length === 1) {
+            $( element ).addClass( 'selected' );
+            $( element ).siblings().removeClass( 'selected' );
+        } else {
+            $( element ).find( descendant ).addClass( 'selected' );
+            $( element ).siblings().find( descendant ).removeClass( 'selected' );
+        }
     };
     
-    ElementsController.prototype.highlightElement = function( element ) {
-        $( element ).addClass( 'selected' );
-        $( element ).siblings.removeClass( 'selected' );
-    };
-    
-    ElementsController.prototype.addEventListeners( eventHandler )
-    
-*/    
-
-    colorPanelsController = {
-        
-        highlightColor: function( selectedPanel ) {
-            console.log(view.colorPanels.getId( model.currentBrush.colorPanelIdx()) );
-
-            $( selectedPanel ).addClass( 'selected' );
-            $( selectedPanel ).siblings().removeClass( 'selected' );
-        },
-        
-        addEventListeners: function( model, view ) {
-            $( view.colorPanels.DOMcontainer ).children().each( function( elementIndex ) {
-                this.onclick = (function( i ) {
-                    return function() {
-                        
-                        // Update currentBrush and canvas.
-                        model.currentBrush.style( i );
-                        view.canvas.applyStyle( model.currentBrush.style() );
-                        
-                        colorPanelsController.highlightColor( this );
-                    };
-                })( elementIndex );
+    ElementsController.prototype.addEventListeners = function( wrapper, eventHandler ) {
+        $( wrapper.DOMcontainer ).children().each( function( i ) {
+            $( this ).click( function() {
+                eventHandler( this, i );
             });
-        },
+        });
+    };
+    
+    colorPanelsController = new ElementsController();
+    
+    colorPanelsController.init = function( model, view ) {
+        var panel;
         
-        init: function( model, view ) {
+        // Populate the color panels.
+        view.colorPanels.populate( model.currentPalette.title, model.currentPalette.colors ); 
+        
+        // Set the canvas to the right style.
+        view.canvas.applyStyle( model.currentBrush.style() );
+
+        // Now make the already selected one pink.
+        panel = document.getElementById( view.colorPanels.getId( model.currentBrush.colorPanelIdx()));
+        this.highlightElement( panel );
+
+        // Add the event listeners.
+        this.addEventListeners( view.colorPanels, function( element, i ) {
             
-            // Populate the color panels.
-            view.colorPanels.populate( model.currentPalette.title, model.currentPalette.colors ); 
-            
-            // Set the canvas to the right style.
+            // Update currentBrush and canvas.
+            model.currentBrush.style( i );
             view.canvas.applyStyle( model.currentBrush.style() );
-
-            // Now make the already selected one pink.
             
-            var panel = document.getElementById( view.colorPanels.getId( model.currentBrush.colorPanelIdx()));
-            this.highlightColor( panel );
-
-            // Add the event handlers.
-            this.addEventListeners( model, view );
-        }
+            // Turn the selected one pink.
+            colorPanelsController.highlightElement( element );
+        });
     };
+         
 
-    palettesColumnController = {
+    palettesColumnController = new ElementsController();
+    
+    palettesColumnController.init = function( model, view ) {
         
-        highlightPalette: function( selectedPalette ) {
-            $( selectedPalette ).children( '.palette-image').addClass( 'selected' );
-            $( selectedPalette ).siblings().children( '.palette-image').removeClass( 'selected' );
-        },
+        // Populate the palettes column.
+        view.palettesColumn.populate( model.palettes );
         
-        addEventListeners: function( model, view ) {
-            $( view.palettesColumn.DOMcontainer ).children().each( function( elementIndex ) {
-                this.onclick = (function( i ) {
-                    return function() {
-                        palettesColumnController.highlightPalette( this );
-                        
-                        var title = model.palettes.data[i].title;
-                        var colors = model.palettes.data[i].colors;
-
-                        model.currentPalette.init( title, colors );
-                        
-                        // Now that we have loaded currentPalette
-                        // with the new colors, invoking colorPanelsController.init()
-                        // will give access to the correct style information
-                        // in currentPalette.
-                        
-                        colorPanelsController.init( model, view );
-                    };
-                })( elementIndex );
-            });
-        },
-        
-        init: function( model, view ) {
+        // Add the event handlers.
+        this.addEventListeners( view.palettesColumn, function( element, i ) {
             
-            // Populate the palettes column.
-            view.palettesColumn.populate( model.palettes );
+            // Load the currentPalette with the new colors.
+            var title = model.palettes.data[i].title;
+            var colors = model.palettes.data[i].colors;
+            model.currentPalette.init( title, colors );
+            colorPanelsController.init( model, view );
             
-            // Add the event handlers.
-            this.addEventListeners( model, view );
-        }
+            // Turn the selected one pink.
+            palettesColumnController.highlightElement( element, ".palette-image" );
+        });        
     };
     
     // -- the event handler for requesting data from colourlovers.com
@@ -913,7 +894,7 @@ APP.controller = (function() {
     init = function() {
 
         model.init({ 
-            paletteTitle:   config.DEFAULT_PALETTE_TITLE, 
+            paletteTitle:  config.DEFAULT_PALETTE_TITLE, 
             paletteColors: config.DEFAULT_PALETTE_COLORS, 
             maxColors:     config.MAX_COLORS,
             brushSize:     config.DEFAULT_BRUSH_SIZE, 
@@ -930,7 +911,7 @@ APP.controller = (function() {
             paletteColors:         config.DEFAULT_PALETTE_COLORS 
         });
             
-        setUserControls( model, view );
+        setMiscellaneousUserControls( model, view );
         setErrorControls( model, view );
         setCanvasControls( view.canvas );
         colorPanelsController.init( model, view );
@@ -950,6 +931,7 @@ APP.controller = (function() {
         setErrorControls: setErrorControls,
         setCanvasControls: setCanvasControls,
 
+        ElementsController: ElementsController,
         colorPanelsController: colorPanelsController,
         palettesColumnController: palettesColumnController,
 
