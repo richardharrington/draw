@@ -136,11 +136,10 @@ APP.model = (function() {
         CurrentPalette,
         CurrentBrush;
         
-    var palettes,
-        currentPalette,
-        currentBrush;
-        
     var init;
+    
+    var instances = [];
+    var instanceNumber = 0;
 
     // --- A note about Palettes, CurrentPalette and CurrentBrush:
 
@@ -410,6 +409,9 @@ APP.model = (function() {
     };
     
     init = function( args ) {
+        var palettes,
+            currentPalette,
+            currentBrush;
         
         // Initialize palettes.
         palettes = new Palettes();
@@ -420,21 +422,21 @@ APP.model = (function() {
         // Initialize currentBrush.
         currentBrush = new CurrentBrush( args.brushSize, args.colorPanelIdx );
         
+        instanceNumber += 1;
+ 
         //----------- MODULE INTERFACE ----------------
-
-        this.Palettes = Palettes;
-        this.CurrentPalette = CurrentPalette;
-        this.CurrentBrush = CurrentBrush;
         
-        this.palettes = palettes;
-        this.currentPalette = currentPalette;
-        this.currentBrush = currentBrush;
+        this.instances[instanceNumber] = {
+            palettes: palettes,
+            currentPalette: currentPalette,
+            currentBrush: currentBrush
+        };
     };
-
 
     return {
         init: init
     };  
+    
 })();
 
 
@@ -446,17 +448,15 @@ APP.view = (function() {
     var model = APP.model;
     var config = APP.config;
     
-    var TheStatus,
-        Canvas,
-        ColorPanels,
-        PalettesColumn;
-        
     var theStatus,
         canvas,
         colorPanels,
         palettesColumn;
         
     var init;
+
+    var instances = [];
+    var instanceNumber = 0;
 
     // ------------------ Status reporting mechanism. --------------------------
     
@@ -548,11 +548,10 @@ APP.view = (function() {
         c.stroke();
     };
 
-    Canvas.prototype.clear = function( color ) {
+    Canvas.prototype.clear = function() {
         var c = this.context;
-        color = color || this.backgroundColor;
 
-        c.fillStyle = "#" + color;
+        c.fillStyle = "#" + this.backgroundColor;
         c.fillRect( 0, 0, this.width, this.height );
     };
     
@@ -623,6 +622,10 @@ APP.view = (function() {
     };
     
     init = function( args ) {
+        var theStatus,
+            canvas,
+            colorPanels,
+            palettesColumn;
         
         // Initialize status reporting.
         theStatus = new TheStatus( args.statusReportElement );
@@ -638,17 +641,16 @@ APP.view = (function() {
         // Initialize empty palettesColumn object.
         palettesColumn = new PalettesColumn( args.palettesColumnElement, args.palettesTitleElement );
 
+        instanceNumber += 1;
+        
         //----------- MODULE INTERFACE ----------------
 
-        this.TheStatus = TheStatus;
-        this.Canvas = Canvas;
-        this.ColorPanels = ColorPanels;
-        this.PalettesColumn = PalettesColumn;
-        
-        this.theStatus = theStatus;
-        this.canvas = canvas;
-        this.colorPanels = colorPanels;
-        this.palettesColumn = palettesColumn;
+        this.instances[instanceNumber] = {
+            theStatus: theStatus,
+            canvas: canvas,
+            colorPanels: colorPanels,
+            palettesColumn: palettesColumn
+        };
     };
     
     return {
@@ -664,6 +666,12 @@ APP.controller = (function() {
 
     var requestFromColourloversAPI;
     var loadPalettes;
+    
+    // whichLoadPalettes is an array of functions,
+    // each calling loadPalettes with a parameter that is the 
+    // index value of the element of whichLoadPalettes that was called.
+    
+    var whichLoadPalettes = [];
     
     var setUserControls;
     var setErrorControls;
@@ -686,7 +694,7 @@ APP.controller = (function() {
         // toggling the brush size and entering search keywords.
 
         $( '#clearCanvas' ).click( function() {
-            view.canvas.clear( config.CANVAS_BACKGROUND_COLOR );
+            view.canvas.clear();
         });
 
         $( '#brushSize' ).change( function() {
@@ -709,6 +717,10 @@ APP.controller = (function() {
         });
     };
     
+    
+    // THERE NEEDS TO BE 1 JSONP SCRIPT TAG FOR EACH INSTANCE.
+    // NEEDS TO BE PART OF THE VIEW, BASICALLY.
+    
     setErrorControls = function( model, view ) {
         // Set up error handlers for all current and future cases of 
         // the manual script tag that downloads the data from colourlovers
@@ -724,19 +736,19 @@ APP.controller = (function() {
 
                 // extract the search string from the colourlovers.com request url.
                 var keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search+)(.*?)(&.*)/, '$2' );
-                theStatus.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
+                view.theStatus.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
             });
     
         } catch ( e ) {
 
             if (window.addEventListener) {
                 window.addEventListener('error', function () {
-                    theStatus.report( "There's been a nebulous problem of some sort." );
+                    view.theStatus.report( "There's been a nebulous problem of some sort." );
                 }, false);
 
             } else if (window.attachEvent) {
                 window.attachEvent('error', function () {
-                    theStatus.report( "There's been a nebulous problem of some sort, probably IE-related." );
+                    view.theStatus.report( "There's been a nebulous problem of some sort, probably IE-related." );
                 });
             }
         }
@@ -841,7 +853,7 @@ APP.controller = (function() {
     
     // -- the event handler for requesting data from colourlovers.com
     
-    requestFromColourloversAPI = function() {
+    requestFromColourloversAPI = function( instanceNumber ) {
         var encodedKeywords;
         var colourLoverScript;
         var keywords = $( '#searchField' ).val();
@@ -870,12 +882,26 @@ APP.controller = (function() {
             encodedKeywords = keywords.replace( /\s+/g, '+' );
             colourLoversScript.setAttribute( 'src', 
                     'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
-                    '&jsonCallback=APP.controller.loadPalettes' );
+                    '&jsonCallback=APP.controller.whichLoadPalettes[' + instanceNumber + ']' );
         }
         return false;
     };
     
-    loadPalettes = function( data ) {
+    // whichLoadPalettes is basically a hack to get a JSONP request 
+    // to know which instance it's supposed to fill when it returns.
+    // It converts instanceNumber from an index of whichLoadPalettes 
+    // into an argument of loadPalettes.
+    
+    whichLoadPalettes.add = function( instanceNumber ) {
+        whichLoadPalettes[instanceNumber] = function( data ) {
+            loadPalettes( data, instanceNumber );
+        };
+    };
+    
+    loadPalettes = function( data, instanceNumber ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+        
         if (model.palettes.load( data )) {
             palettesColumnController.init( model, view );
             view.theStatus.report();   // no arguments means all clear, no errors to report.  
@@ -923,6 +949,7 @@ APP.controller = (function() {
         setErrorControls( model, view );
         setCanvasControls( view.canvas );
         colorPanelsController.init( model, view );
+        whichLoadPalettes.add( instanceNumber );
     };
     
     //----------- module interface -----------------
