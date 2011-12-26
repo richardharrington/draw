@@ -1,3 +1,28 @@
+
+
+/*
+
+TO DO:
+
+A. change the master so it works with the error message.
+
+Sketchpad branch:
+
+1. set the view init so that it puts new templates into the WHOLE html page.
+
+2. change everything from id to class. (PARTICULARLY THE VIEW INIT)
+
+3. deal with the error controller situation.
+
+4. Change setMiscellaneousUserControls to set a bunch of DOM element variables at the beginning.
+
+5. Change config module into an array of configs.
+
+*/
+
+
+
+
 var APP = (typeof APP !== 'undefined') ? APP : {};
 APP.util = (typeof APP.util !== 'undefined') ? APP.util : {};
 APP.config = (typeof APP.config !== 'undefined') ? APP.config : {};
@@ -21,15 +46,25 @@ APP.config = {
 
 APP.util = (function() {
     
+    var isArray,
+        keyList;
+        
+    var PropertyToParameter;
+    
+    var copy,
+        parseSQLDate,
+        object;
+        
+    
     // PRIVATE METHODS
     
-    var isArray = function( obj ) {
+    isArray = function( obj ) {
         return Object.prototype.toString.call( obj ) === "[object Array]";
     };
 
     // keyList returns an array of all own property names in an object.
 
-    var keyList = function( obj ) {
+    keyList = function( obj ) {
         var k, obj;
         var list = [];
         for (k in obj) {
@@ -40,7 +75,27 @@ APP.util = (function() {
         return list;
     };
 
-    // PUBLIC METHODS
+    // PUBLIC CONSTRUCTORS AND METHODS
+    
+    // PropertiesToParameters takes a function (func) and creates
+    // an object with a series of properties, all added by the 
+    // method "add," each of which is a function that takes an arbitrary number of arguments,
+    // adds its own property name to the beginning of the list of arguments that were passed to it,
+    // and then calls the original function "func" with the new argument list.
+    
+    // This is a hack so that we can pass to a JSONP request the name of a callback
+    // function such that the name of the function itself will tell
+    // another function, when the AJAX request returns, which model
+    // instance is supposed to be filled.
+        
+    PropertyToParameter = function( func ) {};
+    
+    PropertyToParameter.prototype.add = function( property ) {
+        this[property] = function() {
+            var args = Array.prototype.slice( arguments, 0 ).unshift( property );
+            func.apply( null, args );
+        };
+    };
     
     // copyProps is like jQuery.extend, except that it lacks 
     // jQuery.extend's ability to copy from more than one object. 
@@ -60,7 +115,7 @@ APP.util = (function() {
     // The last two arguments, deep and arrayOfProps, are optional and can
     // be in any order.
 
-    var copy = function copy( target, source /* optional args: arrayOfProps, deep */ ) {
+    copy = function copy( target, source /* optional args: arrayOfProps, deep */ ) {
         var key, value;
         var toStr = Object.prototype.toString;
         var i;
@@ -91,7 +146,7 @@ APP.util = (function() {
         }
     };
 
-    var parseSQLDate = function( str ) {
+    parseSQLDate = function( str ) {
         
         // Split timestamp into [ Y, M, D, h, m, s ]
         var t = str.split(/[- :]/);
@@ -104,7 +159,7 @@ APP.util = (function() {
 
     // object is an object inheritor function. 
 
-    var object = function ( o, vals ) {
+    object = function ( o, vals ) {
         function F() {};
         F.prototype = o;
         var instance = new F();            
@@ -120,6 +175,8 @@ APP.util = (function() {
         copy: copy,
         parseSQLDate: parseSQLDate,
         object: object,
+        
+        PropertyToParameter: PropertyToParameter
     };
 })();
 
@@ -660,20 +717,12 @@ APP.view = (function() {
 
 APP.controller = (function() {
     
-    var config = APP.config,
-        model = APP.model,
-        view = APP.view;
+    var config = APP.config;
 
     var requestFromColourloversAPI;
     var loadPalettes;
     
-    // whichLoadPalettes is an array of functions,
-    // each calling loadPalettes with a parameter that is the 
-    // index value of the element of whichLoadPalettes that was called.
-    
-    var whichLoadPalettes = [];
-    
-    var setUserControls;
+    var setMiscellaneousUserControls;
     var setErrorControls;
     var setCanvasControls;
     
@@ -683,7 +732,9 @@ APP.controller = (function() {
     
     var init;
     
-    setMiscellaneousUserControls = function( model, view ) {
+    setMiscellaneousUserControls = function( instanceNumber ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
         var code;
         
         // Set brush size HTML select element, 
@@ -721,7 +772,7 @@ APP.controller = (function() {
     // THERE NEEDS TO BE 1 JSONP SCRIPT TAG FOR EACH INSTANCE.
     // NEEDS TO BE PART OF THE VIEW, BASICALLY.
     
-    setErrorControls = function( model, view ) {
+    setErrorControls = function( instanceNumber ) {
         // Set up error handlers for all current and future cases of 
         // the manual script tag that downloads the data from colourlovers
         // (using jQuery .delegate()).
@@ -730,6 +781,9 @@ APP.controller = (function() {
         // fairly recent posts on the Internet say this handler can only be bound
         // to the window object or to an img element), we have as a fallback a
         // generic error handler on the window object if anything goes wrong on the page at all.
+        
+        var model = APP.model.instance[instanceNumber];
+        var view = APP.view.instance[instanceNumber];
 
         try {
             $( document ).delegate('#colourLoversUrl', 'error', function () {
@@ -804,7 +858,10 @@ APP.controller = (function() {
     
     colorPanelsController = new ElementsController();
     
-    colorPanelsController.init = function( model, view ) {
+    colorPanelsController.init = function( instanceNumber ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+        
         var panel;
         
         // Populate the color panels.
@@ -832,8 +889,10 @@ APP.controller = (function() {
 
     palettesColumnController = new ElementsController();
     
-    palettesColumnController.init = function( model, view ) {
-        
+    palettesColumnController.init = function( instanceNumber ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+                
         // Populate the palettes column.
         view.palettesColumn.populate( model.palettes );
         
@@ -854,26 +913,32 @@ APP.controller = (function() {
     // -- the event handler for requesting data from colourlovers.com
     
     requestFromColourloversAPI = function( instanceNumber ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+        
         var encodedKeywords;
         var colourLoverScript;
-        var keywords = $( '#searchField' ).val();
+        
+        var pageId = '#page-' + instanceNumber;
+        var searchField = $( pageId + ' .searchField' );
+        var keywords = searchField.val();
 
         // if the user typed anything
         if (keywords) {
             model.palettes.keywords = keywords;
-            $( '#searchField' ).val( '' );
+            searchField.val( '' );
                         
             view.theStatus.report( "Loading..." );
 
-            // First overwrite any previous script tags with the id 'colourLoversUrl',
+            // First overwrite any previous script tags with the class 'colourLoversUrl',
             // than create the new one that makes the next http request to colourlovers.com.
       
-            if ( $( '#colourLoversUrl' ).length > 0 ) {
-                $( '#colourLoversUrl' ).remove();
+            if ( $( pageId + ' .colourLoversUrl' ).length > 0 ) {
+                $( pageId + '.colourLoversUrl' ).remove();
             }
             colourLoversScript = document.createElement( 'script' );
         	colourLoversScript.id = 'colourLoversUrl';
-            document.getElementsByTagName( 'head' )[0].appendChild( colourLoversScript );
+            document.getElementById( pageId ).appendChild( colourLoversScript );
       
             // Change spaces to plus signs for insertion into search query.
             // This query string tells colourlovers.com to pass back the data wrapped
@@ -882,35 +947,28 @@ APP.controller = (function() {
             encodedKeywords = keywords.replace( /\s+/g, '+' );
             colourLoversScript.setAttribute( 'src', 
                     'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
-                    '&jsonCallback=APP.controller.whichLoadPalettes[' + instanceNumber + ']' );
+                    '&jsonCallback=APP.controller.loadPalettes[' + instanceNumber + ']' );
         }
         return false;
     };
     
-    // whichLoadPalettes is basically a hack to get a JSONP request 
-    // to know which instance it's supposed to fill when it returns.
-    // It converts instanceNumber from an index of whichLoadPalettes 
-    // into an argument of loadPalettes.
+    // Remember: PropertiesToParameters will create a hash (loadPalettes) whose values are functions
+    // that, when called, take their own property names and add them to the front of the argument
+    // list of the anonymous function that was originally passed to the constructor. Then that 
+    // anonymous function is called. I'M VERY TIRED, TOTALLY REWRITE THIS IN THE MORNING.
     
-    whichLoadPalettes.add = function( instanceNumber ) {
-        whichLoadPalettes[instanceNumber] = function( data ) {
-            loadPalettes( data, instanceNumber );
-        };
-    };
-    
-    loadPalettes = function( data, instanceNumber ) {
+    loadPalettes = new util.PropertyToParameter( function( instanceNumber, data ) {
         var model = APP.model.instances[instanceNumber];
         var view = APP.view.instances[instanceNumber];
         
         if (model.palettes.load( data )) {
-            palettesColumnController.init( model, view );
+            palettesColumnController.init( instanceNumber );
             view.theStatus.report();   // no arguments means all clear, no errors to report.  
         } else {
             view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
                                     model.palettes.keywords + '." Try again.' );
         };
-    };
-
+    });
 
     // the init will eventually be broken up into two parts: one for everything
     // that gets executed only once when the user goes to this URL or refreshes 
@@ -919,37 +977,46 @@ APP.controller = (function() {
 
     init = function() {
 
-        model.init({ 
-            paletteTitle:  config.DEFAULT_PALETTE_TITLE, 
-            paletteColors: config.DEFAULT_PALETTE_COLORS, 
-            maxColors:     config.MAX_COLORS,
-            brushSize:     config.DEFAULT_BRUSH_SIZE, 
-            colorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX 
-        });
+        var i, len;
+        var pageId;
+        
+        for (i = 0, len = config.length; i < len; i++) {
+            pageId = "page-" + i;
+            
+            APP.model.init({ 
+                paletteTitle:  config[i].DEFAULT_PALETTE_TITLE, 
+                paletteColors: config[i].DEFAULT_PALETTE_COLORS, 
+                maxColors:     config[i].MAX_COLORS,
+                brushSize:     config[i].DEFAULT_BRUSH_SIZE, 
+                colorPanelIdx: config[i].DEFAULT_COLOR_PANEL_INDEX 
+            });
+            
+            APP.view.init({ 
+                canvasWidth:             config[i].CANVAS_WIDTH, 
+                canvasHeight:            config[i].CANVAS_HEIGHT, 
+                canvasBackgroundColor:   config[i].CANVAS_BACKGROUND_COLOR, 
+                colorPanelIdx:           config[i].DEFAULT_COLOR_PANEL_INDEX,
+                paletteTitle:            config[i].DEFAULT_PALETTE_TITLE, 
+                paletteColors:           config[i].DEFAULT_PALETTE_COLORS,
+                
+                // CHANGE THISE TO CLASSES, NOT IDS. Using pageId.
+                
+                statusReportElement:     document.getElementById( 'statusReport' ), 
+                canvasElement:           document.getElementById( 'canvas' ),
+                colorPanelsElement:      $( 'div.color-container' )[0],
+                colorsTitleElement:      document.getElementById( 'currentPaletteTitle' ),
+                palettesColumnElement:   document.getElementById( 'paletteList' ),
+                palettesTitleElement:    document.getElementById( 'successfulKeywords' ),
 
-        view.init({  
-            canvasWidth:             config.CANVAS_WIDTH, 
-            canvasHeight:            config.CANVAS_HEIGHT, 
-            canvasBackgroundColor:   config.CANVAS_BACKGROUND_COLOR, 
-            colorPanelIdx:           config.DEFAULT_COLOR_PANEL_INDEX,
-            paletteTitle:            config.DEFAULT_PALETTE_TITLE, 
-            paletteColors:           config.DEFAULT_PALETTE_COLORS,
+                brushStyle:              APP.model.instances[i].currentBrush.style() 
+            });
             
-            statusReportElement:     document.getElementById( 'statusReport' ), 
-            canvasElement:           document.getElementById( 'canvas' ),
-            colorPanelsElement:      $( 'div.color-container' )[0],
-            colorsTitleElement:      document.getElementById( 'currentPaletteTitle' ),
-            palettesColumnElement:   document.getElementById( 'paletteList' ),
-            palettesTitleElement:    document.getElementById( 'successfulKeywords' ),
-            
-            brushStyle:              model.currentBrush.style() 
-        });
-            
-        setMiscellaneousUserControls( model, view );
-        setErrorControls( model, view );
-        setCanvasControls( view.canvas );
-        colorPanelsController.init( model, view );
-        whichLoadPalettes.add( instanceNumber );
+            setMiscellaneousUserControls( i );
+            setErrorControls( i );
+            setCanvasControls( i );
+            colorPanelsController.init( i );
+            whichLoadPalettes.add( i );
+        }
     };
     
     //----------- module interface -----------------
@@ -962,11 +1029,10 @@ APP.controller = (function() {
         requestFromColourloversAPI: requestFromColourloversAPI,
         loadPalettes: loadPalettes,
 
-        setUserControls: setUserControls,
+        setMiscellaneousUserControls: setMiscellaneousUserControls,
         setErrorControls: setErrorControls,
         setCanvasControls: setCanvasControls,
 
-        ElementsController: ElementsController,
         colorPanelsController: colorPanelsController,
         palettesColumnController: palettesColumnController,
 
