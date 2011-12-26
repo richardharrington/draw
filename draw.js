@@ -665,7 +665,7 @@ APP.controller = (function() {
     var requestFromColourloversAPI;
     var loadPalettes;
     
-    var setUserControls;
+    var setMiscellaneousUserControls;
     var setErrorControls;
     var setCanvasControls;
     
@@ -935,7 +935,7 @@ APP.controller = (function() {
         requestFromColourloversAPI: requestFromColourloversAPI,
         loadPalettes: loadPalettes,
 
-        setUserControls: setUserControls,
+        setMiscellaneousUserControls: setMiscellaneousUserControls,
         setErrorControls: setErrorControls,
         setCanvasControls: setCanvasControls,
 
