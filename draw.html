@@ -8,39 +8,39 @@
     <link rel="stylesheet" href="draw.css" />
 </head>
 <body>
-    <div class="page">
+    <div class="page" id="page-1">
     
         <div class="left-column">  
-            <p id="palettesFound">Pick a palette from among those found for the search term(s) "<span id="successfulKeywords"></span>":</p>
-            <div id="paletteList"></div>
+            <p class="palettesFound">Pick a palette from among those found for the search term(s) "<span class="successfulKeywords"></span>":</p>
+            <div class="paletteList"></div>
         </div>
     
         <div class="main-box">
             <div class="header">
                 <h1>Palette search</h1>
                 <div>
-                    <span id="searchLabel">Search colourlovers.com for a palette (try a season, like 'summer'):</span>
-                    <input type="text" id="searchField"></input>
-                    <input type="button" id="searchButton" value="search">
+                    <span class="searchLabel">Search colourlovers.com for a palette (try a season, like 'summer'):</span>
+                    <input type="text" class="searchField"></input>
+                    <input type="button" class="searchButton" value="search">
                 </div>
-                <p id="statusReport">&nbsp;</h2> <!--- as a placeholder for spacing.  -->
+                <p class="statusReport">&nbsp;</h2> <!--- as a placeholder for spacing.  -->
             </div>
   
             <div class="canvas-container">
-                <p id="findcurrentPaletteHeader">Current palette: <span id="currentPaletteTitle"></span></p>
+                <p class="currentPaletteHeader">Current palette: <span id="currentPaletteTitle"></span></p>
  
                 <div class="color-container">
                 </div>
 
               	<canvas id="canvas" class="drawing" width="600" height="400">No CANVAS support!!</canvas>
 
-                <div id="bottomControls">
-                    <span id="brushSizeLabel">Brush size:</span>         
-                    <select id="brushSize">
+                <div class="bottomControls">
+                    <span class="brushSizeLabel">Brush size:</span>         
+                    <select class="brushSize">
                   	    <option value="small">Small</option>
                   	    <option value="large">Large</option>
                   	</select><br/>
-                    <input type="button" id="clearCanvas" value="clear canvas">
+                    <input type="button" class="clearCanvas" value="clear canvas">
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
     </div><!-- page -->
   
     <script id="currentPaletteTemplate" type="text/x-jquery-tmpl">
-        <div id="${id}" class="color-panel"></div>
+        <div class="color-panel ${claass}"></div>
     </script>
 
     <script id="palettesTemplate" type="text/x-jquery-tmpl">

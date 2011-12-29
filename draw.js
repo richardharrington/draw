@@ -1,27 +1,16 @@
-
-
 /*
 
 TO DO:
-
-A. change the master so it works with the error message.
-
-Sketchpad branch:
 
 1. set the view init so that it puts new templates into the WHOLE html page.
 
 2. change everything from id to class. (PARTICULARLY THE VIEW INIT)
 
-3. deal with the error controller situation.
+3. Change setMiscellaneousUserControls to set a bunch of DOM element variables at the beginning.
 
-4. Change setMiscellaneousUserControls to set a bunch of DOM element variables at the beginning.
-
-5. Change config module into an array of configs.
+SUPPLEMENTAL (for next commit): deal with the generic error controller situation.
 
 */
-
-
-
 
 var APP = (typeof APP !== 'undefined') ? APP : {};
 APP.util = (typeof APP.util !== 'undefined') ? APP.util : {};
@@ -30,10 +19,10 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model : {};
 APP.view = (typeof APP.view !== 'undefined') ? APP.view : {};
 APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller : {};
 
-APP.config = {
+APP.config = {[
     DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
     MAX_COLORS: 10,
-    DEFAULT_PALETTE_TITLE: "default",
+    DEFAULT_PALETTE_TITLE: "default page 1",
     DEFAULT_COLOR_PANEL_INDEX: 0,
     DEFAULT_BRUSH_WIDTH: 25,
     LARGE_BRUSH_WIDTH: 25,
@@ -42,12 +31,37 @@ APP.config = {
     CANVAS_WIDTH: 1000,
     CANVAS_HEIGHT: 1000,
     CANVAS_BACKGROUND_COLOR: "EEE"
-};
+], [
+    DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
+    MAX_COLORS: 10,
+    DEFAULT_PALETTE_TITLE: "default page 2",
+    DEFAULT_COLOR_PANEL_INDEX: 0,
+    DEFAULT_BRUSH_WIDTH: 25,
+    LARGE_BRUSH_WIDTH: 50,
+    SMALL_BRUSH_WIDTH: 30,
+    DEFAULT_BRUSH_SIZE: "large",
+    CANVAS_WIDTH: 1500,
+    CANVAS_HEIGHT: 1000,
+    CANVAS_BACKGROUND_COLOR: "FFF"
+], [
+    DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
+    MAX_COLORS: 10,
+    DEFAULT_PALETTE_TITLE: "default page 3",
+    DEFAULT_COLOR_PANEL_INDEX: 3,
+    DEFAULT_BRUSH_WIDTH: 25,
+    LARGE_BRUSH_WIDTH: 15,
+    SMALL_BRUSH_WIDTH: 2,
+    DEFAULT_BRUSH_SIZE: "small",
+    CANVAS_WIDTH: 700,
+    CANVAS_HEIGHT: 1000,
+    CANVAS_BACKGROUND_COLOR: "DFF"
+]};
 
 APP.util = (function() {
     
     var isArray,
-        keyList;
+        keyList,
+        forEach;
         
     var PropertyToParameter;
     
@@ -75,9 +89,17 @@ APP.util = (function() {
         return list;
     };
 
+    // Very basic iterator function
+
+    forEach = function( array, action ) {
+        for (var i = 0, len = array.length; i < len; i++) {
+            action( array[i], i );
+        }
+    };
+    
     // PUBLIC CONSTRUCTORS AND METHODS
     
-    // PropertiesToParameters takes a function (func) and creates
+    // PropertyToParameter takes a function (func) and creates
     // an object with a series of properties, all added by the 
     // method "add," each of which is a function that takes an arbitrary number of arguments,
     // adds its own property name to the beginning of the list of arguments that were passed to it,
@@ -87,7 +109,7 @@ APP.util = (function() {
     // function such that the name of the function itself will tell
     // another function, when the AJAX request returns, which model
     // instance is supposed to be filled.
-        
+    
     PropertyToParameter = function( func ) {};
     
     PropertyToParameter.prototype.add = function( property ) {
@@ -184,7 +206,6 @@ APP.util = (function() {
 APP.model = (function() {
     
     var util = APP.util;
-    var config = APP.config;
 
     var BrushStyle,
         brushChildrenProto;
@@ -479,8 +500,6 @@ APP.model = (function() {
         // Initialize currentBrush.
         currentBrush = new CurrentBrush( args.brushSize, args.colorPanelIdx );
         
-        instanceNumber += 1;
- 
         //----------- MODULE INTERFACE ----------------
         
         this.instances[instanceNumber] = {
@@ -488,6 +507,7 @@ APP.model = (function() {
             currentPalette: currentPalette,
             currentBrush: currentBrush
         };
+        instanceNumber += 1;
     };
 
     return {
@@ -629,7 +649,7 @@ APP.view = (function() {
         var jQtitleSpan = $( this.DOMtitleSpan );
         
         for (i = 0, len = colors.length; i < len; i++) {
-            elementIds.push( {id: 'color-' + (i + 1)} );
+            elementClaasses.push( {claass: 'color-' + (i + 1)} );
         }
 
         // Now empty the old color panels, then load the new ones 
@@ -643,7 +663,7 @@ APP.view = (function() {
         jQtitleSpan.text( title );
 
         $( "#currentPaletteTemplate" ).
-                tmpl( elementIds ).
+                tmpl( elementClaasses ).
                 appendTo( jQcontainer ).
                 each( function( elementIndex ) {
                     this.style.backgroundColor = '#' + colors[elementIndex];
@@ -670,7 +690,7 @@ APP.view = (function() {
         var jQcontainer = $( this.DOMcontainer );
     
         $( this.DOMtitleSpan ).text( palettes.keywords );
-        jQcontainer.find( '#palettesFound' ).show();
+        jQcontainer.find( '.palettesFound' ).show();
     
         jQcontainer.empty();
         $( '#palettesTemplate' ).tmpl( palettes.data ).appendTo( jQcontainer );
@@ -698,8 +718,6 @@ APP.view = (function() {
         // Initialize empty palettesColumn object.
         palettesColumn = new PalettesColumn( args.palettesColumnElement, args.palettesTitleElement );
 
-        instanceNumber += 1;
-        
         //----------- MODULE INTERFACE ----------------
 
         this.instances[instanceNumber] = {
@@ -708,6 +726,7 @@ APP.view = (function() {
             colorPanels: colorPanels,
             palettesColumn: palettesColumn
         };
+        instanceNumber += 1;
     };
     
     return {
@@ -732,31 +751,63 @@ APP.controller = (function() {
     
     var init;
     
+    /* We'll get this generic error handler going once we get the rest working.
+    
+    // For the specialized case of when the error handler cannot
+    // be bound to the script element (it seems to work on all browsers, but many
+    // fairly recent posts on the Internet say this handler can only be bound
+    // to the window object or to an img element), we have as a fallback a
+    // generic error handler on the window object if anything goes wrong on the page at all.
+    
+    setGenericError = function() {
+        try {
+            $( document ).delegate( '#fakeTest', 'error', function () {} );
+        } catch( e ) {
+
+            if (window.addEventListener) {
+                window.addEventListener('error', function () {
+                    alert( "There's been a nebulous problem of some sort." );
+                }, false);
+
+            } else if (window.attachEvent) {
+                window.attachEvent('error', function () {
+                    alert( "There's been a nebulous problem of some sort, probably IE-related." );
+                });
+            }
+        }
+
+            
+    };
+    
+    */
+    
     setMiscellaneousUserControls = function( instanceNumber ) {
         var model = APP.model.instances[instanceNumber];
         var view = APP.view.instances[instanceNumber];
+        
+        var pageSelector = '#page-' + instanceNumber;
         var code;
         
         // Set brush size HTML select element, 
         // because Firefox preserves state even when it's refreshed.
-        $( '#brushSize' ).val( model.currentBrush.size() );  
+        $( pageSelector + ' .brushSize' ).val( model.currentBrush.size() );  
 
         // bind the event handlers for clearing the screen, 
         // toggling the brush size and entering search keywords.
 
-        $( '#clearCanvas' ).click( function() {
+        $( pageSelector + ' .clearCanvas' ).click( function() {
             view.canvas.clear();
         });
 
-        $( '#brushSize' ).change( function() {
+        $( pageSelector + ' .brushSize' ).change( function() {
             model.currentBrush.style( this.value );
             view.canvas.applyStyle( model.currentBrush.style() );
         });        
 
-        $( '#searchButton' ).click( function() {
+        $( pageSelector + ' .searchButton' ).click( function() {
             requestFromColourloversAPI( model.palettes );
         });
-        $( '#searchField' ).keydown( function( event ) {
+        $( pageSelector + ' .searchField' ).keydown( function( event ) {
 
             // cross-browser compliance for different keydown event key code property names
     
@@ -768,44 +819,23 @@ APP.controller = (function() {
         });
     };
     
-    
-    // THERE NEEDS TO BE 1 JSONP SCRIPT TAG FOR EACH INSTANCE.
-    // NEEDS TO BE PART OF THE VIEW, BASICALLY.
-    
     setErrorControls = function( instanceNumber ) {
         // Set up error handlers for all current and future cases of 
         // the manual script tag that downloads the data from colourlovers
         // (using jQuery .delegate()).
-        // Also, for the specialized case of when the error handler cannot
-        // be bound to the script element (it seems to work on all browsers, but many
-        // fairly recent posts on the Internet say this handler can only be bound
-        // to the window object or to an img element), we have as a fallback a
-        // generic error handler on the window object if anything goes wrong on the page at all.
-        
-        var model = APP.model.instance[instanceNumber];
+
         var view = APP.view.instance[instanceNumber];
+        var pageSelector = '#page-' + instanceNumber;
 
-        try {
-            $( document ).delegate('#colourLoversUrl', 'error', function () {
+        $( pageSelector ).delegate(' colourLoversUrl', 'error', function () {
 
-                // extract the search string from the colourlovers.com request url.
-                var keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search+)(.*?)(&.*)/, '$2' );
-                view.theStatus.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
-            });
-    
-        } catch ( e ) {
+            // extract the search string from the colourlovers.com request url.
+            var keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search+)(.*?)(&.*)/, '$2' );
+            view.theStatus.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
+        });
 
-            if (window.addEventListener) {
-                window.addEventListener('error', function () {
-                    view.theStatus.report( "There's been a nebulous problem of some sort." );
-                }, false);
 
-            } else if (window.attachEvent) {
-                window.attachEvent('error', function () {
-                    view.theStatus.report( "There's been a nebulous problem of some sort, probably IE-related." );
-                });
-            }
-        }
+
     };
     
     setCanvasControls = function( canvas ) {
@@ -919,8 +949,9 @@ APP.controller = (function() {
         var encodedKeywords;
         var colourLoverScript;
         
-        var pageId = '#page-' + instanceNumber;
-        var searchField = $( pageId + ' .searchField' );
+        var pageId = 'page-' + instanceNumber;
+        var pageSelector = '#' + pageId;
+        var searchField = $( pageSelector + ' .searchField' );
         var keywords = searchField.val();
 
         // if the user typed anything
@@ -933,11 +964,11 @@ APP.controller = (function() {
             // First overwrite any previous script tags with the class 'colourLoversUrl',
             // than create the new one that makes the next http request to colourlovers.com.
       
-            if ( $( pageId + ' .colourLoversUrl' ).length > 0 ) {
-                $( pageId + '.colourLoversUrl' ).remove();
+            if ( $( pageSelector + ' .colourLoversUrl' ).length > 0 ) {
+                $( pageSelector + ' .colourLoversUrl' ).remove();
             }
             colourLoversScript = document.createElement( 'script' );
-        	colourLoversScript.id = 'colourLoversUrl';
+        	$( colourLoversScript ).addClass( 'colourLoversUrl' );
             document.getElementById( pageId ).appendChild( colourLoversScript );
       
             // Change spaces to plus signs for insertion into search query.
@@ -953,9 +984,9 @@ APP.controller = (function() {
     };
     
     // Remember: PropertiesToParameters will create a hash (loadPalettes) whose values are functions
-    // that, when called, take their own property names and add them to the front of the argument
-    // list of the anonymous function that was originally passed to the constructor. Then that 
-    // anonymous function is called. I'M VERY TIRED, TOTALLY REWRITE THIS IN THE MORNING.
+    // that, when called, take their own property names, add them to the front of the argument
+    // list that was passed to them, and then call the anonymous function that was originally passed
+    // to the constructor. The anonymous function is invoked with the new, extended argument list.
     
     loadPalettes = new util.PropertyToParameter( function( instanceNumber, data ) {
         var model = APP.model.instances[instanceNumber];
@@ -978,10 +1009,10 @@ APP.controller = (function() {
     init = function() {
 
         var i, len;
-        var pageId;
+        var pageSelector;
         
         for (i = 0, len = config.length; i < len; i++) {
-            pageId = "page-" + i;
+            pageSelector = "#page-" + i;
             
             APP.model.init({ 
                 paletteTitle:  config[i].DEFAULT_PALETTE_TITLE, 
@@ -1001,13 +1032,12 @@ APP.controller = (function() {
                 
                 // CHANGE THISE TO CLASSES, NOT IDS. Using pageId.
                 
-                statusReportElement:     document.getElementById( 'statusReport' ), 
-                canvasElement:           document.getElementById( 'canvas' ),
-                colorPanelsElement:      $( 'div.color-container' )[0],
-                colorsTitleElement:      document.getElementById( 'currentPaletteTitle' ),
-                palettesColumnElement:   document.getElementById( 'paletteList' ),
-                palettesTitleElement:    document.getElementById( 'successfulKeywords' ),
-
+                statusReportElement:     $( pageSelector + ' .statusReport' )[0], 
+                canvasElement:           $( pageSelector + ' .canvas' )[0],
+                colorPanelsElement:      $( pageSelector + ' .color-container' )[0],
+                colorsTitleElement:      $( pageSelector + ' .currentPaletteTitle' )[0],
+                palettesColumnElement:   $( pageSelector + ' .paletteList' )[0],
+                palettesTitleElement:    $( pageSelector + ' .successfulKeywords' )[0],
                 brushStyle:              APP.model.instances[i].currentBrush.style() 
             });
             
@@ -1015,7 +1045,7 @@ APP.controller = (function() {
             setErrorControls( i );
             setCanvasControls( i );
             colorPanelsController.init( i );
-            whichLoadPalettes.add( i );
+            loadPalettes.add( i );
         }
     };
     
