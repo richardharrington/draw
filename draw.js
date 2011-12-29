@@ -1,3 +1,25 @@
+/*
+
+TO DO:
+
+1. set the view init so that it puts new templates into the WHOLE html page.
+
+2. change everything from id to class. (PARTICULARLY THE VIEW INIT)
+
+3. Change setMiscellaneousUserControls to set a bunch of DOM element variables at the beginning.
+
+SUPPLEMENTAL (for next commit): 
+
+1. deal with the generic error controller situation.
+
+2. Move some stuff out of the view and into the model, like the color palette title,
+   and the background color of the canvas. That stuff should be passed from the
+   model to the view by the controller.
+
+*/
+
+;
+
 var APP = (typeof APP !== 'undefined') ? APP : {};
 APP.util = (typeof APP.util !== 'undefined') ? APP.util : {};
 APP.config = (typeof APP.config !== 'undefined') ? APP.config : {};
@@ -5,31 +27,72 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model : {};
 APP.view = (typeof APP.view !== 'undefined') ? APP.view : {};
 APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller : {};
 
-APP.config = {
+APP.config = [{
     DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
     MAX_COLORS: 10,
-    DEFAULT_PALETTE_TITLE: "default",
+    DEFAULT_PALETTE_TITLE: "default page 1",
     DEFAULT_COLOR_PANEL_INDEX: 0,
-    DEFAULT_BRUSH_WIDTH: 25,
     LARGE_BRUSH_WIDTH: 25,
     SMALL_BRUSH_WIDTH: 10,
     DEFAULT_BRUSH_SIZE: "large",
     CANVAS_WIDTH: 1000,
     CANVAS_HEIGHT: 1000,
     CANVAS_BACKGROUND_COLOR: "EEE"
-};
+}
+];
+
+
+/*
+
+, {
+    DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
+    MAX_COLORS: 10,
+    DEFAULT_PALETTE_TITLE: "default page 2",
+    DEFAULT_COLOR_PANEL_INDEX: 0,
+    LARGE_BRUSH_WIDTH: 50,
+    SMALL_BRUSH_WIDTH: 30,
+    DEFAULT_BRUSH_SIZE: "large",
+    CANVAS_WIDTH: 1500,
+    CANVAS_HEIGHT: 1000,
+    CANVAS_BACKGROUND_COLOR: "FFF"
+}, {
+    DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
+    MAX_COLORS: 10,
+    DEFAULT_PALETTE_TITLE: "default page 3",
+    DEFAULT_COLOR_PANEL_INDEX: 3,
+    LARGE_BRUSH_WIDTH: 15,
+    SMALL_BRUSH_WIDTH: 2,
+    DEFAULT_BRUSH_SIZE: "small",
+    CANVAS_WIDTH: 700,
+    CANVAS_HEIGHT: 1000,
+    CANVAS_BACKGROUND_COLOR: "DFF"
+}];
+
+
+*/
 
 APP.util = (function() {
     
+    var isArray,
+        keyList,
+        forEach;
+        
+    var PropertyToParameter;
+    
+    var copy,
+        parseSQLDate,
+        object;
+        
+    
     // PRIVATE METHODS
     
-    var isArray = function( obj ) {
+    isArray = function( obj ) {
         return Object.prototype.toString.call( obj ) === "[object Array]";
     };
 
     // keyList returns an array of all own property names in an object.
 
-    var keyList = function( obj ) {
+    keyList = function( obj ) {
         var k, obj;
         var list = [];
         for (k in obj) {
@@ -40,7 +103,40 @@ APP.util = (function() {
         return list;
     };
 
-    // PUBLIC METHODS
+    // Very basic iterator function
+
+    forEach = function( array, action ) {
+        for (var i = 0, len = array.length; i < len; i++) {
+            action( array[i], i );
+        }
+    };
+    
+    // PUBLIC CONSTRUCTORS AND METHODS
+    
+    // PropertyToParameter takes a function (func) and creates
+    // an object with a series of properties, all added by the 
+    // method "add," each of which is a function that takes an arbitrary number of arguments,
+    // adds its own property name to the beginning of the list of arguments that were passed to it,
+    // and then calls the original function "func" with the new argument list.
+    
+    // This is a hack so that we can pass to a JSONP request the name of a callback
+    // function such that the name of the function itself will tell
+    // another function, when the AJAX request returns, which model
+    // instance is supposed to be filled.
+    
+    PropertyToParameter = function( func ) {
+        this.func = func;
+    };
+    
+    PropertyToParameter.prototype.add = function( prop ) {
+        this[prop] = (function( f ) {
+            return function() {
+                var args = Array.prototype.slice( arguments, 0 );
+                args.unshift( prop );
+                f.apply( null, args );
+            };
+        })(this.func);
+    };
     
     // copyProps is like jQuery.extend, except that it lacks 
     // jQuery.extend's ability to copy from more than one object. 
@@ -60,7 +156,7 @@ APP.util = (function() {
     // The last two arguments, deep and arrayOfProps, are optional and can
     // be in any order.
 
-    var copy = function copy( target, source /* optional args: arrayOfProps, deep */ ) {
+    copy = function copy( target, source /* optional args: arrayOfProps, deep */ ) {
         var key, value;
         var toStr = Object.prototype.toString;
         var i;
@@ -91,7 +187,7 @@ APP.util = (function() {
         }
     };
 
-    var parseSQLDate = function( str ) {
+    parseSQLDate = function( str ) {
         
         // Split timestamp into [ Y, M, D, h, m, s ]
         var t = str.split(/[- :]/);
@@ -104,7 +200,7 @@ APP.util = (function() {
 
     // object is an object inheritor function. 
 
-    var object = function ( o, vals ) {
+    object = function ( o, vals ) {
         function F() {};
         F.prototype = o;
         var instance = new F();            
@@ -120,6 +216,8 @@ APP.util = (function() {
         copy: copy,
         parseSQLDate: parseSQLDate,
         object: object,
+        
+        PropertyToParameter: PropertyToParameter
     };
 })();
 
@@ -127,7 +225,6 @@ APP.util = (function() {
 APP.model = (function() {
     
     var util = APP.util;
-    var config = APP.config;
 
     var BrushStyle,
         brushChildrenProto;
@@ -136,11 +233,10 @@ APP.model = (function() {
         CurrentPalette,
         CurrentBrush;
         
-    var palettes,
-        currentPalette,
-        currentBrush;
-        
     var init;
+    
+    var instances = [];
+    var instanceNumber = 0;
 
     // --- A note about Palettes, CurrentPalette and CurrentBrush:
 
@@ -158,34 +254,36 @@ APP.model = (function() {
 
     BrushStyle = function( color, width ) {
         this.color = color;
-        this.width = width || config.DEFAULT_BRUSH_WIDTH;
-        this.lineCap = 'round';
-        this.lineJoin = 'round';
+        this.width = width;
     };
+    
+    // We always have the option of making lineCap and lineJoin instance
+    // variables in the future.
+    
+    BrushStyle.prototype.lineCap = 'round';
+    BrushStyle.prototype.lineJoin = 'round';
 
     BrushStyle.prototype.toString = function() {
-      var state = "{" +
+      return "{" +
           "color: " + this.color + ", " +
           "width: " + this.width + ", " +
           "lineCap: " + this.lineCap + ", " +
           "lineJoin: " + this.lineJoin +    
       "}";
-      return state;
     }
 
     brushChildrenProto = new BrushStyle();
     
-
     // --- Set up the CurrentPalette constructor, whose instances',
     // --- own properties are all the Brushstyle children.
 
-    CurrentPalette = function( title, colors, maxColors ) {              
-        this.init( title, colors, maxColors );
+    CurrentPalette = function( title, colors, maxColors, smallBrushWidth, largeBrushWidth ) {              
+        this.init( title, colors, maxColors, smallBrushWidth, largeBrushWidth );
     };
 
     // Load in a new palette of colors. 
 
-    CurrentPalette.prototype.init = function( title, colors, maxColors ) {
+    CurrentPalette.prototype.init = function( title, colors, maxColors, smallBrushWidth, largeBrushWidth ) {
         
         var i, len;
         var color;
@@ -202,11 +300,11 @@ APP.model = (function() {
             color = colors[i];
             small = util.object( brushChildrenProto, {
                 color: color,
-                width: config.SMALL_BRUSH_WIDTH
+                width: smallBrushWidth
             });
             large = util.object( brushChildrenProto, {
        	        color: color,
-       	        width: config.LARGE_BRUSH_WIDTH
+       	        width: largeBrushWidth
        	    });
 
             this.brushStyles.push( small );
@@ -220,7 +318,8 @@ APP.model = (function() {
 
     // --- Set up the current brush.
 
-    CurrentBrush = function( size, colorPanelIdx ) {
+    CurrentBrush = function( size, colorPanelIdx, currPalette ) {
+        this.currentPalette = currPalette;
         this.styleIdx = (colorPanelIdx * 2) + (size === "large" ? 1 : 0);
     };
 
@@ -278,7 +377,7 @@ APP.model = (function() {
     
         // get
         if (arguments.length === 0) {
-            return currentPalette.brushStyles[ this.styleIdx ];
+            return this.currentPalette.brushStyles[ this.styleIdx ];
     
         // set
         } else {
@@ -314,7 +413,7 @@ APP.model = (function() {
             console.log( "size: " + size );
             console.log( "this.styleIdx: " + this.styleIdx );
             console.log( "currentPalette.brushStyles[ this.styleIdx ].toString(): " + 
-                         currentPalette.brushStyles[ this.styleIdx ].toString() );
+                         this.currentPalette.brushStyles[ this.styleIdx ].toString() );
             console.log("\n");
         }
     };
@@ -410,31 +509,35 @@ APP.model = (function() {
     };
     
     init = function( args ) {
+        var palettes,
+            currentPalette,
+            currentBrush;
         
         // Initialize palettes.
         palettes = new Palettes();
 
         // Initialize currentPalette.
-        currentPalette = new CurrentPalette( args.paletteTitle, args.paletteColors, args.maxColors );
+        currentPalette = new CurrentPalette( args.paletteTitle, args.paletteColors, args.maxColors,
+                                             args.smallBrushWidth, args.largeBrushWidth );
 
         // Initialize currentBrush.
-        currentBrush = new CurrentBrush( args.brushSize, args.colorPanelIdx );
+        currentBrush = new CurrentBrush( args.brushSize, args.colorPanelIdx, currentPalette );
         
-        //----------- MODULE INTERFACE ----------------
-
-        this.Palettes = Palettes;
-        this.CurrentPalette = CurrentPalette;
-        this.CurrentBrush = CurrentBrush;
-        
-        this.palettes = palettes;
-        this.currentPalette = currentPalette;
-        this.currentBrush = currentBrush;
+        instances[instanceNumber] = {
+            palettes: palettes,
+            currentPalette: currentPalette,
+            currentBrush: currentBrush
+        };
+        instanceNumber += 1;
     };
 
-
+    //----------- MODULE INTERFACE ----------------
+    
     return {
-        init: init
+        init: init, 
+        instances: instances
     };  
+    
 })();
 
 
@@ -443,20 +546,19 @@ APP.model = (function() {
 
 APP.view = (function() {
     
-    var model = APP.model;
+    var util = APP.util;
     var config = APP.config;
+    var model = APP.model;
     
     var TheStatus,
         Canvas,
         ColorPanels,
         PalettesColumn;
         
-    var theStatus,
-        canvas,
-        colorPanels,
-        palettesColumn;
-        
     var init;
+
+    var instances = [];
+    var instanceNumber = 0;
 
     // ------------------ Status reporting mechanism. --------------------------
     
@@ -482,13 +584,13 @@ APP.view = (function() {
 
     // --------------------- Wrapper for DOM Canvas ----------------------------
 
-    Canvas = function( DOMelement, width, height, backgroundColor, brushStyle, colorPanelIdx ) {
+    Canvas = function( DOMElement, width, height, backgroundColor, brushStyle, colorPanelIdx ) {
         var borderLeftPx = (window.getComputedStyle) ? 
-                            window.getComputedStyle( DOMelement, null )['border-left-width'] :
-                            element.currentStyle.border; // TODO: check in IE6, IE7, IE8
+                            window.getComputedStyle( DOMElement, null )['border-left-width'] :
+                            DOMElement.currentStyle.border; // TODO: check in IE6, IE7, IE8
                             
-        this.DOMElement = DOMelement;
-        this.context = DOMelement.getContext( "2d" );
+        this.DOMElement = DOMElement;
+        this.context = DOMElement.getContext( "2d" );
         this.width = width;
         this.height = height;
         this.backgroundColor = backgroundColor;
@@ -548,32 +650,31 @@ APP.view = (function() {
         c.stroke();
     };
 
-    Canvas.prototype.clear = function( color ) {
+    Canvas.prototype.clear = function() {
         var c = this.context;
-        color = color || this.backgroundColor;
 
-        c.fillStyle = "#" + color;
+        c.fillStyle = "#" + this.backgroundColor;
         c.fillRect( 0, 0, this.width, this.height );
     };
     
     // -------------------- wrapper for DOM color panels --------------------------
     
-    ColorPanels = function( DOMcontainer, DOMtitleSpan, title, colors ) {
-        this.DOMcontainer = DOMcontainer;
-        this.DOMtitleSpan = DOMtitleSpan;
+    ColorPanels = function( DOMContainer, DOMTitleSpan, title, colors ) {
+        this.DOMContainer = DOMContainer;
+        this.DOMTitleSpan = DOMTitleSpan;
         this.populate( title, colors );
     };
     
     ColorPanels.prototype.populate = function( title, colors ) {
         var i, len;
         var color;
-        var elementIds = [];
+        var elementKlasses = [];
         
-        var jQcontainer = $( this.DOMcontainer );
-        var jQtitleSpan = $( this.DOMtitleSpan );
+        var jQcontainer = $( this.DOMContainer );
+        var jQtitleSpan = $( this.DOMTitleSpan );
         
         for (i = 0, len = colors.length; i < len; i++) {
-            elementIds.push( {id: 'color-' + (i + 1)} );
+            elementKlasses.push( {klass: 'color-' + i} );
         }
 
         // Now empty the old color panels, then load the new ones 
@@ -587,7 +688,7 @@ APP.view = (function() {
         jQtitleSpan.text( title );
 
         $( "#currentPaletteTemplate" ).
-                tmpl( elementIds ).
+                tmpl( elementKlasses ).
                 appendTo( jQcontainer ).
                 each( function( elementIndex ) {
                     this.style.backgroundColor = '#' + colors[elementIndex];
@@ -595,15 +696,15 @@ APP.view = (function() {
             
     };
     
-    ColorPanels.prototype.getId = function( colorPanelIdx ) {
-        return 'color-' + (colorPanelIdx + 1);
+    ColorPanels.prototype.getKlass = function( colorPanelIdx ) {
+        return 'color-' + colorPanelIdx + 1;
     };
     
     // -------------------- wrapper for DOM palettes column --------------------------
     
-    PalettesColumn = function( DOMcontainer, DOMtitleSpan ) {
-        this.DOMcontainer = DOMcontainer;
-        this.DOMtitleSpan = DOMtitleSpan;
+    PalettesColumn = function( DOMContainer, DOMTitleSpan ) {
+        this.DOMContainer = DOMContainer;
+        this.DOMTitleSpan = DOMTitleSpan;
     };
     
     PalettesColumn.prototype.populate = function( palettes ) {
@@ -611,10 +712,10 @@ APP.view = (function() {
         // In the left column, show the heading with the keywords, and all the palettes below it,
         // along with their click handlers for loading colors into the drawing program.
     
-        var jQcontainer = $( this.DOMcontainer );
+        var jQcontainer = $( this.DOMContainer );
     
-        $( this.DOMtitleSpan ).text( palettes.keywords );
-        jQcontainer.find( '#palettesFound' ).show();
+        $( this.DOMTitleSpan ).text( palettes.keywords );
+        jQcontainer.find( '.palettesFound' ).show();
     
         jQcontainer.empty();
         $( '#palettesTemplate' ).tmpl( palettes.data ).appendTo( jQcontainer );
@@ -623,6 +724,10 @@ APP.view = (function() {
     };
     
     init = function( args ) {
+        var theStatus,
+            canvas,
+            colorPanels,
+            palettesColumn;
         
         // Initialize status reporting.
         theStatus = new TheStatus( args.statusReportElement );
@@ -638,29 +743,27 @@ APP.view = (function() {
         // Initialize empty palettesColumn object.
         palettesColumn = new PalettesColumn( args.palettesColumnElement, args.palettesTitleElement );
 
-        //----------- MODULE INTERFACE ----------------
-
-        this.TheStatus = TheStatus;
-        this.Canvas = Canvas;
-        this.ColorPanels = ColorPanels;
-        this.PalettesColumn = PalettesColumn;
-        
-        this.theStatus = theStatus;
-        this.canvas = canvas;
-        this.colorPanels = colorPanels;
-        this.palettesColumn = palettesColumn;
+        instances[instanceNumber] = {
+            theStatus: theStatus,
+            canvas: canvas,
+            colorPanels: colorPanels,
+            palettesColumn: palettesColumn
+        };
+        instanceNumber += 1;
     };
     
+    //----------- MODULE INTERFACE ----------------
+
     return {
-        init: init
+        init: init,
+        instances: instances
     };
 })();
 
 APP.controller = (function() {
     
-    var config = APP.config,
-        model = APP.model,
-        view = APP.view;
+    var util = APP.util;
+    var config = APP.config;
 
     var requestFromColourloversAPI;
     var loadPalettes;
@@ -675,74 +778,154 @@ APP.controller = (function() {
     
     var init;
     
-    setMiscellaneousUserControls = function( model, view ) {
+    
+    // -- the event handler for requesting data from colourlovers.com
+    
+    requestFromColourloversAPI = function( instanceNumber ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+        
+        var encodedKeywords;
+        var colourLoversScript;
+        
+        var pageId = 'page-' + instanceNumber;
+        var pageSelector = '#' + pageId;
+        var searchField = $( pageSelector + ' .searchField' );
+        var keywords = searchField.val();
+
+        // if the user typed anything
+        if (keywords) {
+            model.palettes.keywords = keywords;
+            searchField.val( '' );
+                        
+            view.theStatus.report( "Loading..." );
+
+            // First overwrite any previous script tags with the class 'colourLoversUrl',
+            // than create the new one that makes the next http request to colourlovers.com.
+      
+            if ( $( pageSelector + ' .colourLoversUrl' ).length > 0 ) {
+                $( pageSelector + ' .colourLoversUrl' ).remove();
+            }
+            colourLoversScript = document.createElement( 'script' );
+        	$( colourLoversScript ).addClass( 'colourLoversUrl' );
+            document.getElementById( pageId ).appendChild( colourLoversScript );
+      
+            // Change spaces to plus signs for insertion into search query.
+            // This query string tells colourlovers.com to pass back the data wrapped
+            // in our callback function, palettes.load()
+        
+            encodedKeywords = keywords.replace( /\s+/g, '+' );
+            colourLoversScript.setAttribute( 'src', 
+                    'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
+                    '&jsonCallback=APP.controller.loadPalettes[' + instanceNumber + ']' );
+        }
+        return false;
+    };
+    
+    // Remember: PropertiesToParameters will create a hash (loadPalettes) whose values are functions
+    // that, when called, take their own property names, add them to the front of the argument
+    // list that was passed to them, and then call the anonymous function that was originally passed
+    // to the constructor. The anonymous function is invoked with the new, extended argument list.
+    
+    loadPalettes = new util.PropertyToParameter( function( instanceNumber, data ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+        
+        if (model.palettes.load( data )) {
+            palettesColumnController.init( instanceNumber );
+            view.theStatus.report();   // no arguments means all clear, no errors to report.  
+        } else {
+            view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
+                                    model.palettes.keywords + '." Try again.' );
+        };
+    });
+
+    /* We'll get this generic error handler going once we get the rest working.
+    
+    // For the specialized case of when the error handler cannot
+    // be bound to the script element (it seems to work on all browsers, but many
+    // fairly recent posts on the Internet say this handler can only be bound
+    // to the window object or to an img element), we have as a fallback a
+    // generic error handler on the window object if anything goes wrong on the page at all.
+    
+    setGenericError = function() {
+        try {
+            $( document ).delegate( '#fakeTest', 'error', function () {} );
+        } catch( e ) {
+
+            if (window.addEventListener) {
+                window.addEventListener('error', function () {
+                    alert( "There's been a nebulous problem of some sort." );
+                }, false);
+
+            } else if (window.attachEvent) {
+                window.attachEvent('error', function () {
+                    alert( "There's been a nebulous problem of some sort, probably IE-related." );
+                });
+            }
+        }
+
+            
+    };
+    
+    */
+    
+    setMiscellaneousUserControls = function( instanceNumber ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+        
+        var pageSelector = '#page-' + instanceNumber;
         var code;
         
         // Set brush size HTML select element, 
         // because Firefox preserves state even when it's refreshed.
-        $( '#brushSize' ).val( model.currentBrush.size() );  
+        $( pageSelector + ' .brushSize' ).val( model.currentBrush.size() );  
 
         // bind the event handlers for clearing the screen, 
         // toggling the brush size and entering search keywords.
 
-        $( '#clearCanvas' ).click( function() {
-            view.canvas.clear( config.CANVAS_BACKGROUND_COLOR );
+        $( pageSelector + ' .clearCanvas' ).click( function() {
+            view.canvas.clear();
         });
 
-        $( '#brushSize' ).change( function() {
+        $( pageSelector + ' .brushSize' ).change( function() {
             model.currentBrush.style( this.value );
             view.canvas.applyStyle( model.currentBrush.style() );
         });        
 
-        $( '#searchButton' ).click( function() {
-            requestFromColourloversAPI( model.palettes );
+        $( pageSelector + ' .searchButton' ).click( function() {
+            requestFromColourloversAPI( instanceNumber );
         });
-        $( '#searchField' ).keydown( function( event ) {
+        $( pageSelector + ' .searchField' ).keydown( function( event ) {
 
             // cross-browser compliance for different keydown event key code property names
     
             code = event.keyCode || event.which;
             if (code == 13) {
                 event.preventDefault();
-                requestFromColourloversAPI( model.palettes );
+                requestFromColourloversAPI( instanceNumber );
             }
         });
     };
     
-    setErrorControls = function( model, view ) {
+    setErrorControls = function( instanceNumber ) {
         // Set up error handlers for all current and future cases of 
         // the manual script tag that downloads the data from colourlovers
         // (using jQuery .delegate()).
-        // Also, for the specialized case of when the error handler cannot
-        // be bound to the script element (it seems to work on all browsers, but many
-        // fairly recent posts on the Internet say this handler can only be bound
-        // to the window object or to an img element), we have as a fallback a
-        // generic error handler on the window object if anything goes wrong on the page at all.
 
-        try {
-            $( document ).delegate('#colourLoversUrl', 'error', function () {
+        var view = APP.view.instances[instanceNumber];
+        var pageSelector = '#page-' + instanceNumber;
 
-                // extract the search string from the colourlovers.com request url.
-                var keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search+)(.*?)(&.*)/, '$2' );
-                theStatus.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
-            });
-    
-        } catch ( e ) {
+        $( pageSelector ).delegate(' colourLoversUrl', 'error', function () {
 
-            if (window.addEventListener) {
-                window.addEventListener('error', function () {
-                    theStatus.report( "There's been a nebulous problem of some sort." );
-                }, false);
-
-            } else if (window.attachEvent) {
-                window.attachEvent('error', function () {
-                    theStatus.report( "There's been a nebulous problem of some sort, probably IE-related." );
-                });
-            }
-        }
+            // extract the search string from the colourlovers.com request url.
+            var keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search+)(.*?)(&.*)/, '$2' );
+            view.theStatus.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
+        });
     };
     
-    setCanvasControls = function( canvas ) {
+    setCanvasControls = function( instanceNumber ) {
+        var canvas = APP.view.instances[instanceNumber].canvas;
 
         canvas.DOMElement.onmousedown = function( event ) {
             var p = canvas.getMousePos( event );
@@ -783,7 +966,7 @@ APP.controller = (function() {
     };
     
     ElementsController.prototype.addEventListeners = function( wrapper, eventHandler ) {
-        $( wrapper.DOMcontainer ).children().each( function( i ) {
+        $( wrapper.DOMContainer ).children().each( function( i ) {
             $( this ).click( function() {
                 eventHandler( this, i );
             });
@@ -792,7 +975,11 @@ APP.controller = (function() {
     
     colorPanelsController = new ElementsController();
     
-    colorPanelsController.init = function( model, view ) {
+    colorPanelsController.init = function( instanceNumber ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+        var pageSelector = '#page-' + instanceNumber;
+        
         var panel;
         
         // Populate the color panels.
@@ -802,7 +989,7 @@ APP.controller = (function() {
         view.canvas.applyStyle( model.currentBrush.style() );
 
         // Now make the already selected one pink.
-        panel = document.getElementById( view.colorPanels.getId( model.currentBrush.colorPanelIdx()));
+        panel = $( pageSelector + ' .' + view.colorPanels.getKlass( model.currentBrush.colorPanelIdx()));
         this.highlightElement( panel );
 
         // Add the event listeners.
@@ -820,8 +1007,11 @@ APP.controller = (function() {
 
     palettesColumnController = new ElementsController();
     
-    palettesColumnController.init = function( model, view ) {
-        
+    palettesColumnController.init = function( instanceNumber ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+        var pageSelector = '#page-' + instanceNumber;
+                
         // Populate the palettes column.
         view.palettesColumn.populate( model.palettes );
         
@@ -839,53 +1029,6 @@ APP.controller = (function() {
         });        
     };
     
-    // -- the event handler for requesting data from colourlovers.com
-    
-    requestFromColourloversAPI = function() {
-        var encodedKeywords;
-        var colourLoverScript;
-        var keywords = $( '#searchField' ).val();
-
-        // if the user typed anything
-        if (keywords) {
-            model.palettes.keywords = keywords;
-            $( '#searchField' ).val( '' );
-                        
-            view.theStatus.report( "Loading..." );
-
-            // First overwrite any previous script tags with the id 'colourLoversUrl',
-            // than create the new one that makes the next http request to colourlovers.com.
-      
-            if ( $( '#colourLoversUrl' ).length > 0 ) {
-                $( '#colourLoversUrl' ).remove();
-            }
-            colourLoversScript = document.createElement( 'script' );
-        	colourLoversScript.id = 'colourLoversUrl';
-            document.getElementsByTagName( 'head' )[0].appendChild( colourLoversScript );
-      
-            // Change spaces to plus signs for insertion into search query.
-            // This query string tells colourlovers.com to pass back the data wrapped
-            // in our callback function, palettes.load()
-        
-            encodedKeywords = keywords.replace( /\s+/g, '+' );
-            colourLoversScript.setAttribute( 'src', 
-                    'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
-                    '&jsonCallback=APP.controller.loadPalettes' );
-        }
-        return false;
-    };
-    
-    loadPalettes = function( data ) {
-        if (model.palettes.load( data )) {
-            palettesColumnController.init( model, view );
-            view.theStatus.report();   // no arguments means all clear, no errors to report.  
-        } else {
-            view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
-                                    model.palettes.keywords + '." Try again.' );
-        };
-    };
-
-
     // the init will eventually be broken up into two parts: one for everything
     // that gets executed only once when the user goes to this URL or refreshes 
     // their browser, and the other one for every time a new instance of 
@@ -893,36 +1036,46 @@ APP.controller = (function() {
 
     init = function() {
 
-        model.init({ 
-            paletteTitle:  config.DEFAULT_PALETTE_TITLE, 
-            paletteColors: config.DEFAULT_PALETTE_COLORS, 
-            maxColors:     config.MAX_COLORS,
-            brushSize:     config.DEFAULT_BRUSH_SIZE, 
-            colorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX 
-        });
+        var i, len;
+        var pageSelector;
+        
+        for (i = 0, len = config.length; i < len; i++) {
+            pageSelector = "#page-" + i;
+            
+            APP.model.init({ 
+                paletteTitle:    config[i].DEFAULT_PALETTE_TITLE, 
+                paletteColors:   config[i].DEFAULT_PALETTE_COLORS, 
+                maxColors:       config[i].MAX_COLORS,
+                brushSize:       config[i].DEFAULT_BRUSH_SIZE, 
+                largeBrushWidth: config[i].LARGE_BRUSH_WIDTH,
+                smallBrushWidth: config[i].SMALL_BRUSH_WIDTH,
+                colorPanelIdx:   config[i].DEFAULT_COLOR_PANEL_INDEX 
+            });
+            
+            APP.view.init({ 
+                canvasWidth:             config[i].CANVAS_WIDTH, 
+                canvasHeight:            config[i].CANVAS_HEIGHT, 
+                canvasBackgroundColor:   config[i].CANVAS_BACKGROUND_COLOR, 
+                colorPanelIdx:           config[i].DEFAULT_COLOR_PANEL_INDEX,
+                paletteTitle:            config[i].DEFAULT_PALETTE_TITLE, 
+                paletteColors:           config[i].DEFAULT_PALETTE_COLORS,
+                
+                statusReportElement:     $( pageSelector + ' .statusReport' )[0], 
+                canvasElement:           $( pageSelector + ' .canvas' )[0],
+                colorPanelsElement:      $( pageSelector + ' .color-container' )[0],
+                colorsTitleElement:      $( pageSelector + ' .currentPaletteTitle' )[0],
+                palettesColumnElement:   $( pageSelector + ' .paletteList' )[0],
+                palettesTitleElement:    $( pageSelector + ' .successfulKeywords' )[0],
 
-        view.init({  
-            canvasWidth:             config.CANVAS_WIDTH, 
-            canvasHeight:            config.CANVAS_HEIGHT, 
-            canvasBackgroundColor:   config.CANVAS_BACKGROUND_COLOR, 
-            colorPanelIdx:           config.DEFAULT_COLOR_PANEL_INDEX,
-            paletteTitle:            config.DEFAULT_PALETTE_TITLE, 
-            paletteColors:           config.DEFAULT_PALETTE_COLORS,
+                brushStyle:              APP.model.instances[i].currentBrush.style() 
+            });
             
-            statusReportElement:     document.getElementById( 'statusReport' ), 
-            canvasElement:           document.getElementById( 'canvas' ),
-            colorPanelsElement:      $( 'div.color-container' )[0],
-            colorsTitleElement:      document.getElementById( 'currentPaletteTitle' ),
-            palettesColumnElement:   document.getElementById( 'paletteList' ),
-            palettesTitleElement:    document.getElementById( 'successfulKeywords' ),
-            
-            brushStyle:              model.currentBrush.style() 
-        });
-            
-        setMiscellaneousUserControls( model, view );
-        setErrorControls( model, view );
-        setCanvasControls( view.canvas );
-        colorPanelsController.init( model, view );
+            setMiscellaneousUserControls( i );
+            setErrorControls( i );
+            setCanvasControls( i );
+            colorPanelsController.init( i );
+            loadPalettes.add( i );
+        }
     };
     
     //----------- module interface -----------------
@@ -939,7 +1092,6 @@ APP.controller = (function() {
         setErrorControls: setErrorControls,
         setCanvasControls: setCanvasControls,
 
-        ElementsController: ElementsController,
         colorPanelsController: colorPanelsController,
         palettesColumnController: palettesColumnController,
 
