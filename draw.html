@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="draw.css" />
 </head>
 <body>
-    <div class="page" id="page-1">
+    <div class="page" id="page-0">
     
         <div class="left-column">  
             <p class="palettesFound">Pick a palette from among those found for the search term(s) "<span class="successfulKeywords"></span>":</p>
@@ -27,12 +27,12 @@
             </div>
   
             <div class="canvas-container">
-                <p class="currentPaletteHeader">Current palette: <span id="currentPaletteTitle"></span></p>
+                <p class="currentPaletteHeader">Current palette: <span class="currentPaletteTitle"></span></p>
  
                 <div class="color-container">
                 </div>
 
-              	<canvas id="canvas" class="drawing" width="600" height="400">No CANVAS support!!</canvas>
+              	<canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
 
                 <div class="bottomControls">
                     <span class="brushSizeLabel">Brush size:</span>         
@@ -48,7 +48,7 @@
     </div><!-- page -->
   
     <script id="currentPaletteTemplate" type="text/x-jquery-tmpl">
-        <div class="color-panel ${claass}"></div>
+        <div class="color-panel ${klass}"></div>
     </script>
 
     <script id="palettesTemplate" type="text/x-jquery-tmpl">
