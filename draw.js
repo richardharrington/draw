@@ -124,13 +124,18 @@ APP.util = (function() {
     // another function, when the AJAX request returns, which model
     // instance is supposed to be filled.
     
-    PropertyToParameter = function( func ) {};
+    PropertyToParameter = function( func ) {
+        this.func = func;
+    };
     
-    PropertyToParameter.prototype.add = function( property ) {
-        this[property] = function() {
-            var args = Array.prototype.slice( arguments, 0 ).unshift( property );
-            func.apply( null, args );
-        };
+    PropertyToParameter.prototype.add = function( prop ) {
+        this[prop] = (function( f ) {
+            return function() {
+                var args = Array.prototype.slice( arguments, 0 );
+                args.unshift( prop );
+                f.apply( null, args );
+            };
+        })(this.func);
     };
     
     // copyProps is like jQuery.extend, except that it lacks 
@@ -773,6 +778,68 @@ APP.controller = (function() {
     
     var init;
     
+    
+    // -- the event handler for requesting data from colourlovers.com
+    
+    requestFromColourloversAPI = function( instanceNumber ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+        
+        var encodedKeywords;
+        var colourLoversScript;
+        
+        var pageId = 'page-' + instanceNumber;
+        var pageSelector = '#' + pageId;
+        var searchField = $( pageSelector + ' .searchField' );
+        var keywords = searchField.val();
+
+        // if the user typed anything
+        if (keywords) {
+            model.palettes.keywords = keywords;
+            searchField.val( '' );
+                        
+            view.theStatus.report( "Loading..." );
+
+            // First overwrite any previous script tags with the class 'colourLoversUrl',
+            // than create the new one that makes the next http request to colourlovers.com.
+      
+            if ( $( pageSelector + ' .colourLoversUrl' ).length > 0 ) {
+                $( pageSelector + ' .colourLoversUrl' ).remove();
+            }
+            colourLoversScript = document.createElement( 'script' );
+        	$( colourLoversScript ).addClass( 'colourLoversUrl' );
+            document.getElementById( pageId ).appendChild( colourLoversScript );
+      
+            // Change spaces to plus signs for insertion into search query.
+            // This query string tells colourlovers.com to pass back the data wrapped
+            // in our callback function, palettes.load()
+        
+            encodedKeywords = keywords.replace( /\s+/g, '+' );
+            colourLoversScript.setAttribute( 'src', 
+                    'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
+                    '&jsonCallback=APP.controller.loadPalettes[' + instanceNumber + ']' );
+        }
+        return false;
+    };
+    
+    // Remember: PropertiesToParameters will create a hash (loadPalettes) whose values are functions
+    // that, when called, take their own property names, add them to the front of the argument
+    // list that was passed to them, and then call the anonymous function that was originally passed
+    // to the constructor. The anonymous function is invoked with the new, extended argument list.
+    
+    loadPalettes = new util.PropertyToParameter( function( instanceNumber, data ) {
+        var model = APP.model.instances[instanceNumber];
+        var view = APP.view.instances[instanceNumber];
+        
+        if (model.palettes.load( data )) {
+            palettesColumnController.init( instanceNumber );
+            view.theStatus.report();   // no arguments means all clear, no errors to report.  
+        } else {
+            view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
+                                    model.palettes.keywords + '." Try again.' );
+        };
+    });
+
     /* We'll get this generic error handler going once we get the rest working.
     
     // For the specialized case of when the error handler cannot
@@ -827,7 +894,7 @@ APP.controller = (function() {
         });        
 
         $( pageSelector + ' .searchButton' ).click( function() {
-            requestFromColourloversAPI( model.palettes );
+            requestFromColourloversAPI( instanceNumber );
         });
         $( pageSelector + ' .searchField' ).keydown( function( event ) {
 
@@ -836,7 +903,7 @@ APP.controller = (function() {
             code = event.keyCode || event.which;
             if (code == 13) {
                 event.preventDefault();
-                requestFromColourloversAPI( model.palettes );
+                requestFromColourloversAPI( instanceNumber );
             }
         });
     };
@@ -962,67 +1029,6 @@ APP.controller = (function() {
         });        
     };
     
-    // -- the event handler for requesting data from colourlovers.com
-    
-    requestFromColourloversAPI = function( instanceNumber ) {
-        var model = APP.model.instances[instanceNumber];
-        var view = APP.view.instances[instanceNumber];
-        
-        var encodedKeywords;
-        var colourLoverScript;
-        
-        var pageId = 'page-' + instanceNumber;
-        var pageSelector = '#' + pageId;
-        var searchField = $( pageSelector + ' .searchField' );
-        var keywords = searchField.val();
-
-        // if the user typed anything
-        if (keywords) {
-            model.palettes.keywords = keywords;
-            searchField.val( '' );
-                        
-            view.theStatus.report( "Loading..." );
-
-            // First overwrite any previous script tags with the class 'colourLoversUrl',
-            // than create the new one that makes the next http request to colourlovers.com.
-      
-            if ( $( pageSelector + ' .colourLoversUrl' ).length > 0 ) {
-                $( pageSelector + ' .colourLoversUrl' ).remove();
-            }
-            colourLoversScript = document.createElement( 'script' );
-        	$( colourLoversScript ).addClass( 'colourLoversUrl' );
-            document.getElementById( pageId ).appendChild( colourLoversScript );
-      
-            // Change spaces to plus signs for insertion into search query.
-            // This query string tells colourlovers.com to pass back the data wrapped
-            // in our callback function, palettes.load()
-        
-            encodedKeywords = keywords.replace( /\s+/g, '+' );
-            colourLoversScript.setAttribute( 'src', 
-                    'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
-                    '&jsonCallback=APP.controller.loadPalettes[' + instanceNumber + ']' );
-        }
-        return false;
-    };
-    
-    // Remember: PropertiesToParameters will create a hash (loadPalettes) whose values are functions
-    // that, when called, take their own property names, add them to the front of the argument
-    // list that was passed to them, and then call the anonymous function that was originally passed
-    // to the constructor. The anonymous function is invoked with the new, extended argument list.
-    
-    loadPalettes = new util.PropertyToParameter( function( instanceNumber, data ) {
-        var model = APP.model.instances[instanceNumber];
-        var view = APP.view.instances[instanceNumber];
-        
-        if (model.palettes.load( data )) {
-            palettesColumnController.init( instanceNumber );
-            view.theStatus.report();   // no arguments means all clear, no errors to report.  
-        } else {
-            view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
-                                    model.palettes.keywords + '." Try again.' );
-        };
-    });
-
     // the init will eventually be broken up into two parts: one for everything
     // that gets executed only once when the user goes to this URL or refreshes 
     // their browser, and the other one for every time a new instance of 
