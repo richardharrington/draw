@@ -40,7 +40,7 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
         DEFAULT_BRUSH_SIZE: "small",
         CANVAS_WIDTH: 700,
         CANVAS_HEIGHT: 1000,
-        CANVAS_BACKGROUND_COLOR: "DFF"
+        CANVAS_BACKGROUND_COLOR: "FE9"
     }];
 
     var util = APP.util;

@@ -111,6 +111,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     
     setGenericError = function() {
         try {
+            $( document.createElement( 'script' )).bind( 'error', function(){} ) ;
+            )
             $( document ).delegate( '#fakeTest', 'error', function () {} );
         } catch( e ) {
 
@@ -135,15 +137,22 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // Set up error handlers for all current and future cases of 
         // the manual script tag that downloads the data from colourlovers
         // (using jQuery .delegate()).
-
+        
         var view = APP.view.instances[instanceNumber];
         var pageSelector = '#page-' + instanceNumber;
 
-        $( pageSelector ).delegate(' colourLoversUrl', 'error', function () {
+        var keywords;
+
+        $( pageSelector ).delegate(' .colourLoversUrl', 'error', function () {
 
             // extract the search string from the colourlovers.com request url.
-            var keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search+)(.*?)(&.*)/, '$2' );
-            view.theStatus.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
+            keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search\+)(.*?)(&.*)/, '$2' );
+            
+            // unescape (changes plusses to spaces)
+            keywords = keywords.replace( /\+/g, ' ' );
+            
+            view.theStatus.report( 'Unable to load palettes for the keyword or keywords "' + keywords + '." ' +
+                                   'Probably your internet is down.' );
         });
     };
     
