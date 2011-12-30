@@ -5,9 +5,12 @@ TO DO:
 
 1. deal with the generic error controller situation.
 
-2. Move some stuff out of the view and into the model, like the color palette title,
-   and the background color of the canvas. That stuff should be passed from the
-   model to the view by the controller.
+2. Try to make the config variables be part of the instances. There is a file in this folder
+   called scratch.js that tried to do exactly that. It doesn't work, though. Check that out in the morning.
+   I'm too tired to trust myself with git branching specialness right now so I'm going to just leave 
+   it as its own special filename.
+   
+3. Deal with that green line at the top of the screen.
 
 */
 
