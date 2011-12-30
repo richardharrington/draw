@@ -2,18 +2,36 @@ body {
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
     padding: 0px;
     margin: 0px;
+    display: none;
 }
 
 .page {
     margin: auto;
+    width: 2000px;
+    border-top: dotted 4px #2c7;
+    position: absolute;
 }
+
+.page:nth-child(1) {
+    border-top: 0px;
+}
+
 
 .left-column {
     float: left;
     width: 220px;
     margin-left: 25px;
+    margin-top: 20px;
 }
 
+.palettesFound {
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+    display: none;
+}
+.successfulKeywords {
+    font-weight: bold;
+}
 .paletteList {
     font-size: 1em;
     margin-top: 20px;
@@ -86,14 +104,6 @@ h1 {
 }
 .searchField {
     width: 150px;
-}
-.palettesFound {
-    padding-bottom: 0px;
-    margin-bottom: 0px;
-    display: none;
-}
-.successfulKeywords {
-    font-weight: bold;
 }
 .statusReport {
     color: red;

@@ -4,9 +4,7 @@ TO DO:
 
 1. set the view init so that it puts new templates into the WHOLE html page.
 
-2. change everything from id to class. (PARTICULARLY THE VIEW INIT)
-
-3. Change setMiscellaneousUserControls to set a bunch of DOM element variables at the beginning.
+2. Change setMiscellaneousUserControls to set a bunch of DOM element variables at the beginning.
 
 SUPPLEMENTAL (for next commit): 
 
@@ -35,16 +33,10 @@ APP.config = [{
     LARGE_BRUSH_WIDTH: 25,
     SMALL_BRUSH_WIDTH: 10,
     DEFAULT_BRUSH_SIZE: "large",
-    CANVAS_WIDTH: 1000,
-    CANVAS_HEIGHT: 1000,
+    CANVAS_WIDTH: 600,
+    CANVAS_HEIGHT: 400,
     CANVAS_BACKGROUND_COLOR: "EEE"
-}
-];
-
-
-/*
-
-, {
+}, {
     DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
     MAX_COLORS: 10,
     DEFAULT_PALETTE_TITLE: "default page 2",
@@ -52,16 +44,16 @@ APP.config = [{
     LARGE_BRUSH_WIDTH: 50,
     SMALL_BRUSH_WIDTH: 30,
     DEFAULT_BRUSH_SIZE: "large",
-    CANVAS_WIDTH: 1500,
-    CANVAS_HEIGHT: 1000,
+    CANVAS_WIDTH: 800,
+    CANVAS_HEIGHT: 300,
     CANVAS_BACKGROUND_COLOR: "FFF"
 }, {
     DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
     MAX_COLORS: 10,
     DEFAULT_PALETTE_TITLE: "default page 3",
     DEFAULT_COLOR_PANEL_INDEX: 3,
-    LARGE_BRUSH_WIDTH: 15,
-    SMALL_BRUSH_WIDTH: 2,
+    LARGE_BRUSH_WIDTH: 80,
+    SMALL_BRUSH_WIDTH: 5,
     DEFAULT_BRUSH_SIZE: "small",
     CANVAS_WIDTH: 700,
     CANVAS_HEIGHT: 1000,
@@ -69,7 +61,6 @@ APP.config = [{
 }];
 
 
-*/
 
 APP.util = (function() {
     
@@ -533,6 +524,8 @@ APP.model = (function() {
             currentPalette: currentPalette,
             currentBrush: currentBrush
         };
+        
+        // Increment the main instance number.
         instanceNumber += 1;
     };
 
@@ -564,6 +557,7 @@ APP.view = (function() {
 
     var instances = [];
     var instanceNumber = 0;
+    var absolutePageTop = 0;
 
     // ------------------ Status reporting mechanism. --------------------------
     
@@ -603,6 +597,9 @@ APP.view = (function() {
         this.border = (borderLeftPx) ? parseInt(borderLeftPx, 10) : 16;
         this.drawing = false;
         
+        $( DOMElement ).attr( 'width', width );
+        $( DOMElement ).attr( 'height', height );
+                
         this.applyStyle( brushStyle );
         this.clear();
     }
@@ -675,8 +672,8 @@ APP.view = (function() {
         var color;
         var elementKlasses = [];
         
-        var jQcontainer = $( this.DOMContainer );
-        var jQtitleSpan = $( this.DOMTitleSpan );
+        var jQContainer = $( this.DOMContainer );
+        var jQTitleSpan = $( this.DOMTitleSpan );
         
         for (i = 0, len = colors.length; i < len; i++) {
             elementKlasses.push( {klass: 'color-' + i} );
@@ -689,12 +686,12 @@ APP.view = (function() {
         // THIS SHOULD BE CHANGED TO RE-BACKGROUND-COLORING
         // WHAT WAS ALREADY THERE, INSTEAD OF EMPTYING AND RE-DRAWING. 
 
-        jQcontainer.empty();
-        jQtitleSpan.text( title );
+        jQContainer.empty();
+        jQTitleSpan.text( title );
 
         $( "#currentPaletteTemplate" ).
                 tmpl( elementKlasses ).
-                appendTo( jQcontainer ).
+                appendTo( jQContainer ).
                 each( function( elementIndex ) {
                     this.style.backgroundColor = '#' + colors[elementIndex];
                 });
@@ -717,15 +714,16 @@ APP.view = (function() {
         // In the left column, show the heading with the keywords, and all the palettes below it,
         // along with their click handlers for loading colors into the drawing program.
     
-        var jQcontainer = $( this.DOMContainer );
+        var jQContainer = $( this.DOMContainer );
+        var jQTitleSpan = $( this.DOMTitleSpan );
+        
+        jQTitleSpan.text( palettes.keywords );
+        
+        jQContainer.empty();
+        $( '#palettesTemplate' ).tmpl( palettes.data ).appendTo( jQContainer );
     
-        $( this.DOMTitleSpan ).text( palettes.keywords );
-        jQcontainer.find( '.palettesFound' ).show();
-    
-        jQcontainer.empty();
-        $( '#palettesTemplate' ).tmpl( palettes.data ).appendTo( jQcontainer );
-    
-        jQcontainer.show();
+        jQContainer.show();
+        jQTitleSpan.parent().show();
     };
     
     init = function( args ) {
@@ -733,7 +731,7 @@ APP.view = (function() {
             canvas,
             colorPanels,
             palettesColumn;
-        
+            
         // Initialize status reporting.
         theStatus = new TheStatus( args.statusReportElement );
         
@@ -754,6 +752,19 @@ APP.view = (function() {
             colorPanels: colorPanels,
             palettesColumn: palettesColumn
         };
+        
+        // Little hack here to make everything space well vertically, 
+        // probably should be tied to some sort of object. Or I should
+        // just have a better understanding of CSS. Yeah, that would help.
+        
+        absolutePageTop += (instanceNumber === 0) ? 0 : 
+            APP.view.instances[instanceNumber - 1].canvas.height + 475;
+        
+        var pageSelector = '#page-' + instanceNumber;
+        $( pageSelector ).css( 'top', '' + absolutePageTop + 'px' );
+
+        // Increment the main instance number.
+        
         instanceNumber += 1;
     };
     
@@ -990,6 +1001,12 @@ APP.controller = (function() {
         // Populate the color panels.
         view.colorPanels.populate( model.currentPalette.title, model.currentPalette.colors ); 
         
+        // Reset the style if it was set to a panel that no longer
+        // exists (because a new palette has fewer colors than the old one)
+        if (!model.currentBrush.style()) {
+            model.currentBrush.style( 0, model.currentBrush.size() );
+        }
+        
         // Set the canvas to the right style.
         view.canvas.applyStyle( model.currentBrush.style() );
 
@@ -1019,6 +1036,9 @@ APP.controller = (function() {
                 
         // Populate the palettes column.
         view.palettesColumn.populate( model.palettes );
+        
+        // Adjust its height based on the height of the canvas.
+        $( view.palettesColumn.DOMContainer ).css( 'height', '' + (330 + view.canvas.height) );
         
         // Add the event handlers.
         this.addEventListeners( view.palettesColumn, function( element, i ) {
@@ -1081,6 +1101,7 @@ APP.controller = (function() {
             colorPanelsController.init( i );
             loadPalettes.add( i );
         }
+        $( 'body' ).css('display', 'block');
     };
     
     //----------- module interface -----------------

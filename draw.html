@@ -8,64 +8,142 @@
     <link rel="stylesheet" href="draw.css" />
 </head>
 <body>
-    <div class="page" id="page-0">
-    
-        <div class="left-column">  
-            <p class="palettesFound">Pick a palette from among those found for the search term(s) "<span class="successfulKeywords"></span>":</p>
-            <div class="paletteList"></div>
-        </div>
-    
-        <div class="main-box">
-            <div class="header">
-                <h1>Palette search</h1>
-                <div>
-                    <span class="searchLabel">Search colourlovers.com for a palette (try a season, like 'summer'):</span>
-                    <input type="text" class="searchField"></input>
-                    <input type="button" class="searchButton" value="search">
-                </div>
-                <p class="statusReport">&nbsp;</h2> <!--- as a placeholder for spacing.  -->
+<div class="page" id="page-0">
+
+    <div class="left-column">  
+        <p class="palettesFound">Pick a palette from among those found for the search term(s) "<span class="successfulKeywords"></span>":</p>
+        <div class="paletteList"></div>
+    </div>
+
+    <div class="main-box">
+        <div class="header">
+            <h1>Canvas Number <span class="canvasNumber">1<span></h1>
+            <div>
+                <span class="searchLabel">Search colourlovers.com for a palette (try a season, like 'summer'):</span>
+                <input type="text" class="searchField"></input>
+                <input type="button" class="searchButton" value="search">
             </div>
-  
-            <div class="canvas-container">
-                <p class="currentPaletteHeader">Current palette: <span class="currentPaletteTitle"></span></p>
- 
-                <div class="color-container">
-                </div>
+            <p class="statusReport">&nbsp;</h2> <!--- as a placeholder for spacing.  -->
+        </div>
 
-              	<canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
+        <div class="canvas-container">
+            <p class="currentPaletteHeader">Current palette: <span class="currentPaletteTitle"></span></p>
 
-                <div class="bottomControls">
-                    <span class="brushSizeLabel">Brush size:</span>         
-                    <select class="brushSize">
-                  	    <option value="small">Small</option>
-                  	    <option value="large">Large</option>
-                  	</select><br/>
-                    <input type="button" class="clearCanvas" value="clear canvas">
-                </div>
+            <div class="color-container">
+            </div>
+
+          	<canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
+
+            <div class="bottomControls">
+                <span class="brushSizeLabel">Brush size:</span>         
+                <select class="brushSize">
+              	    <option value="small">Small</option>
+              	    <option value="large">Large</option>
+              	</select><br/>
+                <input type="button" class="clearCanvas" value="clear canvas">
             </div>
         </div>
-	
-    </div><!-- page -->
-  
-    <script id="currentPaletteTemplate" type="text/x-jquery-tmpl">
-        <div class="color-panel ${klass}"></div>
-    </script>
+    </div>
 
-    <script id="palettesTemplate" type="text/x-jquery-tmpl">
-        <div class="palette-container">
-            <img class="palette-image" src="${imageUrl}" width="180" />
-            <p class="palette-title">${title}</p>
-            <p class="palette-info">created on ${dateCreated} by ${userName}.</p>
-            {{if description}}
-                <p class="palette-description">${description}</p>
-            {{/if}}
+</div><!-- page -->
+
+<div class="page" id="page-1">
+
+    <div class="left-column">  
+        <p class="palettesFound">Pick a palette from among those found for the search term(s) "<span class="successfulKeywords"></span>":</p>
+        <div class="paletteList"></div>
+    </div>
+
+    <div class="main-box">
+        <div class="header">
+            <h1>Canvas Number <span class="canvasNumber">2<span></h1>
+            <div>
+                <span class="searchLabel">Search colourlovers.com for a palette (try a season, like 'summer'):</span>
+                <input type="text" class="searchField"></input>
+                <input type="button" class="searchButton" value="search">
+            </div>
+            <p class="statusReport">&nbsp;</h2> <!--- as a placeholder for spacing.  -->
         </div>
-    </script>
 
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
-    <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
-    <!--[if lt IE 9]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
-    <script src="draw.js"></script>
+        <div class="canvas-container">
+            <p class="currentPaletteHeader">Current palette: <span class="currentPaletteTitle"></span></p>
+
+            <div class="color-container">
+            </div>
+
+          	<canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
+
+            <div class="bottomControls">
+                <span class="brushSizeLabel">Brush size:</span>         
+                <select class="brushSize">
+              	    <option value="small">Small</option>
+              	    <option value="large">Large</option>
+              	</select><br/>
+                <input type="button" class="clearCanvas" value="clear canvas">
+            </div>
+        </div>
+    </div>
+
+</div><!-- page -->
+
+<div class="page" id="page-2">
+
+    <div class="left-column">  
+        <p class="palettesFound">Pick a palette from among those found for the search term(s) "<span class="successfulKeywords"></span>":</p>
+        <div class="paletteList"></div>
+    </div>
+
+    <div class="main-box">
+        <div class="header">
+            <h1>Canvas Number <span class="canvasNumber">3<span></h1>
+            <div>
+                <span class="searchLabel">Search colourlovers.com for a palette (try a season, like 'summer'):</span>
+                <input type="text" class="searchField"></input>
+                <input type="button" class="searchButton" value="search">
+            </div>
+            <p class="statusReport">&nbsp;</h2> <!--- as a placeholder for spacing.  -->
+        </div>
+
+        <div class="canvas-container">
+            <p class="currentPaletteHeader">Current palette: <span class="currentPaletteTitle"></span></p>
+
+            <div class="color-container">
+            </div>
+
+          	<canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
+
+            <div class="bottomControls">
+                <span class="brushSizeLabel">Brush size:</span>         
+                <select class="brushSize">
+              	    <option value="small">Small</option>
+              	    <option value="large">Large</option>
+              	</select><br/>
+                <input type="button" class="clearCanvas" value="clear canvas">
+            </div>
+        </div>
+    </div>
+
+</div><!-- page -->
+
+<script id="currentPaletteTemplate" type="text/x-jquery-tmpl">
+    <div class="color-panel ${klass}"></div>
+</script>
+
+<script id="palettesTemplate" type="text/x-jquery-tmpl">
+    <div class="palette-container">
+        <img class="palette-image" src="${imageUrl}" width="180" />
+        <p class="palette-title">${title}</p>
+        <p class="palette-info">created on ${dateCreated} by ${userName}.</p>
+        {{if description}}
+            <p class="palette-description">${description}</p>
+        {{/if}}
+    </div>
+</script>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
+<!--[if lt IE 9]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
+<script src="draw.js"></script>
 
 
 </body>
