@@ -139,6 +139,8 @@ h1 {
     border-radius: 10px;
     float: left;
     cursor: pointer;
+    
+    /* TODO: figure out why this CSS3 animation isn't working. */
 
     /*
         -webkit-transition: background-color .7s ease, width .7s ease, -webkit-border-radius .7s ease, margin-left .7s ease, padding-right .7s ease;
