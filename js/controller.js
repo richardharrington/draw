@@ -12,6 +12,8 @@ TO DO:
    
 3. Deal with that green line at the top of the screen. We have a simple fix -- making '#page-0' have a top border of 0.
    But why does this not work with '.page:first-child'? It should select the same element.
+   
+4. Also don't forget to put in backup jQuery files for when we're not connected to the internet.
 
 */
 
