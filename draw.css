@@ -7,13 +7,13 @@ body {
 
 .page {
     margin: auto;
-    width: 2000px;
+    width: 3000px;
     border-top: dotted 4px #2c7;
     position: absolute;
 }
 
-.page:not(#page-0) {
-    border-top: dotted 4px #2c7;
+#page-0 {
+    border-top: 0px;
 }
 
 .left-column {
@@ -48,7 +48,7 @@ body {
     cursor: pointer;
 }
 
-.palette-container:nth-child(1) {
+.palette-container:first-child {
     margin-top: 0px;
 }
 
