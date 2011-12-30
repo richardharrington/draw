@@ -299,7 +299,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
 
     init = function() {
 
-        var config = APP.config;
+        var config = APP.model.config;
 
         var i, len;
         var pageSelector;
@@ -315,15 +315,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         for (i = 0, len = config.length; i < len; i++) {
             pageSelector = "#page-" + i;
             
-            APP.model.init({ 
-                paletteTitle:           config[i].DEFAULT_PALETTE_TITLE, 
-                paletteColors:          config[i].DEFAULT_PALETTE_COLORS, 
-                maxColors:              config[i].MAX_COLORS,
-                brushSize:              config[i].DEFAULT_BRUSH_SIZE, 
-                largeBrushWidth:        config[i].LARGE_BRUSH_WIDTH,
-                smallBrushWidth:        config[i].SMALL_BRUSH_WIDTH,
-                colorPanelIdx:          config[i].DEFAULT_COLOR_PANEL_INDEX 
-            });
+            APP.model.init();
             
             APP.view.init({ 
                 canvasWidth:            config[i].CANVAS_WIDTH, 

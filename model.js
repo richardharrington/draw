@@ -7,6 +7,41 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
 
 (function() {
     
+    var config = [{
+        DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
+        MAX_COLORS: 10,
+        DEFAULT_PALETTE_TITLE: "default page 1",
+        DEFAULT_COLOR_PANEL_INDEX: 0,
+        LARGE_BRUSH_WIDTH: 25,
+        SMALL_BRUSH_WIDTH: 10,
+        DEFAULT_BRUSH_SIZE: "large",
+        CANVAS_WIDTH: 600,
+        CANVAS_HEIGHT: 400,
+        CANVAS_BACKGROUND_COLOR: "EEE"
+    }, {
+        DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
+        MAX_COLORS: 10,
+        DEFAULT_PALETTE_TITLE: "default page 2",
+        DEFAULT_COLOR_PANEL_INDEX: 0,
+        LARGE_BRUSH_WIDTH: 50,
+        SMALL_BRUSH_WIDTH: 30,
+        DEFAULT_BRUSH_SIZE: "large",
+        CANVAS_WIDTH: 800,
+        CANVAS_HEIGHT: 300,
+        CANVAS_BACKGROUND_COLOR: "FFF"
+    }, {
+        DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
+        MAX_COLORS: 10,
+        DEFAULT_PALETTE_TITLE: "default page 3",
+        DEFAULT_COLOR_PANEL_INDEX: 3,
+        LARGE_BRUSH_WIDTH: 80,
+        SMALL_BRUSH_WIDTH: 5,
+        DEFAULT_BRUSH_SIZE: "small",
+        CANVAS_WIDTH: 700,
+        CANVAS_HEIGHT: 1000,
+        CANVAS_BACKGROUND_COLOR: "DFF"
+    }];
+
     var util = APP.util;
 
     var BrushStyle,
@@ -275,10 +310,10 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
             
                 // Many of the descriptions on colourlovers.com
                 // are long garbage strings of html, so exclude those
-                // by checking if the string is too long or starts with a '<' character
+                // by checking if the string is too long.
             
                 desc = newPalette.description;
-                newPalette.description = (desc.length < 200 && desc.charAt(0) !== '<') ? desc : "";
+                newPalette.description = (desc.length < 200) ? desc : "";
             
                 // Load the new palette into the main database object.
             
@@ -293,16 +328,25 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
         var palettes,
             currentPalette,
             currentBrush;
+            
+        var conf = config[instanceNumber];
         
         // Initialize palettes.
         palettes = new Palettes();
-
+        
         // Initialize currentPalette.
-        currentPalette = new CurrentPalette( args.paletteTitle, args.paletteColors, args.maxColors,
-                                             args.smallBrushWidth, args.largeBrushWidth );
+        currentPalette = new CurrentPalette( 
+            conf.DEFAULT_PALETTE_TITLE, 
+            conf.DEFAULT_PALETTE_COLORS, 
+            conf.MAX_COLORS,
+            conf.SMALL_BRUSH_WIDTH, 
+            conf.LARGE_BRUSH_WIDTH );
 
         // Initialize currentBrush.
-        currentBrush = new CurrentBrush( args.brushSize, args.colorPanelIdx, currentPalette );
+        currentBrush = new CurrentBrush(
+            conf.DEFAULT_BRUSH_SIZE,
+            conf.DEFAULT_COLOR_PANEL_INDEX,
+            currentPalette );
         
         instances[instanceNumber] = {
             palettes: palettes,
@@ -318,6 +362,7 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
     
     return {
         init: init, 
+        config: config,
         instances: instances
     };  
     

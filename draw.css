@@ -12,10 +12,9 @@ body {
     position: absolute;
 }
 
-.page:nth-child(1) {
-    border-top: 0px;
+.page:not(#page-0) {
+    border-top: dotted 4px #2c7;
 }
-
 
 .left-column {
     float: left;
