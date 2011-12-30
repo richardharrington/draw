@@ -101,38 +101,6 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         };
     });
 
-    /* We'll get this generic error handler going once we get the rest working.
-    
-    // For the specialized case of when the error handler cannot
-    // be bound to the script element (it seems to work on all browsers, but many
-    // fairly recent posts on the Internet say this handler can only be bound
-    // to the window object or to an img element), we have as a fallback a
-    // generic error handler on the window object if anything goes wrong on the page at all.
-    
-    setGenericError = function() {
-        try {
-            $( document.createElement( 'script' )).bind( 'error', function(){} ) ;
-            )
-            $( document ).delegate( '#fakeTest', 'error', function () {} );
-        } catch( e ) {
-
-            if (window.addEventListener) {
-                window.addEventListener('error', function () {
-                    alert( "There's been a nebulous problem of some sort." );
-                }, false);
-
-            } else if (window.attachEvent) {
-                window.attachEvent('error', function () {
-                    alert( "There's been a nebulous problem of some sort, probably IE-related." );
-                });
-            }
-        }
-
-            
-    };
-    
-    */
-    
     setErrorControls = function( instanceNumber ) {
         // Set up error handlers for all current and future cases of 
         // the manual script tag that downloads the data from colourlovers
