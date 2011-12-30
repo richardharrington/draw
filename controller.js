@@ -313,7 +313,6 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         $( '#pageTemplate' ).tmpl( instanceNumberList ).appendTo( 'body' );
         
         for (i = 0, len = config.length; i < len; i++) {
-            pageSelector = "#page-" + i;
             
             APP.model.init();
             
@@ -325,13 +324,6 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
                 paletteTitle:           config[i].DEFAULT_PALETTE_TITLE, 
                 paletteColors:          config[i].DEFAULT_PALETTE_COLORS,
                 
-                statusReportElement:    $( pageSelector + ' .statusReport' )[0], 
-                canvasElement:          $( pageSelector + ' .canvas' )[0],
-                colorPanelsElement:     $( pageSelector + ' .color-container' )[0],
-                colorsTitleElement:     $( pageSelector + ' .currentPaletteTitle' )[0],
-                palettesColumnElement:  $( pageSelector + ' .paletteList' )[0],
-                palettesTitleElement:   $( pageSelector + ' .successfulKeywords' )[0],
-
                 brushStyle:             APP.model.instances[i].currentBrush.style() 
             });
             
@@ -339,6 +331,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             setErrorControls( i );
             setCanvasControls( i );
             colorPanelsController.init( i );
+            
             loadPalettes.add( i );
         }
         $( 'body' ).css('display', 'block');

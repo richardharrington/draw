@@ -193,19 +193,28 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
             colorPanels,
             palettesColumn;
             
+        var pageSelector = '#page-' + instanceNumber;
+            
+        var statusReportElement =   $( pageSelector + ' .statusReport' )[0], 
+            canvasElement =         $( pageSelector + ' .canvas' )[0],
+            colorPanelsElement =    $( pageSelector + ' .color-container' )[0],
+            colorsTitleElement =    $( pageSelector + ' .currentPaletteTitle' )[0],
+            palettesColumnElement = $( pageSelector + ' .paletteList' )[0],
+            palettesTitleElement =  $( pageSelector + ' .successfulKeywords' )[0];
+            
         // Initialize status reporting.
-        theStatus = new TheStatus( args.statusReportElement );
+        theStatus = new TheStatus( statusReportElement );
         
         // Initialize canvas.
-        canvas = new Canvas( args.canvasElement, args.canvasWidth, args.canvasHeight, 
+        canvas = new Canvas( canvasElement, args.canvasWidth, args.canvasHeight, 
                              args.canvasBackgroundColor, args.brushStyle, args.colorPanelIdx );
         
         // Load the colors into the DOM.
-        colorPanels = new ColorPanels ( args.colorPanelsElement, args.colorsTitleElement, 
+        colorPanels = new ColorPanels ( colorPanelsElement, colorsTitleElement, 
                                         args.paletteTitle, args.paletteColors );
                                            
         // Initialize empty palettesColumn object.
-        palettesColumn = new PalettesColumn( args.palettesColumnElement, args.palettesTitleElement );
+        palettesColumn = new PalettesColumn( palettesColumnElement, palettesTitleElement );
 
         instances[instanceNumber] = {
             theStatus: theStatus,
