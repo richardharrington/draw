@@ -103,9 +103,16 @@ APP.util = (function() {
         return list;
     };
 
-    // Very basic iterator function
-
     // PUBLIC CONSTRUCTORS AND METHODS
+    
+    // Very basic iterator function, used only for debugging
+    // so far.
+
+    forEach = function( array, action ) {
+        for (var i = 0, len = array.length; i < len; i++) {
+            action( array[i], i );
+        }
+    };
     
     // PropertyToParameter takes a function (func) and creates
     // an object with a series of properties, all added by the 
@@ -117,12 +124,6 @@ APP.util = (function() {
     // function such that the name of the function itself will tell
     // another function, when the AJAX request returns, which model
     // instance is supposed to be filled.
-    
-    forEach = function( array, action ) {
-        for (var i = 0, len = array.length; i < len; i++) {
-            action( array[i], i );
-        }
-    };
     
     PropertyToParameter = function( func ) {
         this.func = func;
@@ -278,8 +279,11 @@ APP.model = (function() {
     // --- Set up the CurrentPalette constructor, whose instances',
     // --- own properties are all the Brushstyle children.
 
-    CurrentPalette = function( title, colors, maxColors, smallBrushWidth, largeBrushWidth ) {              
-        this.init( title, colors, maxColors, smallBrushWidth, largeBrushWidth );
+    CurrentPalette = function( title, colors, maxColors, smallBrushWidth, largeBrushWidth ) { 
+        this.maxColors = maxColors;
+        this.smallBrushWidth = smallBrushWidth;
+        this.largeBrushWidth = largeBrushWidth;             
+        this.init( title, colors );
     };
 
     // Load in a new palette of colors. 
@@ -289,23 +293,23 @@ APP.model = (function() {
         var i, len;
         var color;
         var small, large;
-
+        
         this.brushStyles = [];
 
-        // We can only fit maxColors number of panels,
+        // We can only fit this.maxColors number of panels,
         // so truncate the array if necessary. 
 
-        colors = colors.slice( 0, maxColors );
+        colors = colors.slice( 0, this.maxColors );
     
         for (i = 0, len = colors.length; i < len; i++) {
             color = colors[i];
             small = util.object( brushChildrenProto, {
                 color: color,
-                width: smallBrushWidth
+                width: this.smallBrushWidth
             });
             large = util.object( brushChildrenProto, {
        	        color: color,
-       	        width: largeBrushWidth
+       	        width: this.largeBrushWidth
        	    });
 
             this.brushStyles.push( small );
@@ -698,7 +702,7 @@ APP.view = (function() {
     };
     
     ColorPanels.prototype.getKlass = function( colorPanelIdx ) {
-        return 'color-' + colorPanelIdx + 1;
+        return 'color-' + colorPanelIdx;
     };
     
     // -------------------- wrapper for DOM palettes column --------------------------
@@ -990,7 +994,7 @@ APP.controller = (function() {
         view.canvas.applyStyle( model.currentBrush.style() );
 
         // Now make the already selected one pink.
-        panel = $( pageSelector + ' .' + view.colorPanels.getKlass( model.currentBrush.colorPanelIdx()));
+        panel = $( pageSelector + ' .' + view.colorPanels.getKlass( model.currentBrush.colorPanelIdx()) );
         this.highlightElement( panel );
 
         // Add the event listeners.
@@ -1023,7 +1027,7 @@ APP.controller = (function() {
             var title = model.palettes.data[i].title;
             var colors = model.palettes.data[i].colors;
             model.currentPalette.init( title, colors );
-            colorPanelsController.init( i );
+            colorPanelsController.init( instanceNumber );
             
             // Turn the selected one pink.
             palettesColumnController.highlightElement( element, ".palette-image" );
