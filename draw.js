@@ -74,14 +74,14 @@ APP.config = [{
 APP.util = (function() {
     
     var isArray,
-        keyList,
-        forEach;
+        keyList;
         
     var PropertyToParameter;
     
     var copy,
         parseSQLDate,
-        object;
+        object,
+        forEach;
         
     
     // PRIVATE METHODS
@@ -105,12 +105,6 @@ APP.util = (function() {
 
     // Very basic iterator function
 
-    forEach = function( array, action ) {
-        for (var i = 0, len = array.length; i < len; i++) {
-            action( array[i], i );
-        }
-    };
-    
     // PUBLIC CONSTRUCTORS AND METHODS
     
     // PropertyToParameter takes a function (func) and creates
@@ -124,6 +118,12 @@ APP.util = (function() {
     // another function, when the AJAX request returns, which model
     // instance is supposed to be filled.
     
+    forEach = function( array, action ) {
+        for (var i = 0, len = array.length; i < len; i++) {
+            action( array[i], i );
+        }
+    };
+    
     PropertyToParameter = function( func ) {
         this.func = func;
     };
@@ -131,7 +131,7 @@ APP.util = (function() {
     PropertyToParameter.prototype.add = function( prop ) {
         this[prop] = (function( f ) {
             return function() {
-                var args = Array.prototype.slice( arguments, 0 );
+                var args = Array.prototype.slice.call( arguments, 0 );
                 args.unshift( prop );
                 f.apply( null, args );
             };
@@ -216,6 +216,7 @@ APP.util = (function() {
         copy: copy,
         parseSQLDate: parseSQLDate,
         object: object,
+        forEach: forEach,
         
         PropertyToParameter: PropertyToParameter
     };
@@ -778,7 +779,6 @@ APP.controller = (function() {
     
     var init;
     
-    
     // -- the event handler for requesting data from colourlovers.com
     
     requestFromColourloversAPI = function( instanceNumber ) {
@@ -787,6 +787,7 @@ APP.controller = (function() {
         
         var encodedKeywords;
         var colourLoversScript;
+        var searchURL;
         
         var pageId = 'page-' + instanceNumber;
         var pageSelector = '#' + pageId;
@@ -815,14 +816,14 @@ APP.controller = (function() {
             // in our callback function, palettes.load()
         
             encodedKeywords = keywords.replace( /\s+/g, '+' );
-            colourLoversScript.setAttribute( 'src', 
-                    'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
-                    '&jsonCallback=APP.controller.loadPalettes[' + instanceNumber + ']' );
+            searchURL = 'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
+                        '&jsonCallback=APP.controller.loadPalettes[' + instanceNumber + ']'
+            colourLoversScript.setAttribute( 'src', searchURL);
         }
         return false;
     };
     
-    // Remember: PropertiesToParameters will create a hash (loadPalettes) whose values are functions
+    // Remember: PropertyToParameter will create a hash (loadPalettes) whose values are functions
     // that, when called, take their own property names, add them to the front of the argument
     // list that was passed to them, and then call the anonymous function that was originally passed
     // to the constructor. The anonymous function is invoked with the new, extended argument list.
@@ -870,6 +871,22 @@ APP.controller = (function() {
     
     */
     
+    setErrorControls = function( instanceNumber ) {
+        // Set up error handlers for all current and future cases of 
+        // the manual script tag that downloads the data from colourlovers
+        // (using jQuery .delegate()).
+
+        var view = APP.view.instances[instanceNumber];
+        var pageSelector = '#page-' + instanceNumber;
+
+        $( pageSelector ).delegate(' colourLoversUrl', 'error', function () {
+
+            // extract the search string from the colourlovers.com request url.
+            var keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search+)(.*?)(&.*)/, '$2' );
+            view.theStatus.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
+        });
+    };
+    
     setMiscellaneousUserControls = function( instanceNumber ) {
         var model = APP.model.instances[instanceNumber];
         var view = APP.view.instances[instanceNumber];
@@ -905,22 +922,6 @@ APP.controller = (function() {
                 event.preventDefault();
                 requestFromColourloversAPI( instanceNumber );
             }
-        });
-    };
-    
-    setErrorControls = function( instanceNumber ) {
-        // Set up error handlers for all current and future cases of 
-        // the manual script tag that downloads the data from colourlovers
-        // (using jQuery .delegate()).
-
-        var view = APP.view.instances[instanceNumber];
-        var pageSelector = '#page-' + instanceNumber;
-
-        $( pageSelector ).delegate(' colourLoversUrl', 'error', function () {
-
-            // extract the search string from the colourlovers.com request url.
-            var keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search+)(.*?)(&.*)/, '$2' );
-            view.theStatus.report( 'Unable to load palettes for the keywords ' + keywords + '."' );
         });
     };
     
@@ -1022,7 +1023,7 @@ APP.controller = (function() {
             var title = model.palettes.data[i].title;
             var colors = model.palettes.data[i].colors;
             model.currentPalette.init( title, colors );
-            colorPanelsController.init( model, view );
+            colorPanelsController.init( i );
             
             // Turn the selected one pink.
             palettesColumnController.highlightElement( element, ".palette-image" );
