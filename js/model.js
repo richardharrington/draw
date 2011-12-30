@@ -7,41 +7,55 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
 
 (function() {
     
-    var config = [{
-        DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
-        MAX_COLORS: 10,
-        DEFAULT_PALETTE_TITLE: "default palette #1",
-        DEFAULT_COLOR_PANEL_INDEX: 0,
-        LARGE_BRUSH_WIDTH: 25,
-        SMALL_BRUSH_WIDTH: 10,
-        DEFAULT_BRUSH_SIZE: "large",
-        CANVAS_WIDTH: 600,
-        CANVAS_HEIGHT: 400,
-        CANVAS_BACKGROUND_COLOR: "EEE"
-    }, {
-        DEFAULT_PALETTE_COLORS: ['000000', '333333', '666666', '999999', 'BBBBBB'],
-        MAX_COLORS: 10,
-        DEFAULT_PALETTE_TITLE: "default palette #2",
-        DEFAULT_COLOR_PANEL_INDEX: 0,
-        LARGE_BRUSH_WIDTH: 50,
-        SMALL_BRUSH_WIDTH: 30,
-        DEFAULT_BRUSH_SIZE: "large",
-        CANVAS_WIDTH: 800,
-        CANVAS_HEIGHT: 300,
-        CANVAS_BACKGROUND_COLOR: "FFF"
-    }, {
-        DEFAULT_PALETTE_COLORS: ['003366', '336699', '6699BB', '99BBEE', 'BBEE11',
-                                 '060E18', '002E63', '0076FE', 'DBDADC', 'D0FDFE'],
-        MAX_COLORS: 10,
-        DEFAULT_PALETTE_TITLE: "default palette #3",
-        DEFAULT_COLOR_PANEL_INDEX: 3,
-        LARGE_BRUSH_WIDTH: 80,
-        SMALL_BRUSH_WIDTH: 5,
-        DEFAULT_BRUSH_SIZE: "small",
-        CANVAS_WIDTH: 700,
-        CANVAS_HEIGHT: 1000,
-        CANVAS_BACKGROUND_COLOR: "FE9"
-    }];
+    // This instances array will have other properties added dynamically to its element
+    // objects. We start with "config." Later we'll add "currentBrush,"
+    // "currentPalette," and "palettes."
+    
+    var instances = [
+        {
+            config: {
+                DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
+                MAX_COLORS: 10,
+                DEFAULT_PALETTE_TITLE: "default palette #1",
+                DEFAULT_COLOR_PANEL_INDEX: 0,
+                LARGE_BRUSH_WIDTH: 25,
+                SMALL_BRUSH_WIDTH: 10,
+                DEFAULT_BRUSH_SIZE: "large",
+                CANVAS_WIDTH: 600,
+                CANVAS_HEIGHT: 400,
+                CANVAS_BACKGROUND_COLOR: "EEE"
+            }
+        }, 
+        {
+            config: {
+                DEFAULT_PALETTE_COLORS: ['000000', '333333', '666666', '999999', 'BBBBBB'],
+                MAX_COLORS: 10,
+                DEFAULT_PALETTE_TITLE: "default palette #2",
+                DEFAULT_COLOR_PANEL_INDEX: 0,
+                LARGE_BRUSH_WIDTH: 50,
+                SMALL_BRUSH_WIDTH: 30,
+                DEFAULT_BRUSH_SIZE: "large",
+                CANVAS_WIDTH: 800,
+                CANVAS_HEIGHT: 300,
+                CANVAS_BACKGROUND_COLOR: "FFF"
+            }
+        }, 
+        { 
+            config: {
+                DEFAULT_PALETTE_COLORS: ['003366', '336699', '6699BB', '99BBEE', 'BBEE11',
+                                         '060E18', '002E63', '0076FE', 'DBDADC', 'D0FDFE'],
+                MAX_COLORS: 10,
+                DEFAULT_PALETTE_TITLE: "default palette #3",
+                DEFAULT_COLOR_PANEL_INDEX: 3,
+                LARGE_BRUSH_WIDTH: 80,
+                SMALL_BRUSH_WIDTH: 5,
+                DEFAULT_BRUSH_SIZE: "small",
+                CANVAS_WIDTH: 700,
+                CANVAS_HEIGHT: 1000,
+                CANVAS_BACKGROUND_COLOR: "FEB"
+            }
+        }
+    ];
 
     var util = APP.util;
 
@@ -54,7 +68,6 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
         
     var init;
     
-    var instances = [];
     var instanceNumber = 0;
 
     // --- A note about Palettes, CurrentPalette and CurrentBrush:
@@ -325,35 +338,35 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
         return true;
     };
     
-    init = function( args ) {
+    init = function() {
         var palettes,
             currentPalette,
             currentBrush;
             
-        var conf = config[instanceNumber];
+        var config = instances[instanceNumber].config;
         
         // Initialize palettes.
         palettes = new Palettes();
         
         // Initialize currentPalette.
         currentPalette = new CurrentPalette( 
-            conf.DEFAULT_PALETTE_TITLE, 
-            conf.DEFAULT_PALETTE_COLORS, 
-            conf.MAX_COLORS,
-            conf.SMALL_BRUSH_WIDTH, 
-            conf.LARGE_BRUSH_WIDTH );
+            config.DEFAULT_PALETTE_TITLE, 
+            config.DEFAULT_PALETTE_COLORS, 
+            config.MAX_COLORS,
+            config.SMALL_BRUSH_WIDTH, 
+            config.LARGE_BRUSH_WIDTH );
 
         // Initialize currentBrush.
         currentBrush = new CurrentBrush(
-            conf.DEFAULT_BRUSH_SIZE,
-            conf.DEFAULT_COLOR_PANEL_INDEX,
+            config.DEFAULT_BRUSH_SIZE,
+            config.DEFAULT_COLOR_PANEL_INDEX,
             currentPalette );
         
-        instances[instanceNumber] = {
-            palettes: palettes,
-            currentPalette: currentPalette,
-            currentBrush: currentBrush
-        };
+        // Can't just assign the whole object all at once because it's not empty:
+        // it contains config information for each instance from the very start.
+        instances[instanceNumber].palettes = palettes;
+        instances[instanceNumber].currentPalette = currentPalette;
+        instances[instanceNumber].currentBrush = currentBrush;
         
         // Increment the main instance number.
         instanceNumber += 1;
@@ -363,7 +376,6 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
     
     return {
         init: init, 
-        config: config,
         instances: instances
     };  
     

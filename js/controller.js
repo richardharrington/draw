@@ -1,22 +1,5 @@
 // Dependencies: util.js, model.js, view.js
 
-/*
-TO DO:
-
-1. deal with the generic error controller situation.
-
-2. Try to make the config variables be part of the instances. There is a file in this folder
-   called scratch.js that tried to do exactly that. It doesn't work, though. Check that out in the morning.
-   I'm too tired to trust myself with git branching specialness right now so I'm going to just leave 
-   it as its own special filename.
-   
-3. Deal with that green line at the top of the screen. We have a simple fix -- making '#page-0' have a top border of 0.
-   But why does this not work with '.page:first-child'? It should select the same element.
-   
-4. Also don't forget to put in backup jQuery files for when we're not connected to the internet.
-
-*/
-
 ;
 
 var APP = (typeof APP !== 'undefined') ? APP : {};
@@ -259,7 +242,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         view.palettesColumn.populate( model.palettes );
         
         // Adjust its height based on the height of the canvas.
-        $( view.palettesColumn.DOMContainer ).css( 'height', '' + (330 + view.canvas.height) );
+        $( view.palettesColumn.DOMContainer ).css( 'height', '' + (310 + view.canvas.height) );
         
         // Add the event handlers.
         this.addEventListeners( view.palettesColumn, function( element, i ) {
@@ -275,39 +258,41 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         });        
     };
     
-    // the init will eventually be broken up into two parts: one for everything
-    // that gets executed only once when the user goes to this URL or refreshes 
-    // their browser, and the other one for every time a new instance of 
-    // the drawing app is created on the page.
+    // -------------------- CONTROLLER INIT --------------------------
 
     init = function() {
 
-        var config = APP.model.config;
-
+        var config;
+        
         var i, len;
         var pageSelector;
         var instanceNumberList = [];
+        var modelInstances = APP.model.instances;
         
-        // Create the main html blocks.
+        // Create the main html blocks. Need to use the APP.model module
+        // to count the instances because that's where the instances
+        // array is predefined with config information, and exposed to the module
+        // interface. The view instances array is also exposed but it is
+        // empty until APP.view.init() is run.
         
-        for (i = 0, len = config.length; i < len; i++) {
+        for (i = 0, len = modelInstances.length; i < len; i++) {
             instanceNumberList.push( {instanceNum: i} );
         }
         $( '#pageTemplate' ).tmpl( instanceNumberList ).appendTo( 'body' );
         
-        for (i = 0, len = config.length; i < len; i++) {
+        for (i = 0, len = modelInstances.length; i < len; i++) {
+            config = modelInstances[i].config;
             
             APP.model.init();
             
             APP.view.init({ 
-                canvasWidth:            config[i].CANVAS_WIDTH, 
-                canvasHeight:           config[i].CANVAS_HEIGHT, 
-                canvasBackgroundColor:  config[i].CANVAS_BACKGROUND_COLOR, 
-                colorPanelIdx:          config[i].DEFAULT_COLOR_PANEL_INDEX,
-                paletteTitle:           config[i].DEFAULT_PALETTE_TITLE, 
-                paletteColors:          config[i].DEFAULT_PALETTE_COLORS,
-                
-                brushStyle:             APP.model.instances[i].currentBrush.style() 
+                canvasWidth:            config.CANVAS_WIDTH, 
+                canvasHeight:           config.CANVAS_HEIGHT, 
+                canvasBackgroundColor:  config.CANVAS_BACKGROUND_COLOR, 
+                colorPanelIdx:          config.DEFAULT_COLOR_PANEL_INDEX,
+                paletteTitle:           config.DEFAULT_PALETTE_TITLE, 
+                paletteColors:          config.DEFAULT_PALETTE_COLORS,
+                brushStyle:             modelInstances[i].currentBrush.style() 
             });
             
             setMiscellaneousUserControls( i );
