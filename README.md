@@ -15,12 +15,12 @@ Upcoming near-term feature changes can be found in the Issues tab.
 
 ## Origin
 
-This project came out of an assignment in the November 2011 Advanced Javascript class taught by Pedro Ha at NYU SCPS. Pedro had created a basic version of the app, and our assignment was to add the API search functionality and also to significantly refactor the code. His original version can be found in the folder "original-files." That code should in no way reflect on his abilities -- it is in a deliberately half-finished state, so that the students could fix it up.
+This project came out of an assignment in the November 2011 Advanced Javascript class taught by Pedro Ha at NYU SCPS. Pedro had created a basic version of the app, and our assignment was to add the API search functionality and also to significantly refactor the code. His original concise and elegant version can be found in the folder "original-files." Our job as students (along with adding search functionality) was to organize it so that it was more scalable. I have also added a few minor enhancements and features (like the 'clear canvas' button).
 
 
 ## License
 
-Licenses for Pedro Ha's original version of this app and also for excanvas.js (by Google) can be found in the appropriate folders (see Origin above). The rest is:
+Licenses for Pedro Ha's original version of this app and also for excanvas.js (by Google) can be found in the appropriate folders (see Origin above). All subsequent work is:
 
 (MIT License)
 
