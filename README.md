@@ -10,6 +10,8 @@ In the future, it may or may not incorporate the following features:
 * The ability to have two people in different browsers drawing on the same canvas.
 * Other fun stuff. Ideas?
 
+Upcoming near-term feature changes can be found in the Issues tab.
+
 
 ## Origin
 
