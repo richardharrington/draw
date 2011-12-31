@@ -16,16 +16,6 @@ In the future, it may or may not incorporate the following features:
 This project came out of an assignment in the November 2011 Advanced Javascript class taught by Pedro Ha at NYU SCPS. Pedro had created a basic version of the app, and our assignment was to add the API search functionality and also to significantly refactor the code. His original version can be found in the folder "original-files." That code should in no way reflect on his abilities -- it is in a deliberately half-finished state, so that the students could fix it up.
 
 
-## Near-term feature changes
-
-* Fix the bug that causes it to remain in drawing mode if you go off the canvas while you have the mouse pressed down. This bug creates a few problems:
-    1. If you drag the brush out and around to the other side of the canvas, a straight line is drawn from where you left the canvas to where you re-enter it. 
-    2. If go off the canvas while you have the mouse pressed down, when you reenter the canvas you will be in drawing mode whether you have the mouse pressed down or not, and 
-    3. If you go off the canvas while you have the mouse pressed down and then change the color, when you reenter the canvas, everything you've drawn since you last went into drawing mode will be changed to the new color.
-    
-* Change the "small" and "large" selector at the bottom so that they are just buttons, or two sides of one rounded-corner button.
-
-
 ## License
 
 Licenses for Pedro Ha's original version of this app and also for excanvas.js (by Google) can be found in the appropriate folders (see Origin above). The rest is:
