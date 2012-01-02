@@ -242,7 +242,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         view.palettesColumn.populate( model.palettes );
         
         // Adjust its height based on the height of the canvas.
-        $( view.palettesColumn.DOMContainer ).css( 'height', '' + (310 + view.canvas.height) );
+        $( view.palettesColumn.DOMContainer ).css( 'height', '' + (285 + view.canvas.height) );
         
         // Add the event handlers.
         this.addEventListeners( view.palettesColumn, function( element, i ) {

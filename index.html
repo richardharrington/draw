@@ -30,23 +30,25 @@
                 <p class="statusReport">&nbsp;</h2> <!--- as a placeholder for spacing.  -->
             </div>
 
-            <div class="canvas-container">
+            <div class="color-panels-header">
                 <p class="currentPaletteHeader">Current palette: <span class="currentPaletteTitle"></span></p>
 
                 <div class="color-container">
                 </div>
+			</div>
+			<div class="canvas-container">
                 
                 <!--- width and height are defaults, will be overridden by javascript -->
                 
-              	<canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
-
                 <div class="bottomControls">
                     <span class="brushSizeLabel">Brush size:</span>         
                     <select class="brushSize">
                   	    <option value="small">Small</option>
                   	    <option value="large">Large</option>
-                  	</select><br/>
+                  	</select>
                     <input type="button" class="clearCanvas" value="clear canvas">
+	              	<canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
+
                 </div>
             </div>
         </div>
