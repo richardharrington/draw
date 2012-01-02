@@ -34,7 +34,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         
         var pageId = 'page-' + instanceNumber;
         var pageSelector = '#' + pageId;
-        var searchField = $( pageSelector + ' .searchField' );
+        var searchField = $( pageSelector + ' .search-field' );
         var keywords = searchField.val();
 
         // if the user typed anything
@@ -116,24 +116,24 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         
         // Set brush size HTML select element, 
         // because Firefox preserves state even when it's refreshed.
-        $( pageSelector + ' .brushSize' ).val( model.currentBrush.size() );  
+        $( pageSelector + ' .brush-size' ).val( model.currentBrush.size() );  
 
         // bind the event handlers for clearing the screen, 
         // toggling the brush size and entering search keywords.
 
-        $( pageSelector + ' .clearCanvas' ).click( function() {
+        $( pageSelector + ' .clear-canvas' ).click( function() {
             view.canvas.clear();
         });
 
-        $( pageSelector + ' .brushSize' ).change( function() {
+        $( pageSelector + ' .brush-size' ).change( function() {
             model.currentBrush.style( this.value );
             view.canvas.applyStyle( model.currentBrush.style() );
         });        
 
-        $( pageSelector + ' .searchButton' ).click( function() {
+        $( pageSelector + ' .search-button' ).click( function() {
             requestFromColourloversAPI( instanceNumber );
         });
-        $( pageSelector + ' .searchField' ).keydown( function( event ) {
+        $( pageSelector + ' .search-field' ).keydown( function( event ) {
 
             // cross-browser compliance for different keydown event key code property names
     

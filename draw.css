@@ -28,7 +28,7 @@ h1 {
     margin-top: 20px;
 }
 
-.palettesFound {
+.palettes-found {
     padding-bottom: 0px;
     margin-bottom: 0px;
     display: none;
@@ -36,7 +36,7 @@ h1 {
 .successfulKeywords {
     font-weight: bold;
 }
-.paletteList {
+.palette-list {
     font-size: 1em;
     margin-top: 20px;
     height: 700px;
@@ -94,13 +94,13 @@ h1 {
     height: 700px;
 }
 
-.searchLabel {
+.search-label {
     font-size: 1em;
 }
-.searchField {
+.search-field {
     width: 150px;
 }
-.statusReport {
+.status-report {
     color: red;
     font-weight: bold;
     padding-bottom: 0px;
@@ -108,11 +108,11 @@ h1 {
     margin-bottom: 20px;
 }
 
-.currentPaletteTitle {
+.current-palette-title {
   font-weight: bold;
 }
 
-.currentPaletteHeader {
+.current-palette-header {
     margin-top: 15px;
     font-size: 1.2em;
 }
@@ -169,11 +169,11 @@ h1 {
     border: solid 10px #d37;
 }
 
-.brushSizeLabel {
+.brush-size-label {
     font-size: 0.8em;
 }
 
-.clearCanvas {
+.clear-canvas {
     margin-top: 15px;
     margin-left: 30px;
 }

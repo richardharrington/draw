@@ -15,23 +15,23 @@
     <div class="page" id="page-${instanceNum}">
 
         <div class="left-column">  
-            <p class="palettesFound">Pick a palette from among those found for the search term(s) "<span class="successfulKeywords"></span>":</p>
-            <div class="paletteList"></div>
+            <p class="palettes-found">Pick a palette from among those found for the search term(s) "<span class="successfulKeywords"></span>":</p>
+            <div class="palette-list"></div>
         </div>
 
         <div class="main-box">
             <div class="header">
-                <h1>Canvas #<span class="canvasNumber">${instanceNum + 1}<span></h1>
+                <h1>Canvas #<span class="canvas-number">${instanceNum + 1}<span></h1>
                 <div>
-                    <span class="searchLabel">Search colourlovers.com for a palette (try a season or a color):</span>
-                    <input type="text" class="searchField"></input>
-                    <input type="button" class="searchButton" value="search">
+                    <span class="search-label">Search colourlovers.com for a palette (try a season or a color):</span>
+                    <input type="text" class="search-field"></input>
+                    <input type="button" class="search-button" value="search">
                 </div>
-                <p class="statusReport">&nbsp;</h2> <!--- as a placeholder for spacing.  -->
+                <p class="status-report">&nbsp;</p> <!--- as a placeholder for spacing.  -->
             </div>
 
             <div class="color-panels-header">
-                <p class="currentPaletteHeader">Current palette: <span class="currentPaletteTitle"></span></p>
+                <p class="current-palette-header">Current palette: <span class="current-palette-title"></span></p>
 
                 <div class="color-container">
                 </div>
@@ -40,13 +40,13 @@
                 
                 <!--- width and height are defaults, will be overridden by javascript -->
                 
-                <div class="bottomControls">
-                    <span class="brushSizeLabel">Brush size:</span>         
-                    <select class="brushSize">
+                <div class="canvas-controls">
+                    <span class="brush-size-label">Brush size:</span>         
+                    <select class="brush-size">
                   	    <option value="small">Small</option>
                   	    <option value="large">Large</option>
                   	</select>
-                    <input type="button" class="clearCanvas" value="clear canvas">
+                    <input type="button" class="clear-canvas" value="clear canvas">
 	              	<canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
 
                 </div>

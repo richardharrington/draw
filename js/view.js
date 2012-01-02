@@ -195,11 +195,11 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
             
         var pageSelector = '#page-' + instanceNumber;
             
-        var statusReportElement =   $( pageSelector + ' .statusReport' )[0], 
+        var statusReportElement =   $( pageSelector + ' .status-report' )[0], 
             canvasElement =         $( pageSelector + ' .canvas' )[0],
             colorPanelsElement =    $( pageSelector + ' .color-container' )[0],
-            colorsTitleElement =    $( pageSelector + ' .currentPaletteTitle' )[0],
-            palettesColumnElement = $( pageSelector + ' .paletteList' )[0],
+            colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
+            palettesColumnElement = $( pageSelector + ' .palette-list' )[0],
             palettesTitleElement =  $( pageSelector + ' .successfulKeywords' )[0];
             
         // Initialize status reporting.
