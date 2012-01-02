@@ -200,7 +200,7 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
             colorPanelsElement =    $( pageSelector + ' .color-container' )[0],
             colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
             palettesColumnElement = $( pageSelector + ' .palette-list' )[0],
-            palettesTitleElement =  $( pageSelector + ' .successfulKeywords' )[0];
+            palettesTitleElement =  $( pageSelector + ' .successful-keywords' )[0];
             
         // Initialize status reporting.
         theStatus = new TheStatus( statusReportElement );
