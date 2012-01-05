@@ -2,11 +2,11 @@
 
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<title>draw</title>
+    <meta charset="utf-8">
+    <title>draw</title>
 
     <link rel="stylesheet" href="drawing.css" />
-	<!--[if lt IE 9]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
+    <!--[if lt IE 9]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
 </head>
 <body>
     
@@ -20,21 +20,21 @@
     <div id="color-5" class="color-panel"></div>
     </div>
     
-	<canvas id="canvas" class="drawing" width="600" height="400">No CANVAS support!!</canvas>
-	
-	<select id="brushSize">
-	    <option value="small">Small</option>
-	    <option value="large">Large</option>
-	</select>
-	
-	</div><!-- page -->
+    <canvas id="canvas" class="drawing" width="600" height="400">No CANVAS support!!</canvas>
+    
+    <select id="brushSize">
+        <option value="small">Small</option>
+        <option value="large">Large</option>
+    </select>
+    
+    </div><!-- page -->
 
-	<script>
+    <script>
 
-	window.onload = function() {
-	    
-	    // --- Palette -----
-	    
+    window.onload = function() {
+        
+        // --- Palette -----
+        
         function BrushStyle(color, width) {
             this.color = color;
             this.width = width || 25;
@@ -74,11 +74,11 @@
         
         // --- Palette ------
 
-	    // Stsee colors
-	    var palette = ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'];
-	    
-	    var brushStyles = [];
-	    var currentBrushStyleIdx = 0;
+        // Stsee colors
+        var palette = ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'];
+        
+        var brushStyles = [];
+        var currentBrushStyleIdx = 0;
         
         var proto = new BrushStyle();
         
@@ -92,24 +92,24 @@
             return instance;
         }
 
-	    for (var i = 0; i < 2 * palette.length; i++) {
-	        var paletteColor = palette[i];
-	        var small = object(proto, {
-	            color: paletteColor,
-	            width: 10
-	        });
-	        var large = object(proto, {
-    	        color: paletteColor,
-    	        width: 25
-    	    });
-    	    
-	        brushStyles.push(small);
-	        brushStyles.push(large);
-	    }
-	    // alert(brushStyles);
-	    
-	    var colorElts = [];
-	    
+        for (var i = 0; i < 2 * palette.length; i++) {
+            var paletteColor = palette[i];
+            var small = object(proto, {
+                color: paletteColor,
+                width: 10
+            });
+            var large = object(proto, {
+                color: paletteColor,
+                width: 25
+            });
+            
+            brushStyles.push(small);
+            brushStyles.push(large);
+        }
+        // alert(brushStyles);
+        
+        var colorElts = [];
+        
         for (var i = 0; i < 5; i++) {
             var elt = document.getElementById('color-' + (i+1));
             colorElts.push(elt);
@@ -138,14 +138,14 @@
         }
         
         //--------------------
-	    
-    	var canvas = document.getElementById("canvas");
-    	var c = canvas.getContext("2d");
+        
+        var canvas = document.getElementById("canvas");
+        var c = canvas.getContext("2d");
 
         c.fillStyle = "#eee";
         c.fillRect(0, 0, 1000, 1000);
 
-	    currentBrushStyle = brushStyles[currentBrushStyleIdx]; // Pick an arbitrary one
+        currentBrushStyle = brushStyles[currentBrushStyleIdx]; // Pick an arbitrary one
         currentBrushStyle.applyStyle(c);
 
         //========== Brush ==============
@@ -170,7 +170,7 @@
         var drawing = false;
 
         canvas.onmousedown = function(event) {
-        	var p = getMousePos(event);
+            var p = getMousePos(event);
 
             brush.startStroke(p.x, p.y);
 
@@ -178,7 +178,7 @@
         };
 
         canvas.onmousemove = function(event) {
-        	var p = getMousePos(event);
+            var p = getMousePos(event);
 
             if (drawing) {
                 brush.stroke(p.x, p.y);
@@ -189,27 +189,27 @@
             drawing = false;
             brush.strokeEnd();
 
-    	};
-    	
-    	var borderLeftPx = (window.getComputedStyle) ? 
-    	            window.getComputedStyle(canvas, null)['border-left-width']
-    	            : canvas.currentStyle.border; // TODO: check in IE6, IE7, IE8
+        };
+        
+        var borderLeftPx = (window.getComputedStyle) ? 
+                    window.getComputedStyle(canvas, null)['border-left-width']
+                    : canvas.currentStyle.border; // TODO: check in IE6, IE7, IE8
 
-    	var border = (borderLeftPx)? parseInt(borderLeftPx, 10) : 16;
+        var border = (borderLeftPx)? parseInt(borderLeftPx, 10) : 16;
 
-		function getMousePos(event) {
-        	if (!event) { event = window.event; } // This is for IE's global window.event
-        	
-		    var r = canvas.getBoundingClientRect();
-        	var coords = {
-        		x : event.clientX - r.left - border,
-        		y : event.clientY - r.top - border
-        	};
-        	return coords;
+        function getMousePos(event) {
+            if (!event) { event = window.event; } // This is for IE's global window.event
+            
+            var r = canvas.getBoundingClientRect();
+            var coords = {
+                x : event.clientX - r.left - border,
+                y : event.clientY - r.top - border
+            };
+            return coords;
         }
     };
 
-	</script>
+    </script>
 
 </body>
 </html>
