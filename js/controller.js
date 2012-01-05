@@ -126,7 +126,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         });
 
         $( pageSelector + ' .brush-size' ).change( function() {
-            model.currentBrush.style( this.value );
+            model.currentBrush.size( this.value );
             view.canvas.applyStyle( model.currentBrush.style() );
         });        
 
@@ -206,10 +206,10 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // Populate the color panels.
         view.colorPanels.populate( model.currentPalette.title, model.currentPalette.colors ); 
         
-        // Reset the style if it was set to a panel that no longer
+        // Reset the currentBrush's colorPanelIdx if it was set to a panel that no longer
         // exists (because a new palette has fewer colors than the old one)
         if (!model.currentBrush.style()) {
-            model.currentBrush.style( 0, model.currentBrush.size() );
+            model.currentBrush.colorPanelIdx( 0 );
         }
         
         // Set the canvas to the right style.
@@ -223,7 +223,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         this.addEventListeners( view.colorPanels, function( element, i ) {
             
             // Update currentBrush and canvas.
-            model.currentBrush.style( i );
+            model.currentBrush.colorPanelIdx( i );
             view.canvas.applyStyle( model.currentBrush.style() );
             
             // Turn the selected one pink.

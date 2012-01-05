@@ -168,7 +168,7 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
     // prototype methods could use it.
     
 
-    // And now, a series of functions that are both getters and setters,
+    // size and colorPanelIdx are both getters and setters,
     // depending on the number of arguments.
 
     CurrentBrush.prototype.size = function( size /* optional */) {
@@ -197,54 +197,11 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
             this.styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
         }
     }
-
+    
+    // style is a getter only.
+    
     CurrentBrush.prototype.style = function() {
-        
-        // size and colorPanelIdx are both optional arguments 
-        //and can be in either order.
-        var size, colorPanelIdx;
-    
-        // get
-        if (arguments.length === 0) {
-            return this.currentPalette.brushStyles[ this.styleIdx ];
-    
-        // set
-        } else {
-        
-            // Figure out optional arguments.
-        
-            size = (typeof arguments[0] === "string") ? arguments[0] :
-                (typeof arguments[1] === "string") ? arguments[1] :
-                null;
-               
-            colorPanelIdx = (typeof arguments[0] === "number") ? arguments[0] :
-                (typeof arguments[1] === "number") ? arguments[1] :
-                null;
-        
-            // Between the arguments and the CurrentBrush instance properties,
-            // whichever exist, bring the others up to speeed.
-        
-            if (size !== null) {
-                this.size( size );
-            } else {
-                size = this.size();
-            }
-        
-            if (colorPanelIdx !== null) {
-                this.colorPanelIdx( colorPanelIdx );
-            } else {
-                colorPanelIdx = this.colorPanelIdx();
-            }
-        
-            // this.styleIdx should now be updated and accurate.
-        
-            console.log( "colorPanelIdx: " + colorPanelIdx );
-            console.log( "size: " + size );
-            console.log( "this.styleIdx: " + this.styleIdx );
-            console.log( "currentPalette.brushStyles[ this.styleIdx ].toString(): " + 
-                         this.currentPalette.brushStyles[ this.styleIdx ].toString() );
-            console.log("\n");
-        }
+        return this.currentPalette.brushStyles[ this.styleIdx ];
     };
     
 
@@ -302,7 +259,6 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
                 var entry;
                 var desc;
                 var newPalette = {};
-                console.log(idx);
 
                 entry = data[idx];
 
@@ -354,13 +310,15 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
             config.DEFAULT_PALETTE_COLORS, 
             config.MAX_COLORS,
             config.SMALL_BRUSH_WIDTH, 
-            config.LARGE_BRUSH_WIDTH );
+            config.LARGE_BRUSH_WIDTH 
+        );
 
         // Initialize currentBrush.
         currentBrush = new CurrentBrush(
             config.DEFAULT_BRUSH_SIZE,
             config.DEFAULT_COLOR_PANEL_INDEX,
-            currentPalette );
+            currentPalette 
+        );
         
         // Can't just assign the whole object all at once because it's not empty:
         // it contains config information for each instance from the very start.
