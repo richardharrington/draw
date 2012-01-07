@@ -228,9 +228,8 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
         // just have a better understanding of CSS. Yeah, that would help.
         
         absolutePageTop += (instanceNumber === 0) ? 0 : 
-            APP.view.instances[instanceNumber - 1].canvas.height + 460;
+                APP.view.instances[instanceNumber - 1].canvas.height + 460;
         
-        var pageSelector = '#page-' + instanceNumber;
         $( pageSelector ).css( 'top', '' + absolutePageTop + 'px' );
 
         // Increment the main instance number.
