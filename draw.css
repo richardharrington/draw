@@ -90,7 +90,6 @@ h1 {
 .main-box {
     text-align: center;
     margin-left: 300px;
-    width: 700px;
     height: 700px;
 }
 
@@ -119,6 +118,7 @@ h1 {
 
 .color-container {
     margin: auto;
+    width: 700px;
 }
 
 .color-panel {
