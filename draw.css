@@ -1,7 +1,22 @@
+/* standard reset code */
+
+html, body, h1, h2, h3, h4, h5, h6, p, ol, ul, li, pre, code, address, variable, form, fieldset, blockquote {
+ padding: 0;
+ margin: 0;
+ font-size: 100%;
+ font-weight: normal;
+}
+table { border-collapse: collapse; border-spacing: 0; }
+td, th, caption { font-weight: normal; text-align: left; }
+img, fieldset { border: 0; }
+ol { padding-left: 1.4em; list-style: decimal; }
+ul { padding-left: 1.4em; list-style:square; }
+q:before, q:after { content:''; }
+
+/* end reset code */
+
 body {
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
-    padding: 0px;
-    margin: 0px;
     display: none;
 }
 
@@ -11,26 +26,29 @@ h1 {
 }
 
 .page {
-    margin: auto;
-    width: 100%;
+    padding-top: 15px;
+    padding-bottom: 1px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    margin-left: auto;
+    margin-right: auto;
     border-top: dotted 4px #2c7;
-    position: absolute;
+    clear: left;
 }
 
 #page-0 {
     border-top: 0px;
+    margin-top: 5px;
 }
 
 .left-column {
     float: left;
     width: 220px;
     margin-left: 25px;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .palettes-found {
-    padding-bottom: 0px;
-    margin-bottom: 0px;
     display: none;
 }
 .successful-keywords {
@@ -39,17 +57,13 @@ h1 {
 .palette-list {
     font-size: 1em;
     margin-top: 20px;
-    height: 700px;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     display: none;
 }
 
 .palette-container {
     margin-top: 40px;
-    margin-bottom: 0px;
-    margin-left: 0px;
-    margin-right: 0px;
-    padding: 0px;
     cursor: pointer;
 }
 
@@ -70,7 +84,6 @@ h1 {
 }
 
 .palette-container p {
-    margin: 0px;
     padding-right: 4px;
 }
 
@@ -90,7 +103,6 @@ h1 {
 .main-box {
     text-align: center;
     margin-left: 300px;
-    height: 700px;
 }
 
 .search-label {
@@ -102,7 +114,6 @@ h1 {
 .status-report {
     color: red;
     font-weight: bold;
-    padding-bottom: 0px;
     margin-top: 10px;
     margin-bottom: 20px;
 }
@@ -174,13 +185,13 @@ h1 {
 }
 
 .clear-canvas {
-    margin-top: 15px;
+    margin-top: 0px;
     margin-left: 30px;
 }
 
 .canvas {
     margin-top: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     border: solid #2c7 16px;
     -webkit-border-radius: 16px;
     -moz-border-radius: 16px;

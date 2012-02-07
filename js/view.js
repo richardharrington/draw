@@ -18,7 +18,6 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
 
     var instances = [];
     var instanceNumber = 0;
-    var absolutePageTop = 0;
 
     // ------------------ Status reporting mechanism. --------------------------
     
@@ -223,15 +222,6 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
             palettesColumn: palettesColumn
         };
         
-        // Little hack here to make everything space well vertically, 
-        // probably should be tied to some sort of object. Or I should
-        // just have a better understanding of CSS. Yeah, that would help.
-        
-        absolutePageTop += (instanceNumber === 0) ? 0 : 
-                APP.view.instances[instanceNumber - 1].canvas.height + 460;
-        
-        $( pageSelector ).css( 'top', '' + absolutePageTop + 'px' );
-
         // Increment the main instance number.
         
         instanceNumber += 1;
