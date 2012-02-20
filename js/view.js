@@ -61,7 +61,6 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
         $( DOMElement ).attr( 'width', width );
         $( DOMElement ).attr( 'height', height );
                 
-        this.applyStyle( brushStyle );
         this.clear();
     }
 
