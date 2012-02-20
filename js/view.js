@@ -25,18 +25,18 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
     // doesn't like that. I forget which one.)
 
     TheStatus = function( element ) {
-        this.jQElement = $( element );
+        this._jQElement = $( element );
     };
 
     TheStatus.prototype.report = function( str ) {  
 
         // If we've got something to report
         if (arguments.length) {
-            this.jQElement.text( str );
+            this._jQElement.text( str );
 
         // No news is good news.
         } else {
-            this.jQElement.html( '&nbsp;' );
+            this._jQElement.html( '&nbsp;' );
         }
 
     }
@@ -49,13 +49,14 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
                             DOMElement.currentStyle.border; // TODO: check in IE6, IE7, IE8
                             
         this.DOMElement = DOMElement;
-        this.context = DOMElement.getContext( "2d" );
-        this.width = width;
-        this.height = height;
-        this.backgroundColor = backgroundColor;
-
-        this.border = (borderLeftPx) ? parseInt(borderLeftPx, 10) : 16;
         this.drawing = false;
+
+        this._context = DOMElement.getContext( "2d" );
+        this._width = width;
+        this._height = height;
+        this._backgroundColor = backgroundColor;
+
+        this._border = (borderLeftPx) ? parseInt(borderLeftPx, 10) : 16;
         
         $( DOMElement ).attr( 'width', width );
         $( DOMElement ).attr( 'height', height );
@@ -69,14 +70,14 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
 
         var r = this.DOMElement.getBoundingClientRect();
         var coords = {
-            x : event.clientX - r.left - this.border,
-            y : event.clientY - r.top - this.border
+            x : event.clientX - r.left - this._border,
+            y : event.clientY - r.top - this._border
         };
         return coords;
     }
 
     Canvas.prototype.applyStyle = function( brushStyle ) {
-        var c = this.context;
+        var c = this._context;
         
         c.lineWidth = brushStyle.width;
         c.strokeStyle = "#" + brushStyle.color;
@@ -85,7 +86,7 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
     }
 
     Canvas.prototype.startStroke = function( x, y ) {
-        var c = this.context;
+        var c = this._context;
 
         // save fillStyle on stack
         var savedFillStyle = c.fillStyle;
@@ -106,17 +107,18 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
     };
 
     Canvas.prototype.stroke = function( x, y ) {
-        var c = this.context;
+        var c = this._context;
 
         c.lineTo( x, y );
         c.stroke();
+        
     };
 
     Canvas.prototype.clear = function() {
-        var c = this.context;
+        var c = this._context;
 
-        c.fillStyle = "#" + this.backgroundColor;
-        c.fillRect( 0, 0, this.width, this.height );
+        c.fillStyle = "#" + this._backgroundColor;
+        c.fillRect( 0, 0, this._width, this._height );
     };
     
     // -------------------- wrapper for DOM color panels --------------------------
@@ -124,6 +126,7 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
     ColorPanels = function( DOMContainer, DOMTitleSpan, title, colors ) {
         this.DOMContainer = DOMContainer;
         this.DOMTitleSpan = DOMTitleSpan;
+        
         this.populate( title, colors );
     };
     
@@ -187,6 +190,7 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
     };
     
     init = function( args ) {
+
         var theStatus,
             canvas,
             colorPanels,
@@ -223,7 +227,6 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
         };
         
         // Increment the main instance number.
-        
         instanceNumber += 1;
     };
     

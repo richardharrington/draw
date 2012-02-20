@@ -242,6 +242,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         view.palettesColumn.populate( model.palettes );
         
         // Adjust its height based on the height of the canvas.
+        // TODO: Find a way to have this not happen, using CSS.
+        
         $( view.palettesColumn.DOMContainer ).css( 'height', '' + (230 + view.canvas.height) );
         
         // Add the event handlers.
@@ -250,7 +252,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             // Load the currentPalette with the new colors.
             var title = model.palettes.data[i].title;
             var colors = model.palettes.data[i].colors;
-            model.currentPalette.init( title, colors );
+            model.currentPalette.load( title, colors );
             colorPanelsController.init( instanceNumber );
             
             // Turn the selected one pink.

@@ -72,52 +72,48 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
     // --- own properties are all the Brushstyle children.
 
     CurrentPalette = function( title, colors, maxColors, smallBrushWidth, largeBrushWidth ) { 
-        this.maxColors = maxColors;
-        this.smallBrushWidth = smallBrushWidth;
-        this.largeBrushWidth = largeBrushWidth;             
-        this.init( title, colors );
+        this._maxColors = maxColors;
+        this._smallBrushWidth = smallBrushWidth;
+        this._largeBrushWidth = largeBrushWidth;
+        
+        this.load( title, colors );
     };
 
     // Load in a new palette of colors. 
 
-    CurrentPalette.prototype.init = function( title, colors, maxColors, smallBrushWidth, largeBrushWidth ) {
-        
+    CurrentPalette.prototype.load = function( title, colors ) {
         var i, len;
         var color;
         var small, large;
         
-        this.brushStyles = [];
-
         // We can only fit this.maxColors number of panels,
         // so truncate the array if necessary. 
-
-        colors = colors.slice( 0, this.maxColors );
+        this.colors = colors.slice( 0, this._maxColors );
+        
+        this.title = title; 
+        this.brushStyles = [];
     
         for (i = 0, len = colors.length; i < len; i++) {
             color = colors[i];
             small = util.object( brushChildrenProto, {
                 color: color,
-                width: this.smallBrushWidth
+                width: this._smallBrushWidth
             });
             large = util.object( brushChildrenProto, {
        	        color: color,
-       	        width: this.largeBrushWidth
+       	        width: this._largeBrushWidth
        	    });
 
             this.brushStyles.push( small );
             this.brushStyles.push( large );
         }
-        
-        this.title = title;
-        this.colors = colors;
     };
-
 
     // --- Set up the current brush.
 
-    CurrentBrush = function( size, colorPanelIdx, currPalette ) {
-        this.currentPalette = currPalette;
-        this.styleIdx = (colorPanelIdx * 2) + (size === "large" ? 1 : 0);
+    CurrentBrush = function( size, colorPanelIdx, currentPalette ) {
+        this._currentPalette = currentPalette;
+        this._styleIdx = (colorPanelIdx * 2) + (size === "large" ? 1 : 0);
     };
 
     // styleIdx is a number that has two values
@@ -125,22 +121,11 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
     // because styleIdx takes into account
     // whether a brush is small or large.
 
-    // styleIdx is a property of each CurrentBrush
-    // instance. size, colorPanelIdx and style are all 
-    // derived from it when needed.
-
-    // Perhaps styleIdx should be private, because it's never
-    // meant to be read or written directly, but that seemed
-    // like too much of a pain, because then I would have had
-    // to create getter and setter methods for it just so the 
-    // prototype methods could use it.
-    
-
-    // size and colorPanelIdx are both getters and setters,
-    // depending on the number of arguments.
+    // size and colorPanelIdx are overloaded as both 
+    // getters and setters, depending on the number of arguments.
 
     CurrentBrush.prototype.size = function( size /* optional */) {
-        var oldSize = (this.styleIdx % 2) ? "large" : "small";
+        var oldSize = (this._styleIdx % 2) ? "large" : "small";
     
         // get
         if (arguments.length === 0) {
@@ -148,13 +133,13 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
         
         // set
         } else {
-            this.styleIdx += (oldSize === size) ? 0 : 
-                             (size === "small") ? -1 : 1;
+            this._styleIdx += (oldSize === size) ? 0 : 
+                              (size === "small") ? -1 : 1;
         }
     }
 
     CurrentBrush.prototype.colorPanelIdx = function( colorPanelIdx /* optional */) {
-        var oldColorPanelIdx = Math.floor( this.styleIdx / 2 );
+        var oldColorPanelIdx = Math.floor( this._styleIdx / 2 );
     
         // get
         if (arguments.length === 0) {
@@ -162,14 +147,14 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
         
         // set        
         } else {
-            this.styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
+            this._styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
         }
     }
     
     // style is a getter only.
     
     CurrentBrush.prototype.style = function() {
-        return this.currentPalette.brushStyles[ this.styleIdx ];
+        return this._currentPalette.brushStyles[ this._styleIdx ];
     };
     
 
@@ -208,14 +193,14 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
     // downloaded from the colourlovers website into the palettes object.
     
     Palettes = function() {};
+    Palettes.MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 
+                       'July', 'August', 'September', 'October', 'November', 'December'];
 
     Palettes.prototype.load = function( data ) {
         if (!data || data.length === 0) {
             return false;
         }
         
-        var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 
-                      'July', 'August', 'September', 'October', 'November', 'December'];
         var i, len;
         var date;
         var self = this;
@@ -242,7 +227,7 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
                 // Now make "dateCreated" a more readable string.
             
                 date = util.parseSQLDate( newPalette.dateCreated );
-                newPalette.dateCreated = MONTHS[date.getMonth()] + " " + 
+                newPalette.dateCreated = Palettes.MONTHS[date.getMonth()] + " " + 
                                          date.getDate() + ", " + 
                                          date.getFullYear();
             
@@ -289,7 +274,7 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
         );
         
         // Can't just assign the whole object all at once because it's not empty:
-        // it contains config information for each instance from the very start.
+        // it already contains config information for each instance before this init function is run.
         instances[instanceNumber].palettes = palettes;
         instances[instanceNumber].currentPalette = currentPalette;
         instances[instanceNumber].currentBrush = currentBrush;
