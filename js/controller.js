@@ -243,8 +243,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         
         // Adjust its height based on the height of the canvas.
         // TODO: Find a way to have this not happen, using CSS.
+        // For one thing, we're 'illegally' using the private property view.canvas._height
         
-        $( view.palettesColumn.DOMContainer ).css( 'height', '' + (230 + view.canvas.height) );
+        $( view.palettesColumn.DOMContainer ).css( 'height', '' + (230 + view.canvas._height) );
         
         // Add the event handlers.
         this.addEventListeners( view.palettesColumn, function( element, i ) {
