@@ -90,7 +90,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         var savedFillStyle = c.fillStyle;
 
         // load the brushstyle.
-        this._applyStyle( brush.style() );
+        this._applyStyle( brush.style );
         
         // draw a dot the diameter of the brush
         var r = c.lineWidth / 2;
@@ -110,7 +110,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
             oldY = brush.y;
 
         // load the brushstyle.
-        this._applyStyle( brush.style() );
+        this._applyStyle( brush.style );
         
         // go to the location where the brush was last seen.
         c.beginPath();

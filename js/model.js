@@ -24,57 +24,43 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
     // instance of the app on the page. An array with the default settings
     // for each instance can be found in the config.js file.    
 
-    // --- Set up the BrushStyle constructor -----
+    // --- Set up the Palette constructor.
 
-    BrushStyle = function( color, width ) {
-        this.color = color;
-        this.width = width;
-    };
-    
-    // We always have the option of making lineCap and lineJoin instance
-    // variables in the future, but for now let's put them in the prototype.
-    
-    BrushStyle.prototype.lineCap = 'round';
-    BrushStyle.prototype.lineJoin = 'round';
-
-    brushChildrenProto = new BrushStyle();
-    
-    // --- Set up the Palette constructor, whose instances',
-    // --- own properties are all the Brushstyle children.
-
-    Palette = function( title, colors, maxColors, smallBrushWidth, largeBrushWidth ) { 
-        this._maxColors = maxColors;
-        this._smallBrushWidth = smallBrushWidth;
-        this._largeBrushWidth = largeBrushWidth;
+    Palette = function( args ) {
+        this._maxColors = args.maxColors;
+        this._smallBrushWidth = args.smallBrushWidth;
+        this._largeBrushWidth = args.largeBrushWidth;
         
-        this.load( title, colors );
+        this.load( args.title, args.colors );
+        this.activeSize( args.activeSize );
+        this.activeColorPanelIdx( args.activeColorPanelIdx );
     };
 
-    // Load in a new palette of colors. 
+    // Load in a new set of colors with their title.
 
     Palette.prototype.load = function( title, colors ) {
         var i, len;
         var color;
         var small, large;
-        var LINE_CAP = 'round';
-        var LINE_JOIN = 'round';
+        var LINE_CAP = 'round'; // We can always make these configurable later.
+        var LINE_JOIN = 'round'; // ----------
         
         // We can only fit this.maxColors number of panels,
         // so truncate the array if necessary. 
         this.colors = colors.slice( 0, this._maxColors );
-        
         this.title = title; 
-        this.brushStyles = [];
+        
+        this._brushStyles = [];
         
         // brushStyles alternate between small brushes and large brushes.    
         for (i = 0, len = colors.length; i < len; i++) {
-            this.brushStyles.push({
+            this._brushStyles.push({
                 lineCap: LINE_CAP,
                 lineJoin: LINE_JOIN,
                 color: colors[i],
                 width: this._smallBrushWidth
             });
-            this.brushStyles.push({
+            this._brushStyles.push({
                 lineCap: LINE_CAP,
                 lineJoin: LINE_JOIN,
                 color: colors[i],
@@ -82,25 +68,24 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
             });
         }
     };
-
-    // --- Set up a brush.
-
-    Brush = function( size, colorPanelIdx, localPalette ) {
-        this.drawing = false;
-        this._localPalette = localPalette;
-        this._styleIdx = (colorPanelIdx * 2) + (size === "large" ? 1 : 0);
-    };
-
+    
     // styleIdx is a number that has two values
     // for every one that colorPanelIdx has,
     // because styleIdx takes into account
     // whether a brush is small or large.
 
-    // size and colorPanelIdx are overloaded as both 
+    // activeSize and activeColorPanelIdx are overloaded as both 
     // getters and setters, depending on the number of arguments.
-
-    Brush.prototype.size = function( size /* optional */) {
-        var oldSize = (this._styleIdx % 2) ? "large" : "small";
+    
+    // activeStyle is just a getter.
+    
+    Palette.prototype.activeStyle = function( size, colorPanelIdx ) {
+        return this._brushStyles[ this._styleIdx ];
+    };
+    
+    Palette.prototype.activeSize = function( size /* optional */) {
+        var styleIdx = this._styleIdx || 0;
+        var oldSize = (styleIdx % 2) ? "large" : "small";
     
         // get
         if (arguments.length === 0) {
@@ -108,13 +93,15 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
         
         // set
         } else {
-            this._styleIdx += (oldSize === size) ? 0 : 
-                              (size === "small") ? -1 : 1;
+            styleIdx += (oldSize === size) ? 0 : 
+                        (size === "small") ? -1 : 1;
+            this._styleIdx = styleIdx;
         }
-    }
-
-    Brush.prototype.colorPanelIdx = function( colorPanelIdx /* optional */) {
-        var oldColorPanelIdx = Math.floor( this._styleIdx / 2 );
+    };
+    
+    Palette.prototype.activeColorPanelIdx = function( colorPanelIdx /* optional */) {
+        var styleIdx = this._styleIdx || 0;
+        var oldColorPanelIdx = Math.floor( styleIdx / 2 );
     
         // get
         if (arguments.length === 0) {
@@ -122,16 +109,18 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
         
         // set        
         } else {
-            this._styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
+            styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
+            this._styleIdx = styleIdx;
         }
-    }
-    
-    // style is a getter only.
-    
-    Brush.prototype.style = function() {
-        return this._localPalette.brushStyles[ this._styleIdx ];
     };
     
+    // --- Set up a brush.
+
+    Brush = function( brushStyle ) {
+        this.drawing = false;
+        this.style = brushStyle;
+        // also will set this.x and this.y, dynamically
+    };
 
     // PaletteList objects are the objects into which we'll be adding the data from
     // colourlovers.com. (There's only one instance created by the PaletteList constructor
@@ -231,19 +220,19 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
         paletteList = new PaletteList();
         
         // Initialize localPalette.
-        localPalette = new Palette( 
-            config.DEFAULT_PALETTE_TITLE, 
-            config.DEFAULT_PALETTE_COLORS, 
-            config.MAX_COLORS,
-            config.SMALL_BRUSH_WIDTH, 
-            config.LARGE_BRUSH_WIDTH 
-        );
+        localPalette = new Palette({
+            title:               config.DEFAULT_PALETTE_TITLE,
+            colors:              config.DEFAULT_PALETTE_COLORS, 
+            maxColors:           config.MAX_COLORS,
+            smallBrushWidth:     config.SMALL_BRUSH_WIDTH, 
+            largeBrushWidth:     config.LARGE_BRUSH_WIDTH,
+            activeSize:          config.DEFAULT_BRUSH_SIZE,
+            activeColorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX
+        });
 
         // Initialize localBrush.
         localBrush = new Brush(
-            config.DEFAULT_BRUSH_SIZE,
-            config.DEFAULT_COLOR_PANEL_INDEX,
-            localPalette 
+            localPalette.activeStyle()
         );
         
         // TEST OF CONCEPT
@@ -251,9 +240,7 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
         // Initialize testBrush to be operated by the keyboard, in preparation
         // for testing remote events from a Node.js server, from someone else's mouse.
         var testBrush = new Brush(
-            config.DEFAULT_BRUSH_SIZE,
-            config.DEFAULT_COLOR_PANEL_INDEX,
-            localPalette 
+            localPalette.activeStyle() 
         );
         testBrush.x = 50;
         testBrush.y = 50;

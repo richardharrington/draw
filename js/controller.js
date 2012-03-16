@@ -105,9 +105,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var pageSelector = '#' + view.pageId;
         var code;
         
-        // Set brush size HTML select element, 
+        // Set active brush size HTML select element, 
         // because Firefox preserves state even when it's refreshed.
-        $( pageSelector + ' .brush-size' ).val( model.localBrush.size() );  
+        $( pageSelector + ' .brush-size' ).val( model.localPalette.activeSize() );  
 
         // bind the event handlers for clearing the screen, 
         // toggling the brush size and entering search keywords.
@@ -117,7 +117,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         });
 
         $( pageSelector + ' .brush-size' ).change( function() {
-            model.localBrush.size( this.value );
+            model.localPalette.activeSize( this.value );
+            model.localBrush.style = model.localPalette.activeStyle();
         });        
 
         $( pageSelector + ' .search-button' ).click( function() {
@@ -227,21 +228,22 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // Populate the color panels.
         view.colorPanels.populate( model.localPalette.title, model.localPalette.colors ); 
         
-        // Reset the localBrush's colorPanelIdx if it was set to a panel that no longer
+        // Reset the localPalette's activeColorPanelIdx if it was set to a panel that no longer
         // exists (because a new palette has fewer colors than the old one)
-        if (!model.localBrush.style()) {
-            model.localBrush.colorPanelIdx( 0 );
+        if (!model.localPalette.activeStyle()) {
+            model.localPalette.activeColorPanelIdx( 0 );
         }
         
         // Now make the already selected one pink.
-        panel = $( pageSelector + ' .' + view.colorPanels.getDOMElmntClass( model.localBrush.colorPanelIdx()) );
+        panel = $( pageSelector + ' .' + view.colorPanels.getDOMElmntClass( model.localPalette.activeColorPanelIdx()) );
         this.highlightElement( panel );
 
         // Add the event listeners.
         this.addEventListeners( view.colorPanels, function( element, i ) {
             
-            // Update localBrush.
-            model.localBrush.colorPanelIdx( i );
+            // Update localPalette and localBrush.
+            model.localPalette.activeColorPanelIdx( i );
+            model.localBrush.style = model.localPalette.activeStyle();
             
             // Turn the selected one pink.
             colorPanelsController.highlightElement( element );

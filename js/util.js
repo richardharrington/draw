@@ -130,7 +130,7 @@ APP.util = (typeof APP.util !== 'undefined') ? APP.util :
         return d;
     };
 
-    // object is an object inheritor function. 
+    // object is an object inheritor function. (NOT USED IN THE CURRENT VERSION OF THE SCRIPT)
 
     object = function ( o, vals ) {
         function F() {};
