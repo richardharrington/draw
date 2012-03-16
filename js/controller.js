@@ -14,7 +14,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     
     var setMiscellaneousUserControls;
     var setErrorControls;
-    var setCanvasControls;
+    var setMouseEventListeners;
+    var setBrushEventListers;
     
     var ElementsController;
     var colorPanelsController;
@@ -106,7 +107,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         
         // Set brush size HTML select element, 
         // because Firefox preserves state even when it's refreshed.
-        $( pageSelector + ' .brush-size' ).val( model.currentBrush.size() );  
+        $( pageSelector + ' .brush-size' ).val( model.localBrush.size() );  
 
         // bind the event handlers for clearing the screen, 
         // toggling the brush size and entering search keywords.
@@ -116,8 +117,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         });
 
         $( pageSelector + ' .brush-size' ).change( function() {
-            model.currentBrush.size( this.value );
-            view.canvas.applyStyle( model.currentBrush.style() );
+            model.localBrush.size( this.value );
         });        
 
         $( pageSelector + ' .search-button' ).click( function() {
@@ -135,27 +135,61 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         });
     };
     
-    setCanvasControls = function( view ) {
+    setMouseEventListeners = function( view, model ) {
         var canvas = view.canvas;
+        var localBrush = model.localBrush;
 
         canvas.DOMElement.onmousedown = function( event ) {
             var p = canvas.getMousePos( event );
-            canvas.startStroke( p.x, p.y );
-            canvas.drawing = true;
+            localBrush.x = p.x;
+            localBrush.y = p.y;
+            localBrush.drawing = true; 
+            canvas.startStroke( localBrush );
         };
 
         canvas.DOMElement.onmousemove = function( event ) {
             var p = canvas.getMousePos( event );
 
-            if (canvas.drawing) {
-                canvas.stroke( p.x, p.y );
+            if (localBrush.drawing) {
+                canvas.stroke( localBrush, p.x, p.y );
             }
         };
 
         canvas.DOMElement.onmouseup = function( event ) {
-            canvas.drawing = false;
+            localBrush.drawing = false;
         };
     };
+    
+    // TEST OF CONCEPT
+    
+    setKeyboardEventListeners = function( view, model ) {
+        var canvas = view.canvas;
+        var testBrush = model.testBrush;
+        
+        document.onkeydown = function( event ) {
+            if ( event.keyCode == 9 || ( event.keyCode >= 32 && event.keyCode <= 34 ) || (event.keyCode >= 37 && event.keyCode <= 40) ) {
+                switch( event.keyCode ) {
+                    case 37: // left
+                    canvas.stroke( testBrush, testBrush.x - 5, testBrush.y );
+                    break;
+                    
+                    case 38:   // up
+                    canvas.stroke( testBrush, testBrush.x, testBrush.y - 5 );
+                    break;
+                    
+                    case 39:  // right
+                    canvas.stroke( testBrush, testBrush.x + 5, testBrush.y );
+                    break;
+                    
+                    case 40:  // down
+                    canvas.stroke( testBrush, testBrush.x, testBrush.y + 5 );
+                    break;
+                }
+                event.preventDefault();
+            }
+        };
+    };
+    
     
     // Now set up the controllers for the color panels and the palettes column,
     // which are quite similar so we're going to re-use the code.
@@ -193,25 +227,21 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // Populate the color panels.
         view.colorPanels.populate( model.currentPalette.title, model.currentPalette.colors ); 
         
-        // Reset the currentBrush's colorPanelIdx if it was set to a panel that no longer
+        // Reset the localBrush's colorPanelIdx if it was set to a panel that no longer
         // exists (because a new palette has fewer colors than the old one)
-        if (!model.currentBrush.style()) {
-            model.currentBrush.colorPanelIdx( 0 );
+        if (!model.localBrush.style()) {
+            model.localBrush.colorPanelIdx( 0 );
         }
         
-        // Set the canvas to the right style.
-        view.canvas.applyStyle( model.currentBrush.style() );
-
         // Now make the already selected one pink.
-        panel = $( pageSelector + ' .' + view.colorPanels.getDOMElmntClass( model.currentBrush.colorPanelIdx()) );
+        panel = $( pageSelector + ' .' + view.colorPanels.getDOMElmntClass( model.localBrush.colorPanelIdx()) );
         this.highlightElement( panel );
 
         // Add the event listeners.
         this.addEventListeners( view.colorPanels, function( element, i ) {
             
-            // Update currentBrush and canvas.
-            model.currentBrush.colorPanelIdx( i );
-            view.canvas.applyStyle( model.currentBrush.style() );
+            // Update localBrush.
+            model.localBrush.colorPanelIdx( i );
             
             // Turn the selected one pink.
             colorPanelsController.highlightElement( element );
@@ -276,27 +306,21 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         for (i = 0, len = configArray.length; i < len; i++) {
             
             config = configArray[i];
-            
             model = new APP.Model( config );
             models.push( model );
-            
-            // WHY DO IT THIS WAY? JUST SEND CONFIG, AND THE TWO OTHER VARIABLES.
-            
-            view = new APP.View({ 
-                canvasWidth:            config.CANVAS_WIDTH, 
-                canvasHeight:           config.CANVAS_HEIGHT, 
-                canvasBackgroundColor:  config.CANVAS_BACKGROUND_COLOR, 
-                colorPanelIdx:          config.DEFAULT_COLOR_PANEL_INDEX,
-                paletteTitle:           config.DEFAULT_PALETTE_TITLE, 
-                paletteColors:          config.DEFAULT_PALETTE_COLORS,
-                pageNumber:             i, 
-                brushStyle:             models[i].currentBrush.style() 
-            });
+            view = new APP.View( config, i );
             views.push( view );
             
             setMiscellaneousUserControls( view, model, i );
             setErrorControls( view );
-            setCanvasControls( view );
+            setMouseEventListeners( view, model );
+            setKeyboardEventListeners( view, model );
+            
+            // TEST OF CONCEPT
+            
+            view.canvas.startStroke( model.testBrush );
+            
+            
             colorPanelsController.init( view, model );
             loadPalettes.add( i );
         }
@@ -315,7 +339,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
 
         setMiscellaneousUserControls: setMiscellaneousUserControls,
         setErrorControls: setErrorControls,
-        setCanvasControls: setCanvasControls,
+        setMouseEventListeners: setMouseEventListeners,
 
         colorPanelsController: colorPanelsController,
         palettesColumnController: palettesColumnController,

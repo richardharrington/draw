@@ -40,7 +40,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
 
     // --------------------- Wrapper for DOM Canvas ----------------------------
 
-    Canvas = function( DOMElement, width, height, backgroundColor, brushStyle, colorPanelIdx ) {
+    Canvas = function( DOMElement, width, height, backgroundColor ) {
         var borderLeftPx = (window.getComputedStyle) ? 
                             window.getComputedStyle( DOMElement, null )['border-left-width'] :
                             DOMElement.currentStyle.border; // TODO: check in IE6, IE7, IE8
@@ -59,7 +59,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         $( DOMElement ).attr( 'height', height );
                 
         this.clear();
-    }
+    };
 
     Canvas.prototype.getMousePos = function( event ) {
         event = event || window.event; // This is for IE's global window.event
@@ -70,23 +70,28 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
             y : event.clientY - r.top - this._border
         };
         return coords;
-    }
+    };
 
-    Canvas.prototype.applyStyle = function( brushStyle ) {
+    Canvas.prototype._applyStyle = function( brushStyle ) {
         var c = this._context;
         
         c.lineWidth = brushStyle.width;
         c.strokeStyle = "#" + brushStyle.color;
         c.lineCap = brushStyle.lineCap;
         c.lineJoin = brushStyle.lineJoin;
-    }
+    };
 
-    Canvas.prototype.startStroke = function( x, y ) {
+    Canvas.prototype.startStroke = function( brush ) {
         var c = this._context;
+        var x = brush.x;
+        var y = brush.y;
 
         // save fillStyle on stack
         var savedFillStyle = c.fillStyle;
 
+        // load the brushstyle.
+        this._applyStyle( brush.style() );
+        
         // draw a dot the diameter of the brush
         var r = c.lineWidth / 2;
         c.fillStyle = c.strokeStyle;
@@ -95,19 +100,29 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         c.arc( x, y, r, 0, Math.PI * 2 );
         c.fill();
 
-        // finish up, restore fillStyle and start new path
-        c.beginPath();
-        c.moveTo( x, y );
+        // restore fillStyle 
         c.fillStyle = savedFillStyle;
-
     };
 
-    Canvas.prototype.stroke = function( x, y ) {
+    Canvas.prototype.stroke = function( brush, x, y ) {
         var c = this._context;
+        var oldX = brush.x,
+            oldY = brush.y;
 
+        // load the brushstyle.
+        this._applyStyle( brush.style() );
+        
+        // go to the location where the brush was last seen.
+        c.beginPath();
+        c.moveTo( oldX, oldY );
+        
+        // draw to new coordinates.
         c.lineTo( x, y );
         c.stroke();
         
+        //update brush position.
+        brush.x = x;
+        brush.y = y;
     };
 
     Canvas.prototype.clear = function() {
@@ -194,14 +209,14 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         jQContainer.parent()[0].style.display = 'block';
     };
     
-    init = function( args ) {
+    init = function( config, pageNumber ) {
 
         var theStatus,
             canvas,
             colorPanels,
             palettesColumn;
             
-        var pageId = 'page-' + args.pageNumber;
+        var pageId = 'page-' + pageNumber;
         var pageSelector = '#' + pageId;
             
         var statusReportElement =   $( pageSelector + ' .status-report' )[0], 
@@ -215,12 +230,12 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         theStatus = new TheStatus( statusReportElement );
         
         // Initialize canvas.
-        canvas = new Canvas( canvasElement, args.canvasWidth, args.canvasHeight, 
-                             args.canvasBackgroundColor, args.brushStyle, args.colorPanelIdx );
+        canvas = new Canvas( canvasElement, config.CANVAS_WIDTH, config.CANVAS_HEIGHT, 
+                             config.CANVAS_BACKGROUND_COLOR );
         
         // Load the colors into the DOM.
         colorPanels = new ColorPanels ( colorPanelsElement, colorsTitleElement, 
-                                        args.paletteTitle, args.paletteColors );
+                                        config.DEFAULT_PALETTE_TITLE, config.DEFAULT_PALETTE_COLORS );
                                            
         // Initialize empty palettesColumn object.
         palettesColumn = new PalettesColumn( palettesColumnElement, palettesTitleElement );
