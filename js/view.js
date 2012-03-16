@@ -170,7 +170,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         // Add some if needed. (Will automatically be transparent.)
         newDOMElmntClasses = DOMElmntClasses.slice(oldLength, newLength);
         if (newDOMElmntClasses.length > 0) {
-            newColorPanels = $( "#currentPaletteTemplate" )
+            newColorPanels = $( "#colorPanelsTemplate" )
                     .tmpl( newDOMElmntClasses )
                     .appendTo( jQContainer );
         }
@@ -192,7 +192,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         this.DOMTitleSpan = DOMTitleSpan;
     };
     
-    PalettesColumn.prototype.populate = function( palettes ) {
+    PalettesColumn.prototype.populate = function( paletteList ) {
         
         // In the left column, show the heading with the keywords, and all the palettes below it,
         // along with their click handlers for loading colors into the drawing program.
@@ -200,10 +200,10 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         var jQContainer = $( this.DOMContainer );
         var jQTitleSpan = $( this.DOMTitleSpan );
 
-        jQTitleSpan.text( palettes.keywords );
+        jQTitleSpan.text( paletteList.keywords );
         
         jQContainer.empty();
-        $( '#palettesTemplate' ).tmpl( palettes.data ).appendTo( jQContainer );
+        $( '#paletteListTemplate' ).tmpl( paletteList.data ).appendTo( jQContainer );
         
         // Show it.    
         jQContainer.parent()[0].style.display = 'block';

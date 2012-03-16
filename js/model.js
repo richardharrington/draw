@@ -12,13 +12,13 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
     var BrushStyle,
         brushChildrenProto;
 
-    var Palettes,
-        CurrentPalette,
+    var PaletteList,
+        Palette,
         Brush;
         
     var init;
 
-    // --- A note about Palettes, CurrentPalette and Brush:
+    // --- A note about PaletteList, Palette and Brush:
 
     // There is one instance each of each of these objects for each
     // instance of the app on the page. An array with the default settings
@@ -39,10 +39,10 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
 
     brushChildrenProto = new BrushStyle();
     
-    // --- Set up the CurrentPalette constructor, whose instances',
+    // --- Set up the Palette constructor, whose instances',
     // --- own properties are all the Brushstyle children.
 
-    CurrentPalette = function( title, colors, maxColors, smallBrushWidth, largeBrushWidth ) { 
+    Palette = function( title, colors, maxColors, smallBrushWidth, largeBrushWidth ) { 
         this._maxColors = maxColors;
         this._smallBrushWidth = smallBrushWidth;
         this._largeBrushWidth = largeBrushWidth;
@@ -52,7 +52,7 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
 
     // Load in a new palette of colors. 
 
-    CurrentPalette.prototype.load = function( title, colors ) {
+    Palette.prototype.load = function( title, colors ) {
         var i, len;
         var color;
         var small, large;
@@ -85,9 +85,9 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
 
     // --- Set up a brush.
 
-    Brush = function( size, colorPanelIdx, currentPalette ) {
+    Brush = function( size, colorPanelIdx, localPalette ) {
         this.drawing = false;
-        this._currentPalette = currentPalette;
+        this._localPalette = localPalette;
         this._styleIdx = (colorPanelIdx * 2) + (size === "large" ? 1 : 0);
     };
 
@@ -129,21 +129,21 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
     // style is a getter only.
     
     Brush.prototype.style = function() {
-        return this._currentPalette.brushStyles[ this._styleIdx ];
+        return this._localPalette.brushStyles[ this._styleIdx ];
     };
     
 
-    // Palettes objects are the objects into which we'll be adding the data from
-    // colourlovers.com. (There's only one instance created by the Palettes constructor
+    // PaletteList objects are the objects into which we'll be adding the data from
+    // colourlovers.com. (There's only one instance created by the PaletteList constructor
     // in the current version of the app.) 
     
-    // The Palettes constructor prototype contains a method to load the data.
-    // Each palettes object contains a string with the search keywords and 
+    // The PaletteList constructor prototype contains a method to load the data.
+    // Each paletteList object contains a string with the search keywords and 
     // an array with the returned data.
      
     // After we add properties on the fly it will look like this:
 
-    // palettes = { 
+    // paletteList = { 
     //   keywords: 'summer apple tree',
     //   data: [
     //     { imageUrl: 'http://myimage.jpg',
@@ -165,13 +165,13 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
     
 
     // This function does a deep copy of data from the feed
-    // downloaded from the colourlovers website into the palettes object.
+    // downloaded from the colourlovers website into the paletteList object.
     
-    Palettes = function() {};
-    Palettes.MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 
+    PaletteList = function() {};
+    PaletteList.MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 
                        'July', 'August', 'September', 'October', 'November', 'December'];
 
-    Palettes.prototype.load = function( data ) {
+    PaletteList.prototype.load = function( data ) {
         if (!data || data.length === 0) {
             return false;
         }
@@ -202,7 +202,7 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
                 // Now make "dateCreated" a more readable string.
             
                 date = util.parseSQLDate( newPalette.dateCreated );
-                newPalette.dateCreated = Palettes.MONTHS[date.getMonth()] + " " + 
+                newPalette.dateCreated = PaletteList.MONTHS[date.getMonth()] + " " + 
                                          date.getDate() + ", " + 
                                          date.getFullYear();
             
@@ -223,15 +223,15 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
     };
     
     init = function( config ) {
-        var palettes,
-            currentPalette,
+        var paletteList,
+            localPalette,
             localBrush;
             
-        // Initialize palettes.
-        palettes = new Palettes();
+        // Initialize paletteList.
+        paletteList = new PaletteList();
         
-        // Initialize currentPalette.
-        currentPalette = new CurrentPalette( 
+        // Initialize localPalette.
+        localPalette = new Palette( 
             config.DEFAULT_PALETTE_TITLE, 
             config.DEFAULT_PALETTE_COLORS, 
             config.MAX_COLORS,
@@ -243,7 +243,7 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
         localBrush = new Brush(
             config.DEFAULT_BRUSH_SIZE,
             config.DEFAULT_COLOR_PANEL_INDEX,
-            currentPalette 
+            localPalette 
         );
         
         // TEST OF CONCEPT
@@ -253,7 +253,7 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
         var testBrush = new Brush(
             config.DEFAULT_BRUSH_SIZE,
             config.DEFAULT_COLOR_PANEL_INDEX,
-            currentPalette 
+            localPalette 
         );
         testBrush.x = 50;
         testBrush.y = 50;
@@ -261,8 +261,8 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
                 
         //----------- MODULE INTERFACE ----------------
 
-        this.palettes = palettes;
-        this.currentPalette = currentPalette;
+        this.paletteList = paletteList;
+        this.localPalette = localPalette;
         this.localBrush = localBrush;
         
         // TEST OF CONCEPT

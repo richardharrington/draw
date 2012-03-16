@@ -36,7 +36,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
 
         // if the user typed anything
         if (keywords) {
-            model.palettes.keywords = keywords;
+            model.paletteList.keywords = keywords;
             searchField.val( '' );
                         
             view.theStatus.report( "Loading..." );
@@ -53,7 +53,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
       
             // Change spaces to plus signs for insertion into search query.
             // This query string tells colourlovers.com to pass back the data wrapped
-            // in our callback function, palettes.load()
+            // in our callback function, APP.controller.loadPalettes
         
             encodedKeywords = keywords.replace( /\s+/g, '+' );
             searchURL = 'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
@@ -72,12 +72,12 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var model = APP.models[instanceNumber];
         var view = APP.views[instanceNumber];
         
-        if (model.palettes.load( data )) {
+        if (model.paletteList.load( data )) {
             palettesColumnController.init( view, model );
             view.theStatus.report();   // no arguments means all clear, no errors to report.  
         } else {
             view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
-                                    model.palettes.keywords + '." Try again.' );
+                                    model.paletteList.keywords + '." Try again.' );
         };
     });
 
@@ -170,19 +170,19 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             if ( event.keyCode == 9 || ( event.keyCode >= 32 && event.keyCode <= 34 ) || (event.keyCode >= 37 && event.keyCode <= 40) ) {
                 switch( event.keyCode ) {
                     case 37: // left
-                    canvas.stroke( testBrush, testBrush.x - 5, testBrush.y );
+                    canvas.stroke( testBrush, testBrush.x - 1, testBrush.y );
                     break;
                     
                     case 38:   // up
-                    canvas.stroke( testBrush, testBrush.x, testBrush.y - 5 );
+                    canvas.stroke( testBrush, testBrush.x, testBrush.y - 1 );
                     break;
                     
                     case 39:  // right
-                    canvas.stroke( testBrush, testBrush.x + 5, testBrush.y );
+                    canvas.stroke( testBrush, testBrush.x + 1, testBrush.y );
                     break;
                     
                     case 40:  // down
-                    canvas.stroke( testBrush, testBrush.x, testBrush.y + 5 );
+                    canvas.stroke( testBrush, testBrush.x, testBrush.y + 1 );
                     break;
                 }
                 event.preventDefault();
@@ -225,7 +225,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var pageSelector = '#' + view.pageId;
         
         // Populate the color panels.
-        view.colorPanels.populate( model.currentPalette.title, model.currentPalette.colors ); 
+        view.colorPanels.populate( model.localPalette.title, model.localPalette.colors ); 
         
         // Reset the localBrush's colorPanelIdx if it was set to a panel that no longer
         // exists (because a new palette has fewer colors than the old one)
@@ -254,7 +254,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var pageSelector = '#' + view.pageId;
                 
         // Populate the palettes column.
-        view.palettesColumn.populate( model.palettes );
+        view.palettesColumn.populate( model.paletteList );
         
         // Adjust its height based on the height of the canvas.
         // TODO: Find a way to have this not happen, using CSS.
@@ -271,10 +271,10 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // Add the event handlers.
         this.addEventListeners( view.palettesColumn, function( element, i ) {
             
-            // Load the currentPalette with the new colors.
-            var title = model.palettes.data[i].title;
-            var colors = model.palettes.data[i].colors;
-            model.currentPalette.load( title, colors );
+            // Load the localPalette with the new colors.
+            var title = model.paletteList.data[i].title;
+            var colors = model.paletteList.data[i].colors;
+            model.localPalette.load( title, colors );
             colorPanelsController.init( view, model );
             
             // Turn the selected one pink.
