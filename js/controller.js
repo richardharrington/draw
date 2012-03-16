@@ -1,4 +1,4 @@
-// Dependencies: util.js, model.js, view.js
+// Dependencies: util.js, model.js, view.js, config.js
 
 ;
 
@@ -24,16 +24,12 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     
     // -- the event handler for requesting data from colourlovers.com
     
-    requestFromColourloversAPI = function( instanceNumber ) {
-        var model = APP.model.instances[instanceNumber];
-        var view = APP.view.instances[instanceNumber];
-        
+    requestFromColourloversAPI = function( view, model, instanceNumber ) {
         var encodedKeywords;
         var colourLoversScript;
         var searchURL;
         
-        var pageId = 'page-' + instanceNumber;
-        var pageSelector = '#' + pageId;
+        var pageSelector = '#' + view.pageId;
         var searchField = $( pageSelector + ' .search-field' );
         var keywords = searchField.val();
 
@@ -52,7 +48,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             }
             colourLoversScript = document.createElement( 'script' );
         	$( colourLoversScript ).addClass( 'colourLoversUrl' );
-            document.getElementById( pageId ).appendChild( colourLoversScript );
+            document.getElementById( view.pageId ).appendChild( colourLoversScript );
       
             // Change spaces to plus signs for insertion into search query.
             // This query string tells colourlovers.com to pass back the data wrapped
@@ -72,11 +68,11 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     // to the constructor. The anonymous function is invoked with the new, extended argument list.
     
     loadPalettes = new util.PropertyToParameter( function( instanceNumber, data ) {
-        var model = APP.model.instances[instanceNumber];
-        var view = APP.view.instances[instanceNumber];
+        var model = APP.models[instanceNumber];
+        var view = APP.views[instanceNumber];
         
         if (model.palettes.load( data )) {
-            palettesColumnController.init( instanceNumber );
+            palettesColumnController.init( view, model );
             view.theStatus.report();   // no arguments means all clear, no errors to report.  
         } else {
             view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
@@ -84,16 +80,13 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         };
     });
 
-    setErrorControls = function( instanceNumber ) {
+    setErrorControls = function( view ) {
         // Set up error handlers for all current and future cases of 
         // the manual script tag that downloads the data from colourlovers
         // (using jQuery .delegate()).
         
-        var view = APP.view.instances[instanceNumber];
-        var pageSelector = '#page-' + instanceNumber;
-
         var keywords;
-
+        var pageSelector = '#' + view.pageId;
         $( pageSelector ).delegate(' .colourLoversUrl', 'error', function () {
 
             // extract the search string from the colourlovers.com request url.
@@ -107,11 +100,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         });
     };
     
-    setMiscellaneousUserControls = function( instanceNumber ) {
-        var model = APP.model.instances[instanceNumber];
-        var view = APP.view.instances[instanceNumber];
-        
-        var pageSelector = '#page-' + instanceNumber;
+    setMiscellaneousUserControls = function( view, model, instanceNumber ) {
+        var pageSelector = '#' + view.pageId;
         var code;
         
         // Set brush size HTML select element, 
@@ -131,7 +121,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         });        
 
         $( pageSelector + ' .search-button' ).click( function() {
-            requestFromColourloversAPI( instanceNumber );
+            requestFromColourloversAPI( view, model, instanceNumber );
         });
         $( pageSelector + ' .search-field' ).keydown( function( event ) {
 
@@ -140,13 +130,13 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             code = event.keyCode || event.which;
             if (code == 13) {
                 event.preventDefault();
-                requestFromColourloversAPI( instanceNumber );
+                requestFromColourloversAPI( view, model, instanceNumber );
             }
         });
     };
     
-    setCanvasControls = function( instanceNumber ) {
-        var canvas = APP.view.instances[instanceNumber].canvas;
+    setCanvasControls = function( view ) {
+        var canvas = view.canvas;
 
         canvas.DOMElement.onmousedown = function( event ) {
             var p = canvas.getMousePos( event );
@@ -196,12 +186,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     
     colorPanelsController = new ElementsController();
     
-    colorPanelsController.init = function( instanceNumber ) {
-        var model = APP.model.instances[instanceNumber];
-        var view = APP.view.instances[instanceNumber];
-        var pageSelector = '#page-' + instanceNumber;
-        
+    colorPanelsController.init = function( view, model ) {
         var panel;
+        var pageSelector = '#' + view.pageId;
         
         // Populate the color panels.
         view.colorPanels.populate( model.currentPalette.title, model.currentPalette.colors ); 
@@ -233,10 +220,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
 
     palettesColumnController = new ElementsController();
     
-    palettesColumnController.init = function( instanceNumber ) {
-        var model = APP.model.instances[instanceNumber];
-        var view = APP.view.instances[instanceNumber];
-        var pageSelector = '#page-' + instanceNumber;
+    palettesColumnController.init = function( view, model ) {
+        var pageSelector = '#' + view.pageId;
                 
         // Populate the palettes column.
         view.palettesColumn.populate( model.palettes );
@@ -260,7 +245,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             var title = model.palettes.data[i].title;
             var colors = model.palettes.data[i].colors;
             model.currentPalette.load( title, colors );
-            colorPanelsController.init( instanceNumber );
+            colorPanelsController.init( view, model );
             
             // Turn the selected one pink.
             palettesColumnController.highlightElement( element, ".palette-image" );
@@ -271,44 +256,48 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
 
     init = function() {
 
-        var config;
+        var models = APP.models = [];
+        var views = APP.views = [];
+        var model, view;
         
         var i, len;
+        var configArray = APP.config;
+        var config;
         var pageSelector;
         var instanceNumberList = [];
-        var modelInstances = APP.model.instances;
         
-        // Create the main html blocks. Need to use the APP.model module
-        // to count the instances because that's where the instances
-        // array is predefined with config information, and exposed to the module
-        // interface. The view instances array is also exposed but it is
-        // empty until APP.view.init() is run.
-        
-        for (i = 0, len = modelInstances.length; i < len; i++) {
+        // Create the main html blocks. 
+        for (i = 0, len = configArray.length; i < len; i++) {
             instanceNumberList.push( {instanceNum: i} );
         }
         $( '#pageTemplate' ).tmpl( instanceNumberList ).appendTo( 'body' );
         
-        for (i = 0, len = modelInstances.length; i < len; i++) {
-            config = modelInstances[i].config;
+        // Create the models and views.
+        for (i = 0, len = configArray.length; i < len; i++) {
             
-            APP.model.init();
+            config = configArray[i];
             
-            APP.view.init({ 
+            model = new APP.Model( config );
+            models.push( model );
+            
+            // WHY DO IT THIS WAY? JUST SEND CONFIG, AND THE TWO OTHER VARIABLES.
+            
+            view = new APP.View({ 
                 canvasWidth:            config.CANVAS_WIDTH, 
                 canvasHeight:           config.CANVAS_HEIGHT, 
                 canvasBackgroundColor:  config.CANVAS_BACKGROUND_COLOR, 
                 colorPanelIdx:          config.DEFAULT_COLOR_PANEL_INDEX,
                 paletteTitle:           config.DEFAULT_PALETTE_TITLE, 
                 paletteColors:          config.DEFAULT_PALETTE_COLORS,
-                brushStyle:             modelInstances[i].currentBrush.style() 
+                pageNumber:             i, 
+                brushStyle:             models[i].currentBrush.style() 
             });
+            views.push( view );
             
-            setMiscellaneousUserControls( i );
-            setErrorControls( i );
-            setCanvasControls( i );
-            colorPanelsController.init( i );
-            
+            setMiscellaneousUserControls( view, model, i );
+            setErrorControls( view );
+            setCanvasControls( view );
+            colorPanelsController.init( view, model );
             loadPalettes.add( i );
         }
         $( 'body' ).css('display', 'block');

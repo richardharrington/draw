@@ -1,14 +1,13 @@
-// Dependency: util.js, config.js
+// Dependency: util.js
 
 ;
 
 var APP = (typeof APP !== 'undefined') ? APP : {};
-APP.model = (typeof APP.model !== 'undefined') ? APP.model : 
+APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model : 
 
 (function() {
     
     var util = APP.util;
-    var config = APP.config;
 
     var BrushStyle,
         brushChildrenProto;
@@ -18,25 +17,6 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
         CurrentBrush;
         
     var init;
-    var instanceNumber = 0;
-
-    // The 'instances' array will have other properties added dynamically to its element
-    // objects. We start with "config," which contains all the information from the config.js
-    // file. Later we'll add "currentBrush," "currentPalette," and "palettes."
-    
-    var instances = [];
-    var i, k, len;
-    
-    for (i = 0, len = config.length; i < len; i += 1) {
-        instances[i] = {};
-        instances[i].config = {};
-        for (k in config[i]) {
-            if (config[i].hasOwnProperty( k )) {
-                instances[i].config[k] = config[i][k]
-            }
-        }
-    }
-
 
     // --- A note about Palettes, CurrentPalette and CurrentBrush:
 
@@ -247,13 +227,11 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
         return true;
     };
     
-    init = function() {
+    init = function( config ) {
         var palettes,
             currentPalette,
             currentBrush;
             
-        var config = instances[instanceNumber].config;
-        
         // Initialize palettes.
         palettes = new Palettes();
         
@@ -272,22 +250,15 @@ APP.model = (typeof APP.model !== 'undefined') ? APP.model :
             config.DEFAULT_COLOR_PANEL_INDEX,
             currentPalette 
         );
-        
-        // Can't just assign the whole object all at once because it's not empty:
-        // it already contains config information for each instance before this init function is run.
-        instances[instanceNumber].palettes = palettes;
-        instances[instanceNumber].currentPalette = currentPalette;
-        instances[instanceNumber].currentBrush = currentBrush;
-        
-        // Increment the main instance number.
-        instanceNumber += 1;
+                
+        //----------- MODULE INTERFACE ----------------
+
+        this.palettes = palettes;
+        this.currentPalette = currentPalette;
+        this.currentBrush = currentBrush;
     };
 
     //----------- MODULE INTERFACE ----------------
     
-    return {
-        init: init, 
-        instances: instances
-    };  
-    
+    return init;  
 })();

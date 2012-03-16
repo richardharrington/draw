@@ -3,7 +3,7 @@
 ;
 
 var APP = (typeof APP !== 'undefined') ? APP : {};
-APP.view = (typeof APP.view !== 'undefined') ? APP.view : 
+APP.View = (typeof APP.View !== 'undefined') ? APP.View : 
 
 (function() {
     
@@ -15,9 +15,6 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
         PalettesColumn;
         
     var init;
-
-    var instances = [];
-    var instanceNumber = 0;
 
     // ------------------ Status reporting mechanism. --------------------------
     
@@ -204,7 +201,8 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
             colorPanels,
             palettesColumn;
             
-        var pageSelector = '#page-' + instanceNumber;
+        var pageId = 'page-' + args.pageNumber;
+        var pageSelector = '#' + pageId;
             
         var statusReportElement =   $( pageSelector + ' .status-report' )[0], 
             canvasElement =         $( pageSelector + ' .canvas' )[0],
@@ -227,21 +225,16 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
         // Initialize empty palettesColumn object.
         palettesColumn = new PalettesColumn( palettesColumnElement, palettesTitleElement );
 
-        instances[instanceNumber] = {
-            theStatus: theStatus,
-            canvas: canvas,
-            colorPanels: colorPanels,
-            palettesColumn: palettesColumn
-        };
-        
-        // Increment the main instance number.
-        instanceNumber += 1;
+        //----------- MODULE INTERFACE ----------------
+
+        this.theStatus = theStatus;
+        this.canvas = canvas;
+        this.colorPanels = colorPanels;
+        this.palettesColumn = palettesColumn;
+        this.pageId = pageId;
     };
     
     //----------- MODULE INTERFACE ----------------
 
-    return {
-        init: init,
-        instances: instances
-    };
+    return init;
 })();
