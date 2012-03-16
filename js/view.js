@@ -131,36 +131,45 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
     
     ColorPanels.prototype.populate = function( title, colors ) {
         var i, len;
-        var color;
-        var elementKlasses = [];
+        var newLength, oldLength;
+        var newColorPanels;
+        var DOMElmntClasses = [];
+        var newDOMElmntClasses;
         
         var jQContainer = $( this.DOMContainer );
         var jQTitleSpan = $( this.DOMTitleSpan );
         
+        // Make the array of new DOM classes.
         for (i = 0, len = colors.length; i < len; i++) {
-            elementKlasses.push( {klass: 'color-' + i} );
+            DOMElmntClasses.push( {klass: 'color-' + i} );
         }
-
-        // Now empty the old color panels, then load the new ones 
-        // into the DOM. Create the div tags with the 
-        // jQuery template, then add background colors.
         
-        // THIS SHOULD BE CHANGED TO RE-BACKGROUND-COLORING
-        // WHAT WAS ALREADY THERE, INSTEAD OF EMPTYING AND RE-DRAWING. 
-
-        jQContainer.empty();
+        // Set the title for this palette of colors.
         jQTitleSpan.text( title );
-
-        $( "#currentPaletteTemplate" ).
-                tmpl( elementKlasses ).
-                appendTo( jQContainer ).
-                each( function( elementIndex ) {
-                    this.style.backgroundColor = '#' + colors[elementIndex];
-                });
-            
+        
+        oldLength = jQContainer.children().length;
+        newLength = DOMElmntClasses.length;
+        
+        // Take away some if needed.
+        for (i = oldLength; i > newLength; i--) {
+            jQContainer.children(':last-child').remove();
+        }
+        
+        // Add some if needed. (Will automatically be transparent.)
+        newDOMElmntClasses = DOMElmntClasses.slice(oldLength, newLength);
+        if (newDOMElmntClasses.length > 0) {
+            newColorPanels = $( "#currentPaletteTemplate" )
+                    .tmpl( newDOMElmntClasses )
+                    .appendTo( jQContainer );
+        }
+                
+        // Now go through and set the new colors.
+        jQContainer.children().each( function( i ) {
+            this.style.backgroundColor = '#' + colors[i];
+        });
     };
     
-    ColorPanels.prototype.getKlass = function( colorPanelIdx ) {
+    ColorPanels.prototype.getDOMElmntClass = function( colorPanelIdx ) {
         return 'color-' + colorPanelIdx;
     };
     
@@ -199,9 +208,9 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
             
         var statusReportElement =   $( pageSelector + ' .status-report' )[0], 
             canvasElement =         $( pageSelector + ' .canvas' )[0],
-            colorPanelsElement =    $( pageSelector + ' .color-container' )[0],
+            colorPanelsElement =    $( pageSelector + ' .color-panels' )[0],
             colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
-            palettesColumnElement = $( pageSelector + ' .palette-list' )[0],
+            palettesColumnElement = $( pageSelector + ' .left-column' )[0],
             palettesTitleElement =  $( pageSelector + ' .successful-keywords' )[0];
             
         // Initialize status reporting.

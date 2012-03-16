@@ -216,7 +216,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         view.canvas.applyStyle( model.currentBrush.style() );
 
         // Now make the already selected one pink.
-        panel = $( pageSelector + ' .' + view.colorPanels.getKlass( model.currentBrush.colorPanelIdx()) );
+        panel = $( pageSelector + ' .' + view.colorPanels.getDOMElmntClass( model.currentBrush.colorPanelIdx()) );
         this.highlightElement( panel );
 
         // Add the event listeners.
@@ -244,8 +244,13 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // Adjust its height based on the height of the canvas.
         // TODO: Find a way to have this not happen, using CSS.
         // For one thing, we're 'illegally' using the private property view.canvas._height
+        $( view.palettesColumn.DOMContainer ).css( 'height', '' + (305 + view.canvas._height) );
         
-        $( view.palettesColumn.DOMContainer ).css( 'height', '' + (230 + view.canvas._height) );
+        // Widen the left column.
+        $( view.palettesColumn.DOMContainer ).css( 'width', 220 );
+        
+        // Slide the main box over.
+        $( pageSelector + ' .main-box-wrapper' ).css ( 'margin-left', 240 );
         
         // Add the event handlers.
         this.addEventListeners( view.palettesColumn, function( element, i ) {

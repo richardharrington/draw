@@ -18,36 +18,38 @@
             <div class="palette-list"></div>
         </div>
 
-        <div class="main-box">
-            <div class="header">
-                <h1>Canvas #<span class="canvas-number">${instanceNum + 1}<span></h1>
-                <div>
-                    <span class="search-label">Search colourlovers.com for a palette (try a season or a color):</span>
-                    <input type="text" class="search-field"></input>
-                    <input type="button" class="search-button" value="search">
+        <div class="main-box-wrapper">
+            <div class="main-box">
+                <div class="header">
+                    <h1>Canvas #<span class="canvas-number">${instanceNum + 1}<span></h1>
+                    <div>
+                        <span class="search-label">Search colourlovers.com for a palette (try a season or a color):</span>
+                        <input type="text" class="search-field"></input>
+                        <input type="button" class="search-button" value="search">
+                    </div>
+
+                    <!-- a placeholder for spacing:  -->
+                    <p class="status-report">&nbsp;</p> 
                 </div>
-                <p class="status-report">&nbsp;</p> <!--- as a placeholder for spacing.  -->
-            </div>
 
-            <div class="color-panels-header">
-                <p class="current-palette-header">Current palette: <span class="current-palette-title"></span></p>
-
-                <div class="color-container">
+                <div class="color-panels-container-wrapper">
+                        <p class="current-palette-header">Current palette: <span class="current-palette-title"></span></p>
+                        <div class="color-panels"></div>
                 </div>
-			</div>
-			<div class="canvas-container">
-                
-                <!--- width and height are defaults, will be overridden by javascript -->
-              	<canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
-                
-                <div class="canvas-controls">
-                    <span class="brush-size-label">Brush size:</span>         
-                    <select class="brush-size">
-                  	    <option value="small">Small</option>
-                  	    <option value="large">Large</option>
-                  	</select>
-                    <input type="button" class="clear-canvas" value="clear canvas">
+                <div class="canvas-container">
 
+                    <!--- width and height are defaults, will be overridden by javascript -->
+                    <canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
+
+                    <div class="canvas-controls">
+                        <span class="brush-size-label">Brush size:</span>         
+                        <select class="brush-size">
+                            <option value="small">Small</option>
+                            <option value="large">Large</option>
+                        </select>
+                        <input type="button" class="clear-canvas" value="clear canvas">
+
+                    </div>
                 </div>
             </div>
         </div>
