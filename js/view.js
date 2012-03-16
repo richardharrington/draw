@@ -187,14 +187,14 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
     
         var jQContainer = $( this.DOMContainer );
         var jQTitleSpan = $( this.DOMTitleSpan );
-        
+
         jQTitleSpan.text( palettes.keywords );
         
         jQContainer.empty();
         $( '#palettesTemplate' ).tmpl( palettes.data ).appendTo( jQContainer );
-    
-        jQContainer.show();
-        jQTitleSpan.parent().show();
+        
+        // Show it.    
+        jQContainer.parent()[0].style.display = 'block';
     };
     
     init = function( args ) {
@@ -210,7 +210,7 @@ APP.view = (typeof APP.view !== 'undefined') ? APP.view :
             canvasElement =         $( pageSelector + ' .canvas' )[0],
             colorPanelsElement =    $( pageSelector + ' .color-panels' )[0],
             colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
-            palettesColumnElement = $( pageSelector + ' .left-column' )[0],
+            palettesColumnElement = $( pageSelector + ' .palette-list' )[0],
             palettesTitleElement =  $( pageSelector + ' .successful-keywords' )[0];
             
         // Initialize status reporting.

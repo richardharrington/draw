@@ -244,10 +244,11 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // Adjust its height based on the height of the canvas.
         // TODO: Find a way to have this not happen, using CSS.
         // For one thing, we're 'illegally' using the private property view.canvas._height
-        $( view.palettesColumn.DOMContainer ).css( 'height', '' + (305 + view.canvas._height) );
+        $( view.palettesColumn.DOMContainer ).parent().css( 'height', '' + (305 + view.canvas._height) );
         
         // Widen the left column.
-        $( view.palettesColumn.DOMContainer ).css( 'width', 220 );
+        $( view.palettesColumn.DOMContainer ).parent().css( {'width': '220px', 'margin-left': '15px'} );
+        
         
         // Slide the main box over.
         $( pageSelector + ' .main-box-wrapper' ).css ( 'margin-left', 240 );
