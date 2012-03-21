@@ -171,19 +171,19 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             if ( event.keyCode == 9 || ( event.keyCode >= 32 && event.keyCode <= 34 ) || (event.keyCode >= 37 && event.keyCode <= 40) ) {
                 switch( event.keyCode ) {
                     case 37: // left
-                    canvas.stroke( testBrush, testBrush.x - 1, testBrush.y );
+                    canvas.stroke( testBrush, testBrush.x - 5, testBrush.y );
                     break;
                     
                     case 38:   // up
-                    canvas.stroke( testBrush, testBrush.x, testBrush.y - 1 );
+                    canvas.stroke( testBrush, testBrush.x, testBrush.y - 5 );
                     break;
                     
                     case 39:  // right
-                    canvas.stroke( testBrush, testBrush.x + 1, testBrush.y );
+                    canvas.stroke( testBrush, testBrush.x + 5, testBrush.y );
                     break;
                     
                     case 40:  // down
-                    canvas.stroke( testBrush, testBrush.x, testBrush.y + 1 );
+                    canvas.stroke( testBrush, testBrush.x, testBrush.y + 5 );
                     break;
                 }
                 event.preventDefault();
@@ -320,7 +320,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             
             // TEST OF CONCEPT
             
-            view.canvas.startStroke( model.testBrush );
+            // starts with a red dot on the screen, to be moved by keyboard commands
+            // view.canvas.startStroke( model.testBrush );
             
             
             colorPanelsController.init( view, model );
