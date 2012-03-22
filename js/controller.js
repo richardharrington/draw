@@ -278,6 +278,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             var colors = model.paletteList.data[i].colors;
             model.localPalette.load( title, colors );
             colorPanelsController.init( view, model );
+            model.localBrush.style = model.localPalette.activeStyle();
             
             // Turn the selected one pink.
             palettesColumnController.highlightElement( element, ".palette-image" );
@@ -296,13 +297,16 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var configArray = APP.config;
         var config;
         var pageSelector;
-        var instanceNumberList = [];
+        var pageVariables = [];
         
         // Create the main html blocks. 
         for (i = 0, len = configArray.length; i < len; i++) {
-            instanceNumberList.push( {instanceNum: i} );
+            pageVariables.push({
+                instanceNum: i,
+                title: configArray[i].APP_TITLE
+            });
         }
-        $( '#pageTemplate' ).tmpl( instanceNumberList ).appendTo( 'body' );
+        $( '#pageTemplate' ).tmpl( pageVariables ).appendTo( 'body' );
         
         // Create the models and views.
         for (i = 0, len = configArray.length; i < len; i++) {
