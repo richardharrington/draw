@@ -185,7 +185,7 @@ h1 {
     font-size: 0.8em;
 }
 
-.clear-canvas {
+.clear-canvas, .restore-canvas {
     margin-top: 0px;
     margin-left: 30px;
 }

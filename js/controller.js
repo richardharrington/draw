@@ -116,6 +116,10 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             view.canvas.clear();
         });
 
+        $( pageSelector + ' .restore-canvas' ).click( function() {
+            view.canvas.restoreHistory();
+        });
+        
         $( pageSelector + ' .brush-size' ).change( function() {
             model.localPalette.activeSize( this.value );
             model.localBrush.style = model.localPalette.activeStyle();

@@ -52,6 +52,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         this._width = width;
         this._height = height;
         this._backgroundColor = backgroundColor;
+        this._history = [];
 
         this._border = (borderLeftPx) ? parseInt(borderLeftPx, 10) : 16;
         
@@ -72,25 +73,36 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         return coords;
     };
 
-    Canvas.prototype._applyStyle = function( brushStyle ) {
+    Canvas.prototype._applyStyle = function( segment ) {
         var c = this._context;
         
-        c.lineWidth = brushStyle.width;
-        c.strokeStyle = "#" + brushStyle.color;
-        c.lineCap = brushStyle.lineCap;
-        c.lineJoin = brushStyle.lineJoin;
+        c.lineWidth = segment.width;
+        c.strokeStyle = "#" + segment.color;
+        c.lineCap = segment.lineCap;
+        c.lineJoin = segment.lineJoin;
+    };
+    
+    Canvas.prototype.startStroke = function( brush ) {
+        var brushStyle = brush.style;
+        var segment = {
+            lineCap: brushStyle.lineCap,
+            lineJoin: brushStyle.lineJoin,
+            color: brushStyle.color,
+            width: brushStyle.width,
+            ix: brush.x,
+            iy: brush.y,
+        };
+        this._drawDot( segment );
+        this._history.push( segment );
     };
 
-    Canvas.prototype.startStroke = function( brush ) {
+    Canvas.prototype._drawDot = function( segment ) {
         var c = this._context;
-        var x = brush.x;
-        var y = brush.y;
+        var x = segment.ix;
+        var y = segment.iy;
 
-        // save fillStyle on stack
-        var savedFillStyle = c.fillStyle;
-
-        // load the brushstyle.
-        this._applyStyle( brush.style );
+        // load the styles.
+        this._applyStyle( segment );
         
         // draw a dot the diameter of the brush
         var r = c.lineWidth / 2;
@@ -99,30 +111,45 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         c.moveTo( x, y );
         c.arc( x, y, r, 0, Math.PI * 2 );
         c.fill();
-
-        // restore fillStyle 
-        c.fillStyle = savedFillStyle;
+    };
+    
+    Canvas.prototype.stroke = function( brush, x, y ) {
+        var brushStyle = brush.style;
+        var segment = {
+            lineCap: brushStyle.lineCap,
+            lineJoin: brushStyle.lineJoin,
+            color: brushStyle.color,
+            width: brushStyle.width,
+            ix: brush.x,
+            iy: brush.y,
+            fx: x,
+            fy: y            
+        };
+        this._strokeSegment( segment );
+        this._history.push( segment );
+        
+        // update brush position.
+        brush.x = x;
+        brush.y = y;
     };
 
-    Canvas.prototype.stroke = function( brush, x, y ) {
+    Canvas.prototype._strokeSegment = function( segment ) {
         var c = this._context;
-        var oldX = brush.x,
-            oldY = brush.y;
-
-        // load the brushstyle.
-        this._applyStyle( brush.style );
+        var ix = segment.ix,
+            iy = segment.iy,
+            fx = segment.fx,
+            fy = segment.fy;
+        
+        // load the styles.
+        this._applyStyle( segment );
         
         // go to the location where the brush was last seen.
         c.beginPath();
-        c.moveTo( oldX, oldY );
+        c.moveTo( ix, iy );
         
         // draw to new coordinates.
-        c.lineTo( x, y );
+        c.lineTo( fx, fy );
         c.stroke();
-        
-        //update brush position.
-        brush.x = x;
-        brush.y = y;
     };
 
     Canvas.prototype.clear = function() {
@@ -130,6 +157,28 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
 
         c.fillStyle = "#" + this._backgroundColor;
         c.fillRect( 0, 0, this._width, this._height );
+    };
+    
+    Canvas.prototype.restoreHistory = function() {
+        var c = this._context;
+        var history = this._history;
+        var i, len;
+        var segment;
+        
+        this.clear();
+        
+        // This next loop checks for the existence of segment.fx
+        // because that will tell us whether it's an initial dot or a continuing stroke
+        // (ix stands for initial x and fx stands for final x).
+        
+        for (var i = 0, len = history.length; i < len; i++) {
+            segment = history[i];
+            if (segment.fx == null) {
+                this._drawDot( segment );
+            } else {
+                this._strokeSegment( segment )
+            }
+        }
     };
     
     // -------------------- wrapper for DOM color panels --------------------------
