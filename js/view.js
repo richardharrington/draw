@@ -82,49 +82,16 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         c.lineJoin = segment.lineJoin;
     };
     
-    Canvas.prototype.startStroke = function( brush ) {
-      
-        this.stroke(brush, brush.x, brush.y);
-    };
-
-    Canvas.prototype._drawDot = function( segment ) {
-        var c = this._context;
-        var x = segment.ix;
-        var y = segment.iy;
-
-        // load the styles.
-        this._applyStyle( segment );
-        
-        // draw a dot the diameter of the brush
-        var r = c.lineWidth / 2;
-        c.fillStyle = c.strokeStyle;
-        c.beginPath();
-        c.moveTo( x, y );
-        c.arc( x, y, r, 0, Math.PI * 2 );
-        c.fill();
-    };
+    // The 'segment' argument is an object containing all the 
+    // properties of BrushStyle object, plus the two starting 
+    // and two ending coordinates of the segment.
     
-    Canvas.prototype.stroke = function( brush, x, y ) {
-        var brushStyle = brush.style;
-        var segment = {
-            lineCap: brushStyle.lineCap,
-            lineJoin: brushStyle.lineJoin,
-            color: brushStyle.color,
-            width: brushStyle.width,
-            ix: brush.x,
-            iy: brush.y,
-            fx: x,
-            fy: y            
-        };
-        this._strokeSegment( segment );
+    Canvas.prototype.stroke = function( segment ) {
+        this._stroke( segment );
         this._history.push( segment );
-        
-        // update brush position.
-        brush.x = x;
-        brush.y = y;
     };
 
-    Canvas.prototype._strokeSegment = function( segment ) {
+    Canvas.prototype._stroke = function( segment ) {
         var c = this._context;
         var ix = segment.ix,
             iy = segment.iy,
@@ -154,7 +121,6 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         var c = this._context;
         var history = this._history;
         var i, len;
-        var segment;
         
         this.clear();
         
@@ -163,12 +129,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         // (ix stands for initial x and fx stands for final x).
         
         for (var i = 0, len = history.length; i < len; i++) {
-            segment = history[i];
-            if (segment.fx == null) {
-                this._drawDot( segment );
-            } else {
-                this._strokeSegment( segment )
-            }
+            this._stroke(history[i]);
         }
     };
     

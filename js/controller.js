@@ -21,6 +21,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     var colorPanelsController;
     var palettesColumnController;
     
+    var socket;
+    
     var init;
     
     // -- the event handler for requesting data from colourlovers.com
@@ -139,6 +141,14 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             }
         });
     };
+
+    setSocketIOEventListeners = function ( view ) {
+        var canvas = view.canvas;
+        socket = io.connect('http://10.0.1.2:3000');
+        socket.on('stroke', function( segment ) {
+            canvas.stroke( segment );
+        });
+    }
     
     setMouseEventListeners = function( view, model ) {
         var canvas = view.canvas;
@@ -146,17 +156,24 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
 
         canvas.DOMElement.onmousedown = function( event ) {
             var p = canvas.getMousePos( event );
-            localBrush.x = p.x;
-            localBrush.y = p.y;
+            var x = localBrush.x = p.x;
+            var y = localBrush.y = p.y;
             localBrush.drawing = true; 
-            canvas.startStroke( localBrush );
+            // Stroking from a point to the same point 
+            // creates a dot, in canvas.
+            socket.emit('move', $.extend({}, localBrush.style, {ix: x, iy: y, fx: x, fy: y} ));
         };
 
         canvas.DOMElement.onmousemove = function( event ) {
-            var p = canvas.getMousePos( event );
-
             if (localBrush.drawing) {
-                canvas.stroke( localBrush, p.x, p.y );
+                var p = canvas.getMousePos( event );
+                var ix = localBrush.x;
+                var iy = localBrush.y;
+                var fx = p.x;
+                var fy = p.y;
+                socket.emit('move', $.extend({}, localBrush.style, {ix: ix, iy: iy, fx: fx, fy: fy} ));
+                localBrush.x = fx;
+                localBrush.y = fy;
             }
         };
 
@@ -173,23 +190,29 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         
         document.onkeydown = function( event ) {
             if ( event.keyCode == 9 || ( event.keyCode >= 32 && event.keyCode <= 34 ) || (event.keyCode >= 37 && event.keyCode <= 40) ) {
+                var ix = testBrush.ix,
+                    iy = testBrush.iy,
+                    fx = testBrush.fx,
+                    fy = testBrush.fy;
+                    
                 switch( event.keyCode ) {
                     case 37: // left
-                    canvas.stroke( testBrush, testBrush.x - 5, testBrush.y );
+                    testBrush.fx = fx -= 5;
                     break;
                     
                     case 38:   // up
-                    canvas.stroke( testBrush, testBrush.x, testBrush.y - 5 );
+                    testBrush.fy = fy -= 5;
                     break;
                     
                     case 39:  // right
-                    canvas.stroke( testBrush, testBrush.x + 5, testBrush.y );
+                    testBrush.fx = fx += 5;
                     break;
                     
                     case 40:  // down
-                    canvas.stroke( testBrush, testBrush.x, testBrush.y + 5 );
+                    testBrush.fy = fy += 5;
                     break;
                 }
+                socket.emit('move', $.extend({}, localBrush.style, {ix: ix, iy: iy, fx: fx, fy: fy}))
                 event.preventDefault();
             }
         };
@@ -325,6 +348,12 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             setErrorControls( view );
             setMouseEventListeners( view, model );
             setKeyboardEventListeners( view, model );
+            
+            // Attention: this is just a temporary thing now. We need to rethink
+            // whether we want to support multiple views on the same page.
+            // currently this will erase the previous event listeners every time we iterate
+            // through this loop, if there is more than one view on the page.
+            setSocketIOEventListeners( view );
             
             // TEST OF CONCEPT
             
