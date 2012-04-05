@@ -3,15 +3,38 @@ var app = require('http').createServer(handler)
   , fs = require('fs')
   , parse = require('url').parse
   , join = require('path').join
-  , counter = 0;
+  , counter = 0
+  , history = [];
 
-io.sockets.on('connection', function (socket) {
-  socket.on('move', function (data) {
-    io.sockets.emit('stroke', data);
+io.sockets.on('connection', function(socket) {
+  socket.on('getHistory', function() {
+    socket.emit('drawHistory', history);
+  });
+  socket.on('requestClear', function() {
+    io.sockets.emit('clear');
+    
+    // give them a chance to think about it 
+    // and possibly press the restore button 
+    // before they make their next move.
+    io.sockets.once('move', function(data) {
+      history = [];
+      stroke(data);      
+    });
+    io.sockets.once('getHistory', function() {
+      io.sockets.emit('drawHistory');
+    })
+  });
+  socket.on('move', function(data) {
+    stroke(data);
   });
 });
 
 app.listen(3000, '10.0.1.2');
+
+function stroke(segment) {
+  history.push(segment);
+  io.sockets.emit('stroke', segment);
+}
 
 function handler (req, res) {
   var url = parse(req.url);

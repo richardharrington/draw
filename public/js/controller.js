@@ -115,11 +115,11 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // toggling the brush size and entering search keywords.
 
         $( pageSelector + ' .clear-canvas' ).click( function() {
-            view.canvas.clear();
+            socket.emit('requestClear');
         });
 
         $( pageSelector + ' .restore-canvas' ).click( function() {
-            view.canvas.restoreHistory();
+            socket.emit('getHistory');
         });
         
         $( pageSelector + ' .brush-size' ).change( function() {
@@ -147,6 +147,13 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         socket = io.connect('http://10.0.1.2:3000');
         socket.on('stroke', function( segment ) {
             canvas.stroke( segment );
+        });
+        socket.on('drawHistory', function( history ) {
+            canvas.clear();
+            canvas.restoreHistory( history );
+        });
+        socket.on('clear', function() {
+          canvas.clear();
         });
     }
     
@@ -181,44 +188,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             localBrush.drawing = false;
         };
     };
-    
-    // TEST OF CONCEPT
-    
-    setKeyboardEventListeners = function( view, model ) {
-        var canvas = view.canvas;
-        var testBrush = model.testBrush;
         
-        document.onkeydown = function( event ) {
-            if ( event.keyCode == 9 || ( event.keyCode >= 32 && event.keyCode <= 34 ) || (event.keyCode >= 37 && event.keyCode <= 40) ) {
-                var ix = testBrush.ix,
-                    iy = testBrush.iy,
-                    fx = testBrush.fx,
-                    fy = testBrush.fy;
-                    
-                switch( event.keyCode ) {
-                    case 37: // left
-                    testBrush.fx = fx -= 5;
-                    break;
-                    
-                    case 38:   // up
-                    testBrush.fy = fy -= 5;
-                    break;
-                    
-                    case 39:  // right
-                    testBrush.fx = fx += 5;
-                    break;
-                    
-                    case 40:  // down
-                    testBrush.fy = fy += 5;
-                    break;
-                }
-                socket.emit('move', $.extend({}, localBrush.style, {ix: ix, iy: iy, fx: fx, fy: fy}))
-                event.preventDefault();
-            }
-        };
-    };
-    
-    
     // Now set up the controllers for the color panels and the palettes column,
     // which are quite similar so we're going to re-use the code.
 
@@ -347,13 +317,13 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             setMiscellaneousUserControls( view, model, i );
             setErrorControls( view );
             setMouseEventListeners( view, model );
-            setKeyboardEventListeners( view, model );
             
             // Attention: this is just a temporary thing now. We need to rethink
             // whether we want to support multiple views on the same page.
             // currently this will erase the previous event listeners every time we iterate
             // through this loop, if there is more than one view on the page.
             setSocketIOEventListeners( view );
+            socket.emit('getHistory');
             
             // TEST OF CONCEPT
             

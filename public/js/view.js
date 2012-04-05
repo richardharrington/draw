@@ -87,11 +87,6 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
     // and two ending coordinates of the segment.
     
     Canvas.prototype.stroke = function( segment ) {
-        this._stroke( segment );
-        this._history.push( segment );
-    };
-
-    Canvas.prototype._stroke = function( segment ) {
         var c = this._context;
         var ix = segment.ix,
             iy = segment.iy,
@@ -117,9 +112,8 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         c.fillRect( 0, 0, this._width, this._height );
     };
     
-    Canvas.prototype.restoreHistory = function() {
+    Canvas.prototype.restoreHistory = function( history ) {
         var c = this._context;
-        var history = this._history;
         var i, len;
         
         this.clear();
@@ -129,7 +123,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         // (ix stands for initial x and fx stands for final x).
         
         for (var i = 0, len = history.length; i < len; i++) {
-            this._stroke(history[i]);
+            this.stroke(history[i]);
         }
     };
     
