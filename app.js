@@ -15,8 +15,10 @@ app.listen(3000, '10.0.1.2');
 
 function handler (req, res) {
   var url = parse(req.url);
-  var localPathname = (url.pathname === '/') ? '/index.html' : url.pathname;
-  var path = __dirname + localPathname;
+  var localPathname = (url.pathname === '/') 
+    ? '/index.html' 
+    : url.pathname;
+  var path = __dirname + '/public' + localPathname;
   
   fs.stat(path, function(err, stat) {
     if (err) {
