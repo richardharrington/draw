@@ -2,10 +2,14 @@ var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
   , parse = require('url').parse
-  , join = require('path').join;
+  , join = require('path').join
+  , userID = 0;
 
 io.sockets.on('connection', function (socket) {
+  userID++;
   socket.on('move', function (data) {
+    counter++;
+    console.log("We've received move number " + counter + " from user number " + userID);
     io.sockets.emit('stroke', data);
   });
 });
