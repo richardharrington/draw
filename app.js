@@ -3,22 +3,20 @@ var app = require('http').createServer(handler)
   , fs = require('fs')
   , parse = require('url').parse
   , join = require('path').join
-  , userID = 0;
+  , counter = 0;
 
 io.sockets.on('connection', function (socket) {
-  userID++;
   socket.on('move', function (data) {
-    counter++;
-    console.log("We've received move number " + counter + " from user number " + userID);
-    io.sockets.emit('stroke', data);
+    console.log("We've received move number " + counter++);
+    socket.emit('stroke', data);
   });
 });
 
-app.listen(80, '10.0.1.2');
+app.listen(3000, '10.0.1.2');
 
 function handler (req, res) {
   var url = parse(req.url);
-  var localPathname = (url.pathname === '/') ? '/index.html' : url.pathname;
+  var localPathname = (url.pathname === '/') ? 'index.html' : url.pathname;
   var path = __dirname + localPathname;
   
   fs.stat(path, function(err, stat) {
