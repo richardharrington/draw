@@ -83,17 +83,8 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
     };
     
     Canvas.prototype.startStroke = function( brush ) {
-        var brushStyle = brush.style;
-        var segment = {
-            lineCap: brushStyle.lineCap,
-            lineJoin: brushStyle.lineJoin,
-            color: brushStyle.color,
-            width: brushStyle.width,
-            ix: brush.x,
-            iy: brush.y,
-        };
-        this._drawDot( segment );
-        this._history.push( segment );
+      
+        this.stroke(brush, brush.x, brush.y);
     };
 
     Canvas.prototype._drawDot = function( segment ) {
