@@ -10,7 +10,11 @@ var app = require('http').createServer(handler)
 io.sockets.on('connection', function(socket) {
   // Get a new browser up to date.
   socket.on('updateFromHistory', function() {
-    socket.emit('drawHistory', history);
+    // As long as haven't cleared the screen
+    // in preparation for clearing the history...
+    if (!waitingForClearCanvasConfirmation) {
+      socket.emit('drawHistory', history);      
+    }
   });
   socket.on('move', function(segment) {
     // Wipe the history if this is the 
