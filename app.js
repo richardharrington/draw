@@ -32,7 +32,7 @@ io.sockets.on('connection', function(socket) {
   });
 });
 
-app.listen(3000, '10.0.1.2');
+app.listen(8080);
 
 function handler (req, res) {
   var url = parse(req.url);

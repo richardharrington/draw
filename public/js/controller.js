@@ -144,7 +144,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
 
     setSocketIOEventListeners = function ( view ) {
         var canvas = view.canvas;
-        socket = io.connect('http://10.0.1.2:3000');
+        socket = io.connect();
         socket.on('stroke', function( segment ) {
             canvas.stroke( segment );
         });
