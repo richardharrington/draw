@@ -3,9 +3,8 @@ var app = require('http').createServer(handler)
   , fs = require('fs')
   , parse = require('url').parse
   , join = require('path').join
-  , history = [];
-  
-var waitingForClearCanvasConfirmation = false;
+  , history = []
+  , waitingForClearCanvasConfirmation = false;
 
 
 io.sockets.on('connection', function(socket) {
@@ -13,70 +12,25 @@ io.sockets.on('connection', function(socket) {
   socket.on('updateFromHistory', function() {
     socket.emit('drawHistory', history);
   });
-});
-
-// Draw on all browsers when any user drags the mouse.
-function stroke(segment) {
-  history.push(segment);
-  io.sockets.emit('stroke', segment);
-}
-
-// Clear all browsers' canvases when any user so desires,
-// But allow anyone the chance to press the 'Restore' button
-// until someone else makes the next move.
-function confirmClear(socket) {
-  io.sockets.emit('clear');
-  
-  // Remove regular 'move' listener and replace with 
-  // a function that wipes the history first.
-  io.sockets.clients().forEach(function(socket) {
-    socket.removeListener('move', stroke);
+  socket.on('move', function(segment) {
+    // Wipe the history if this is the 
+    // first move after a request to clear the canvas.
+    if (waitingForClearCanvasConfirmation) {
+      history = [];
+      waitingForClearCanvasConfirmation = false;
+    }
+    history.push(segment);
+    io.sockets.emit('stroke', segment)
   });
-  var wipeHistoryAndStartAgain = function (segment) {
-    history = [];
-    stroke(segment);
-    // Restore regular 'move' listener.
-    io.sockets.clients().forEach(function(socket) {
-      socket.on('move', stroke);
-    });
-  }
-  io.sockets.once('move', wipeHistoryAndStartAgain);
-  
-  // Restore instead.
-  io.sockets.on('requestRestore', function() {
-    
-    // Restore 'move' listener
-    io.sockets.removeListener('move', wipeHistoryAndStartAgain);
-    io.sockets.on('move', stroke);
-    
-    // Restore everyone's canvas.
+  socket.on('requestClear', function() {
+    waitingForClearCanvasConfirmation = true;
+    io.sockets.emit('clear');
+  });
+  socket.on('requestRestore', function() {
+    waitingForClearCanvasConfirmation = false;
     io.sockets.emit('drawHistory', history);
   });
-  
-  // TODO, related to above: Check to see whether new 'requestRestore'
-  // listeners are going to keep getting added, or whether it's an idempotent assignment.
-  
-  io.sockets.once('move', function(segment) {
-    history = [];
-    stroke(data);
-    // Restore regular 'move' listener.
-    io.sockets.on('move', stroke);
-  });
-  var wipeHistoryAndStartAgain = function(data) {
-    history = [];
-    stroke(data);
-  }
-  
-  io.sockets.once('move', wipeHistoryAndStartAgain);
-  io.sockets.once('requestRestore', function(data) {
-    io.sockets.removeListener(wipeHistoryAndStartAgain);
-    io.sockets.emit('drawHistory');
-  });
-}
-io.sockets.on('move', stroke);
-
-
-
+});
 
 app.listen(3000, '10.0.1.2');
 
