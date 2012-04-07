@@ -98,8 +98,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             // unescape (changes plusses to spaces)
             keywords = keywords.replace( /\+/g, ' ' );
             
-            view.theStatus.report( 'Unable to load palettes for the keyword or keywords "' + keywords + '." ' +
-                                   'Probably your internet is down.' );
+            view.theStatus.report( 'Unable to load palettes for the keyword(s) "' + keywords + '." ' +
+                                   'Probably a problem with either the colourlovers.com website or your internet connection.' );
         });
     };
     
