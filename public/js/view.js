@@ -46,6 +46,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
     };
     
     ClearRestoreCanvas.prototype.showClear = function() {
+        console.log("We're activating the clear button.");
         var el = this._jQElement;
         el.addClass('clear-canvas');
         el.removeClass('restore-canvas');
@@ -260,7 +261,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         var pageSelector = '#' + pageId;
             
         var statusReportElement =   $( pageSelector + ' .status-report' )[0], 
-            clearRestoreElement =   $( pageSelector + ' .clear-canvas')[0];
+            clearRestoreElement =   $( pageSelector + ' .clear-restore-button')[0];
             canvasElement =         $( pageSelector + ' .canvas' )[0],
             colorPanelsElement =    $( pageSelector + ' .color-panels' )[0],
             colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],

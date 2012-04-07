@@ -185,7 +185,7 @@ h1 {
     font-size: 0.8em;
 }
 
-.clear-canvas, .restore-canvas {
+.clear-restore-button {
     margin-top: 0px;
     margin-left: 30px;
 }

@@ -10,7 +10,7 @@ var app = require('http').createServer(handler)
 io.sockets.on('connection', function(socket) {
     
   // Get a new browser up to date.
-  socket.on('updateFromHistory', function() {
+  socket.on('requestInitHistory', function() {
     // As long as someone hasn't just cleared the canvas
     // in preparation for clearing the history...
     if (!waitingForClearCanvasConfirmation) {

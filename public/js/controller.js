@@ -333,7 +333,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             // currently this will erase the previous event listeners every time we iterate
             // through this loop, if there is more than one view on the page.
             setSocketIOEventListeners( view );
-            socket.emit('updateFromHistory');
+            socket.emit('requestInitHistory');
             
             // TEST OF CONCEPT
             
