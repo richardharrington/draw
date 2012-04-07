@@ -111,14 +111,16 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // because Firefox preserves state even when it's refreshed.
         $( pageSelector + ' .brush-size' ).val( model.localPalette.activeSize() );  
 
-        // bind the event handlers for clearing the screen, 
-        // toggling the brush size and entering search keywords.
+        // bind the event handlers for toggling the brush size and 
+        // entering search keywords. Also for toggling the clear and
+        // restore canvas buttons, which are dynamically swapped out
+        // for each other.
 
-        $( pageSelector + ' .clear-canvas' ).click( function() {
+        $( pageSelector ).on('click', '.clear-canvas', function() {
             socket.emit('requestClear');
         });
-
-        $( pageSelector + ' .restore-canvas' ).click( function() {
+        
+        $( pageSelector ).on('click', '.restore-canvas', function() {
             socket.emit('requestRestore');
         });
         
@@ -149,11 +151,19 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             canvas.stroke( segment );
         });
         socket.on('drawHistory', function( history ) {
-            canvas.clear();
-            canvas.restoreHistory( history );
+            view.clearRestoreCanvas.showClear();
+            canvas.drawHistory( history );
         });
-        socket.on('clear', function() {
-          canvas.clear();
+        
+        // Clear canvas and show the 'Restore canvas' undo button.
+        socket.on('tempClear', function() {
+            view.clearRestoreCanvas.showRestore();
+            canvas.clear();
+        });
+        
+        // Swap out the 'Restore canvas' button for the 'Clear canvas' button.
+        socket.on('finalClear', function() {
+            view.clearRestoreCanvas.showClear();
         });
     }
     
@@ -168,7 +178,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             localBrush.drawing = true; 
             // Stroking from a point to the same point 
             // creates a dot, in canvas.
-            socket.emit('move', $.extend({}, localBrush.style, {ix: x, iy: y, fx: x, fy: y} ));
+            socket.emit('move', $.extend({}, localBrush.style, {ix: x, iy: y} ));
         };
 
         canvas.DOMElement.onmousemove = function( event ) {

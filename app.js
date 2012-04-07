@@ -8,27 +8,30 @@ var app = require('http').createServer(handler)
 
 
 io.sockets.on('connection', function(socket) {
+    
   // Get a new browser up to date.
   socket.on('updateFromHistory', function() {
-    // As long as haven't cleared the screen
+    // As long as someone hasn't just cleared the canvas
     // in preparation for clearing the history...
     if (!waitingForClearCanvasConfirmation) {
       socket.emit('drawHistory', history);      
     }
   });
+  
   socket.on('move', function(segment) {
     // Wipe the history if this is the 
     // first move after a request to clear the canvas.
     if (waitingForClearCanvasConfirmation) {
       history = [];
       waitingForClearCanvasConfirmation = false;
+      io.sockets.emit('finalClear');
     }
     history.push(segment);
     io.sockets.emit('stroke', segment)
   });
   socket.on('requestClear', function() {
     waitingForClearCanvasConfirmation = true;
-    io.sockets.emit('clear');
+    io.sockets.emit('tempClear');
   });
   socket.on('requestRestore', function() {
     waitingForClearCanvasConfirmation = false;

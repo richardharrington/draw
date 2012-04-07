@@ -12,7 +12,8 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
     var TheStatus,
         Canvas,
         ColorPanels,
-        PalettesColumn;
+        PalettesColumn,
+        ClearRestoreCanvas;
         
     var init;
 
@@ -36,6 +37,26 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
             this._jQElement.html( '&nbsp;' );
         }
 
+    }
+
+    // ----- Clear or Restore canvas button (toggles between the two). ---------
+    
+    ClearRestoreCanvas = function( element ) {
+        this._jQElement = $( element );
+    };
+    
+    ClearRestoreCanvas.prototype.showClear = function() {
+        var el = this._jQElement;
+        el.addClass('clear-canvas');
+        el.removeClass('restore-canvas');
+        el.val('Clear canvas');
+    }
+
+    ClearRestoreCanvas.prototype.showRestore = function() {
+        var el = this._jQElement;
+        el.addClass('restore-canvas');
+        el.removeClass('clear-canvas');
+        el.val('Restore canvas');
     }
 
     // --------------------- Wrapper for DOM Canvas ----------------------------
@@ -73,36 +94,60 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         return coords;
     };
 
-    Canvas.prototype._applyStyle = function( segment ) {
+    Canvas.prototype._applyStyle = function( style ) {
         var c = this._context;
         
-        c.lineWidth = segment.width;
-        c.strokeStyle = "#" + segment.color;
-        c.lineCap = segment.lineCap;
-        c.lineJoin = segment.lineJoin;
+        c.lineWidth = style.width;
+        c.strokeStyle = "#" + style.color;
+        c.lineCap = style.lineCap;
+        c.lineJoin = style.lineJoin;
     };
     
     // The 'segment' argument is an object containing all the 
     // properties of BrushStyle object, plus the two starting 
     // and two ending coordinates of the segment.
     
-    Canvas.prototype.stroke = function( segment ) {
+    Canvas.prototype._startStroke = function( segment ) {
         var c = this._context;
-        var ix = segment.ix,
-            iy = segment.iy,
-            fx = segment.fx,
-            fy = segment.fy;
-        
-        // load the styles.
+        var x = segment.ix;
+        var y = segment.iy;
+
+        // load the style.
         this._applyStyle( segment );
         
-        // go to the location where the brush was last seen.
+        // draw a dot the diameter of the brush
+        var r = c.lineWidth / 2;
+        c.fillStyle = c.strokeStyle;
         c.beginPath();
-        c.moveTo( ix, iy );
+        c.moveTo( x, y );
+        c.arc( x, y, r, 0, Math.PI * 2 );
+        c.fill();
+    };
+    
+    Canvas.prototype.stroke = function( segment ) {
         
-        // draw to new coordinates.
-        c.lineTo( fx, fy );
-        c.stroke();
+        // If there's no final coordinates, run 
+        // _startStroke to just draw a dot.
+        if (segment.fx == null) {
+            this._startStroke( segment );
+        } else {
+            var c = this._context;
+            var ix = segment.ix,
+                iy = segment.iy,
+                fx = segment.fx,
+                fy = segment.fy;
+
+            // load the style.
+            this._applyStyle( segment );
+
+            // go to the location where the brush was last seen.
+            c.beginPath();
+            c.moveTo( ix, iy );
+
+            // draw to new coordinates.
+            c.lineTo( fx, fy );
+            c.stroke();
+        }
     };
 
     Canvas.prototype.clear = function() {
@@ -112,7 +157,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         c.fillRect( 0, 0, this._width, this._height );
     };
     
-    Canvas.prototype.restoreHistory = function( history ) {
+    Canvas.prototype.drawHistory = function( history ) {
         var c = this._context;
         var i, len;
         
@@ -215,6 +260,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         var pageSelector = '#' + pageId;
             
         var statusReportElement =   $( pageSelector + ' .status-report' )[0], 
+            clearRestoreElement =   $( pageSelector + ' .clear-canvas')[0];
             canvasElement =         $( pageSelector + ' .canvas' )[0],
             colorPanelsElement =    $( pageSelector + ' .color-panels' )[0],
             colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
@@ -223,6 +269,9 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
             
         // Initialize status reporting.
         theStatus = new TheStatus( statusReportElement );
+        
+        // Initialize canvas clearing and restoring button.
+        clearRestoreCanvas = new ClearRestoreCanvas( clearRestoreElement );
         
         // Initialize canvas.
         canvas = new Canvas( canvasElement, config.CANVAS_WIDTH, config.CANVAS_HEIGHT, 
@@ -238,6 +287,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         //----------- MODULE INTERFACE ----------------
 
         this.theStatus = theStatus;
+        this.clearRestoreCanvas = clearRestoreCanvas;
         this.canvas = canvas;
         this.colorPanels = colorPanels;
         this.palettesColumn = palettesColumn;
