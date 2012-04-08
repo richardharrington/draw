@@ -13,7 +13,8 @@ APP.util = (typeof APP.util !== 'undefined') ? APP.util :
     var copy,
         parseSQLDate,
         object,
-        forEach;
+        forEach,
+        isTouchSupported;
     
     // PRIVATE METHODS
     
@@ -129,6 +130,20 @@ APP.util = (typeof APP.util !== 'undefined') ? APP.util :
 
         return d;
     };
+    
+    // feature detection for touch events
+    
+    isTouchSupported = function () {
+        var el = document.createElement('div');
+        var eventName = 'ontouchstart';
+        var isSupported = (eventName in el);
+        if (!isSupported) {
+            el.setAttribute(eventName, 'return;');
+            isSupported = typeof el[eventName] === 'function';
+        }
+        el = null;
+        return isSupported;
+    }
 
     // object is an object inheritor function. (NOT USED IN THE CURRENT VERSION OF THE SCRIPT)
 
@@ -149,6 +164,7 @@ APP.util = (typeof APP.util !== 'undefined') ? APP.util :
         parseSQLDate: parseSQLDate,
         object: object,
         forEach: forEach,
+        isTouchSupported: isTouchSupported,
         
         PropertyToParameter: PropertyToParameter
     };

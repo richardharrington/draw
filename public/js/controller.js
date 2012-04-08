@@ -167,37 +167,71 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         });
     }
     
+    // ------------- DRAWING FUNCTIONS, FOLLOWED BY EVENT LISTENERS FOR THEM. -----------
+    
+    var startDraw = function( view, model, event ) {
+        var canvas = view.canvas;
+        var localBrush = model.localBrush;
+        var p = canvas.getPos( event );
+        var x = localBrush.x = p.x;
+        var y = localBrush.y = p.y;
+        localBrush.drawing = true; 
+        socket.emit('move', $.extend({}, localBrush.style, {ix: x, iy: y} ));
+    }
+    
+    var continueDraw = function( view, model, event ) {
+        var canvas = view.canvas;
+        var localBrush = model.localBrush;
+        var p = canvas.getPos( event );
+        var ix = localBrush.x;
+        var iy = localBrush.y;
+        var fx = p.x;
+        var fy = p.y;
+        socket.emit('move', $.extend({}, localBrush.style, {ix: ix, iy: iy, fx: fx, fy: fy} ));
+        localBrush.x = fx;
+        localBrush.y = fy;
+    }
+    
+    var stopDraw = function( model ) {
+        model.localBrush.drawing = false;
+    }
+    
     setMouseEventListeners = function( view, model ) {
         var canvas = view.canvas;
         var localBrush = model.localBrush;
-
-        canvas.DOMElement.onmousedown = function( event ) {
-            var p = canvas.getMousePos( event );
-            var x = localBrush.x = p.x;
-            var y = localBrush.y = p.y;
-            localBrush.drawing = true; 
-            // Stroking from a point to the same point 
-            // creates a dot, in canvas.
-            socket.emit('move', $.extend({}, localBrush.style, {ix: x, iy: y} ));
-        };
-
-        canvas.DOMElement.onmousemove = function( event ) {
-            if (localBrush.drawing) {
-                var p = canvas.getMousePos( event );
-                var ix = localBrush.x;
-                var iy = localBrush.y;
-                var fx = p.x;
-                var fy = p.y;
-                socket.emit('move', $.extend({}, localBrush.style, {ix: ix, iy: iy, fx: fx, fy: fy} ));
-                localBrush.x = fx;
-                localBrush.y = fy;
-            }
-        };
-
-        canvas.DOMElement.onmouseup = function( event ) {
-            localBrush.drawing = false;
-        };
+        
+        canvas.DOMElement.addEventListener('mousedown', function( event ) {
+            startDraw( view, model, event );
+        }, false);
+        canvas.DOMElement.addEventListener('mousemove', function( event ) {
+            if (localBrush.drawing) continueDraw( view, model, event );
+        }, false);
+        canvas.DOMElement.addEventListener('mouseup', function() {
+            stopDraw( model );
+        }, false);
     };
+    
+    var setTouchEventListeners = function( view, model ) {
+        var canvas = view.canvas;
+        var localBrush = model.localBrush;
+        
+        canvas.DOMElement.addEventListener('touchstart', function( event ) {
+            // Don't want to disable pinch and zoom
+            if (event.touches.length === 1) {
+                startDraw( view, model, event.touches[0] );
+                event.preventDefault();
+            } else {
+                stopDraw( model );
+            }
+        }, false);
+        canvas.DOMElement.addEventListener('touchmove', function( event ) {
+            if (localBrush.drawing) continueDraw( view, model, event.changedTouches[0] );
+            event.preventDefault();
+        }, false);
+        canvas.DOMElement.addEventListener('touchend', function( event ) {
+            stopDraw( model );
+        }, false);
+    }
         
     // Now set up the controllers for the color panels and the palettes column,
     // which are quite similar so we're going to re-use the code.
@@ -326,21 +360,19 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             
             setMiscellaneousUserControls( view, model, i );
             setErrorControls( view );
-            setMouseEventListeners( view, model );
-            
+            if (util.isTouchSupported()) {
+                setTouchEventListeners( view, model );
+            } else {
+                setMouseEventListeners( view, model );
+            }
+                        
             // Attention: this is just a temporary thing now. We need to rethink
             // whether we want to support multiple views on the same page.
             // currently this will erase the previous event listeners every time we iterate
             // through this loop, if there is more than one view on the page.
             setSocketIOEventListeners( view );
             socket.emit('requestInitHistory');
-            
-            // TEST OF CONCEPT
-            
-            // starts with a red dot on the screen, to be moved by keyboard commands
-            // view.canvas.startStroke( model.testBrush );
-            
-            
+                        
             colorPanelsController.init( view, model );
             loadPalettes.add( i );
         }

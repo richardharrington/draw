@@ -83,7 +83,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         this.clear();
     };
 
-    Canvas.prototype.getMousePos = function( event ) {
+    Canvas.prototype.getPos = function( event ) {
         event = event || window.event; // This is for IE's global window.event
 
         var r = this.DOMElement.getBoundingClientRect();
