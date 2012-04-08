@@ -18,6 +18,7 @@ q:before, q:after { content:''; }
 body {
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
     display: none;
+    background-image: url(./images/ricepaper2.png);
 }
 
 h1 {
