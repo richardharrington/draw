@@ -133,10 +133,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             requestFromColourloversAPI( view, model, instanceNumber );
         });
         $( pageSelector + ' .search-field' ).keydown( function( event ) {
-
-            // cross-browser compliance for different keydown event key code property names
-    
-            code = event.keyCode || event.which;
+            var code = event.which;
             if (code == 13) {
                 event.preventDefault();
                 requestFromColourloversAPI( view, model, instanceNumber );
