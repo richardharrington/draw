@@ -204,7 +204,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             startDraw( view, model, event );
         }, false);
         canvas.DOMElement.addEventListener('mousemove', function( event ) {
-            if (localBrush.drawing) continueDraw( view, model, event );
+            if (localBrush.drawing) {
+                continueDraw( view, model, event );
+            }
         }, false);
         canvas.DOMElement.addEventListener('mouseup', function() {
             stopDraw( model );
@@ -216,7 +218,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var localBrush = model.localBrush;
         
         canvas.DOMElement.addEventListener('touchstart', function( event ) {
-            // Don't want to disable pinch and zoom
+            // Don't want to disable pinch and zoom.
+            // THIS WORKS IN ANDROID BUT NOT IN IPHONE, 
+            // WHERE THE PINCH AND ZOOM IS INDEED DISABLED.
             if (event.touches.length === 1) {
                 startDraw( view, model, event.touches[0] );
                 event.preventDefault();
@@ -225,8 +229,10 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             }
         }, false);
         canvas.DOMElement.addEventListener('touchmove', function( event ) {
-            if (localBrush.drawing) continueDraw( view, model, event.changedTouches[0] );
-            event.preventDefault();
+            if (localBrush.drawing && event.touches.length === 1) {
+                continueDraw( view, model, event.changedTouches[0] );
+                event.preventDefault();
+            }
         }, false);
         canvas.DOMElement.addEventListener('touchend', function( event ) {
             stopDraw( model );
