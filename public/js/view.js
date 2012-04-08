@@ -46,7 +46,6 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
     };
     
     ClearRestoreCanvas.prototype.showClear = function() {
-        console.log("We're activating the clear button.");
         var el = this._jQElement;
         el.addClass('clear-canvas');
         el.removeClass('restore-canvas');
