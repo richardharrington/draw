@@ -39,7 +39,7 @@ io.sockets.on('connection', function(socket) {
   });
 });
 
-app.listen(3000);
+app.listen(8888, '10.11.12.111');
 
 function handler (req, res) {
   var url = parse(req.url);

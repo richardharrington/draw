@@ -88,8 +88,10 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
 
         var r = this.DOMElement.getBoundingClientRect();
         var coords = {
-            x : event.clientX - r.left - this._border,
-            y : event.clientY - r.top - this._border
+          // No attempt to cater to IE here. We'll try to do that later.
+        
+          x : event.pageX - (r.left + window.pageXOffset) - this._border,
+          y : event.pageY - (r.top + window.pageYOffset) - this._border
         };
         return coords;
     };
