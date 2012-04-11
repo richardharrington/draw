@@ -1,6 +1,6 @@
 {
-  "name": "draw",
-  "subdomain": "draw",
+  "name": "draw-dev",
+  "subdomain": "draw-dev",
   "scripts": {
     "start": "app.js"
   },
