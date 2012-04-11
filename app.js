@@ -6,6 +6,8 @@ var app = require('http').createServer(handler)
   , history = []
   , waitingForClearCanvasConfirmation = false;
   
+/*
+
 io.configure('production', function(){
   io.enable('browser client minification');  // send minified client
   io.enable('browser client etag');          // apply etag caching logic based on version number
@@ -23,6 +25,8 @@ io.configure('production', function(){
 io.configure('development', function(){
   io.set('transports', ['websocket']);
 });
+
+*/
 
 io.sockets.on('connection', function(socket) {
     
