@@ -42,8 +42,6 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
         var i, len;
         var color;
         var small, large;
-        var LINE_CAP = 'round'; // We can always make these configurable later.
-        var LINE_JOIN = 'round'; // ----------
         
         // We can only fit this.maxColors number of panels,
         // so truncate the array if necessary. 
@@ -55,14 +53,10 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
         // brushStyles alternate between small brushes and large brushes.    
         for (i = 0, len = colors.length; i < len; i++) {
             this._brushStyles.push({
-                lineCap: LINE_CAP,
-                lineJoin: LINE_JOIN,
                 color: colors[i],
                 width: this._smallBrushWidth
             });
             this._brushStyles.push({
-                lineCap: LINE_CAP,
-                lineJoin: LINE_JOIN,
                 color: colors[i],
                 width: this._largeBrushWidth                
             });

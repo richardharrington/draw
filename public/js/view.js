@@ -70,6 +70,11 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         this.drawing = false;
 
         this._context = DOMElement.getContext( "2d" );
+        
+        // Possibly make these configurable in the future.
+        this._context.lineCap = 'round';
+        this._context.lineJoin = 'round';
+        
         this._width = width;
         this._height = height;
         this._backgroundColor = backgroundColor;
@@ -101,8 +106,12 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         
         c.lineWidth = style.width;
         c.strokeStyle = "#" + style.color;
-        c.lineCap = style.lineCap;
-        c.lineJoin = style.lineJoin;
+        
+        // Don't know why we have to do this when the properties
+        // should be set already, but if we find out,
+        // we should make the same fix to paper.js.
+        c.lineCap = 'round';
+        c.lineJoin = 'round';
     };
     
     // The 'segment' argument is an object containing all the 
