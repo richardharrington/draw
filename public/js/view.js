@@ -79,9 +79,6 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         // point in the future, but not now.
         this._context.lineCap = 'round';
         this._context.lineJoin = 'round';
-        console.log(this._context.lineCap);
-        console.log(this._context.lineJoin);
-        
         
         this._border = (borderLeftPx) ? parseInt(borderLeftPx, 10) : 16;
         
@@ -110,6 +107,13 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
 
         c.lineWidth = style.width;
         c.strokeStyle = "#" + style.color;
+        
+        // Don't know why I have to do this here with 
+        // these parameters that are already set, but
+        // if I figure it out I can tell paper.js how to 
+        // similarly fix their stuff.
+        c.lineCap = 'round';
+        c.lineJoin = 'round';
     };
     
     // The 'segment' argument is an object containing all the 
@@ -133,24 +137,31 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
           this._applyStyle( segment );
         }
 
-        // Reset the brush if we've been sent initial coordinates.
-        if (ix != null) {
-            c.beginPath();
-            c.moveTo( ix, iy );              
-        }
-        
-        // Move the brush if we've been sent final coordinates, 
-        // otherwise draw a dot the diameter of the brush.
-        if (fx != null) {
+        // Move the brush if it should be moved, 
+        // (indicated by two sets of identical coordinates)
+        if (ix !== fx || iy !== fy) {
+            
+            // Reset the brush if we've been sent initial coordinates.
+            if (ix != null) {
+                c.beginPath();
+                c.moveTo( ix, iy );              
+            }
             c.lineTo( fx, fy );
             c.stroke();              
-        } else {
+        } 
+        
+        // If it's not a move but just a click,
+        // draw a dot the diameter of the brush.
+        else {
+            console.log('circle');
             r = c.lineWidth / 2;
             c.fillStyle = c.strokeStyle;
             c.beginPath();
             c.moveTo( ix, iy );
             c.arc( ix, iy, r, 0, Math.PI * 2 );
             c.fill();
+            // Clear path for next move.
+            c.beginPath();
         }
     };
 

@@ -4,8 +4,7 @@ var app = require('http').createServer(handler)
   , parse = require('url').parse
   , join = require('path').join
   , history = []
-  , userBrushes = {}
-  , channelBrush = null
+  , lastUserId = 0
   , userIdGen = 0
   , waitingForClearCanvasConfirmation = false;
   
@@ -33,6 +32,7 @@ io.configure('development', function(){
 
 io.sockets.on('connection', function(socket) {
   var userId = userIdGen++;
+  var lastUserSegment = {};
     
   // Get a new browser up to date.
   socket.on('requestInitHistory', function() {
@@ -58,22 +58,28 @@ io.sockets.on('connection', function(socket) {
     // If only fx and fy exist, it's the continuation of a stroke.
     // If only ix and iy exist, it's a new stroke with the same brush.
     
-    // Create a user brush if we don't have one already.
-    userBrushes[userId] = userBrushes[userId] || {};
-    var userBrush = userBrushes[userId];
-    
     // If a new brush has been sent from the user, or if the user's ongoing
     // brush is different from the one in the last history element that happens
     // to have been broadcast (channelBrush), then broadcast brush information.
-    if (segment.color) {
-      userBrush.color = segment.color;      
-      userBrush.width = segment.width;
-    } else if ((userBrush.color !== channelBrush.color) || (userBrush.width !== channelBrush.width)){
-      segment.color = userBrush.color;
-      segment.width = userBrush.width;
+    if (segment.color != null) {
+      lastUserSegment.width = segment.color;
+      lastUserSegment.color = segment.color;
+    } 
+    
+    // We're continuing a stroke, so make sure we don't jump back and forth between brushes.
+    else if (userId !== lastUserId) {
+      segment.ix = lastUserSegment.fx;
+      segment.iy = lastUserSegment.fy;
+      segment.width = lastUserSegment.width;
+      segment.color = lastUserSegment.color;
     }
     
-    channelBrush = userBrush;
+    // Now set it up for the next round. Don't actually 
+    // care about the initial coordinates here.
+    lastUserSegment.fx = segment.fx;
+    lastUserSegment.fy = segment.fy;
+
+    lastUserId = userId;
     history.push(segment);
     io.sockets.emit('stroke', segment)
   });

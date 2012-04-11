@@ -170,10 +170,12 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var canvas = view.canvas;
         var localBrush = model.localBrush;
         var p = canvas.getPos( event );
-        var x = localBrush.x = p.x;
-        var y = localBrush.y = p.y;
+        var x = p.x;
+        var y = p.y;
+        socket.emit('move', {ix: x, iy: y, fx: x, fy: y, color: localBrush.style.color, width: localBrush.style.width} );
+        localBrush.x = x;
+        localBrush.y = y;
         localBrush.drawing = true; 
-        socket.emit('move', $.extend({}, localBrush.style, {ix: x, iy: y} ));
     }
     
     var continueDraw = function( view, model, event ) {
@@ -213,9 +215,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var localBrush = model.localBrush;
         
         canvas.DOMElement.addEventListener('touchstart', function( event ) {
+            
             // Don't want to disable pinch and zoom.
-            // THIS WORKS IN ANDROID BUT NOT IN IPHONE, 
-            // WHERE THE PINCH AND ZOOM IS INDEED DISABLED.
             if (event.touches.length === 1) {
                 startDraw( view, model, event.touches[0] );
                 event.preventDefault();
