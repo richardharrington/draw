@@ -357,6 +357,10 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         model = new APP.Model( config );
         view = new APP.View( config );
         
+        // EXPOSE FOR DEBUGGING
+        APP.model = model;
+        APP.view = view;
+        
         // Set the controls.
         setMiscellaneousUserControls();
         setErrorControls();
@@ -369,6 +373,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         colorPanelsController.init();
 
         $( 'body' ).css('display', 'block');
+        
     };
     
     //----------- module interface -----------------

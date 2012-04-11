@@ -135,14 +135,13 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         // Draw a dot.
         r = c.lineWidth / 2;
         c.fillStyle = c.strokeStyle;
-        c.moveTo( x, y );
         c.beginPath();
         c.arc( x, y, r, 0, Math.PI * 2 );
         c.fill();
 
-        // Clear circle path and start line path in preparation for next stroke.
-        moveTo( x, y );
+        // Clear the circle path and move the cursor in preparation for the next stroke.
         c.beginPath();
+        moveTo( x, y );
     }
     
     Canvas.prototype.stroke = function( seg ) {
@@ -161,8 +160,8 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
 
         // Reset the brush if we've been supplied initial coordinates.
         if (ix != null) {
-            c.moveTo( ix, iy );           
             c.beginPath();
+            c.moveTo( ix, iy );           
         }
         c.lineTo( fx, fy );
         c.stroke();
@@ -187,7 +186,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         
         for (var i = 0, len = history.length; i < len; i++) {
             el = history[i];
-            if (typeof el.fx === 'number') {
+            if (el.fx != null) {
                 this.stroke(el);
             } else {
                 this.startStroke(el);
