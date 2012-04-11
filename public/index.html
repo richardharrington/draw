@@ -9,59 +9,58 @@
     <title>draw</title>
 </head>
 <body>
+<div class="page" id="mainPage">
 
-<script id="pageTemplate" type="text/x-jquery-tmpl">
-    <div class="page" id="page-${instanceNum}">
+    <div class="left-column">  
+        <p class="palettes-found">Pick a palette from among those found for the search term(s) "
+            <span class="successful-keywords"></span>":
+        </p>
+        <div class="palette-list"></div>
+    </div>
 
-        <div class="left-column">  
-            <p class="palettes-found">Pick a palette from among those found for the search term(s) "<span class="successful-keywords"></span>":</p>
-            <div class="palette-list"></div>
-        </div>
-
-        <div class="main-box-wrapper">
-            <div class="main-box">
-                <div class="header">
-                    <h1>${title}</h1>
-                    <div>
-                        <span class="search-label">Search colourlovers.com for a palette (try a season or a color):</span>
-                        <input type="text" class="search-field"></input>
-                        <input type="button" class="search-button" value="search">
-                    </div>
-
-                    <!-- a placeholder for spacing:  -->
-                    <p class="status-report">&nbsp;</p> 
+    <div class="main-box-wrapper">
+        <div class="main-box">
+            <div class="header">
+                <h1>Draw</h1>
+                <div>
+                    <span class="search-label">Search colourlovers.com for a palette (try a season or a color):</span>
+                    <input type="text" class="search-field"></input>
+                    <input type="button" class="search-button" value="search">
                 </div>
 
-                <div class="color-panels-container-wrapper">
-                        <p class="current-palette-header">Current palette: <span class="current-palette-title"></span></p>
-                        <div class="color-panels"></div>
-                </div>
-                <div class="canvas-container">
+                <!-- a placeholder for spacing:  -->
+                <p class="status-report">&nbsp;</p> 
+            </div>
 
-                    <!--- width and height are defaults, will be overridden by javascript -->
-                    <canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
+            <div class="color-panels-container-wrapper">
+                    <p class="current-palette-header">Current palette: <span class="current-palette-title"></span></p>
+                    <div class="color-panels"></div>
+            </div>
+            <div class="canvas-container">
 
-                    <div class="canvas-controls">
-                        <span class="brush-size-label">Brush size:</span>         
-                        <select class="brush-size">
-                            <option value="small">Small</option>
-                            <option value="large">Large</option>
-                        </select>
-                        
-                        <!-- This next button toggles between a clearing button and a restoring
-                             button. The behavior is delegated by jQuery to the class names "clear-canvas"
-                             and "restore-canvas". It starts out with neither of these names because we 
-                             want it to be disabled at first, in case the already logged-in users are 
-                             in the middle of confirming a clear-canvas action. -->
-                             
-                        <input type="button" class="clear-restore-button" value="Clear canvas" />
-                    </div>
+                <!--- width and height are defaults, will be overridden by javascript -->
+                <canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
+
+                <div class="canvas-controls">
+                    <span class="brush-size-label">Brush size:</span>         
+                    <select class="brush-size">
+                        <option value="small">Small</option>
+                        <option value="large">Large</option>
+                    </select>
+                    
+                    <!-- This next button toggles between a clearing button and a restoring
+                         button. The behavior is delegated by jQuery to the class names "clear-canvas"
+                         and "restore-canvas". It starts out with neither of these names because we 
+                         want it to be disabled at first, in case the already logged-in users are 
+                         in the middle of confirming a clear-canvas action. -->
+                         
+                    <input type="button" class="clear-restore-button" value="Clear canvas" />
                 </div>
             </div>
         </div>
+    </div>
 
-    </div><!-- page -->
-</script>
+</div><!-- page -->
 
 <script id="colorPanelsTemplate" type="text/x-jquery-tmpl">
     <div class="color-panel ${klass}"></div>

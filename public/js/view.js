@@ -272,14 +272,14 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         jQContainer.parent()[0].style.display = 'block';
     };
     
-    init = function( config, pageNumber ) {
+    init = function( config ) {
 
         var theStatus,
             canvas,
             colorPanels,
             palettesColumn;
             
-        var pageId = 'page-' + pageNumber;
+        var pageId = config.PAGE_ID;
         var pageSelector = '#' + pageId;
             
         var statusReportElement =   $( pageSelector + ' .status-report' )[0], 

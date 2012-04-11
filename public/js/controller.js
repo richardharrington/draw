@@ -23,11 +23,13 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     
     var socket;
     
-    var init;
+    var view
+      , model
+      , init;
     
     // -- the event handler for requesting data from colourlovers.com
     
-    requestFromColourloversAPI = function( view, model, instanceNumber ) {
+    requestFromColourloversAPI = function() {
         var encodedKeywords;
         var colourLoversScript;
         var searchURL;
@@ -59,7 +61,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         
             encodedKeywords = keywords.replace( /\s+/g, '+' );
             searchURL = 'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
-                        '&jsonCallback=APP.controller.loadPalettes[' + instanceNumber + ']'
+                        '&jsonCallback=APP.controller.loadPalettes'
             colourLoversScript.setAttribute( 'src', searchURL);
         }
         return false;
@@ -70,20 +72,20 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     // list that was passed to them, and then call the anonymous function that was originally passed
     // to the constructor. The anonymous function is invoked with the new, extended argument list.
     
-    loadPalettes = new util.PropertyToParameter( function( instanceNumber, data ) {
-        var model = APP.models[instanceNumber];
-        var view = APP.views[instanceNumber];
+    loadPalettes = function( data ) {
+        var model = APP.model;
+        var view = APP.view;
         
         if (model.paletteList.load( data )) {
-            palettesColumnController.init( view, model );
+            palettesColumnController.init();
             view.theStatus.report();   // no arguments means all clear, no errors to report.  
         } else {
             view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
                                     model.paletteList.keywords + '." Try again.' );
         };
-    });
+    };
 
-    setErrorControls = function( view ) {
+    setErrorControls = function() {
         // Set up error handlers for all current and future cases of 
         // the manual script tag that downloads the data from colourlovers
         // (using jQuery .delegate()).
@@ -103,7 +105,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         });
     };
     
-    setMiscellaneousUserControls = function( view, model, instanceNumber ) {
+    setMiscellaneousUserControls = function() {
         var pageSelector = '#' + view.pageId;
         var code;
         
@@ -137,12 +139,12 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             var code = event.which;
             if (code == 13) {
                 event.preventDefault();
-                requestFromColourloversAPI( view, model, instanceNumber );
+                requestFromColourloversAPI();
             }
         });
     };
 
-    setSocketIOEventListeners = function ( view ) {
+    setSocketIO = function () {
         var canvas = view.canvas;
         socket = io.connect();
         socket.on('dot', function( dot ) {
@@ -166,11 +168,15 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         socket.on('finalClear', function() {
             view.clearRestoreCanvas.showClear();
         });
+        
+        // Init
+        socket.emit('registerBrush', model.localBrush.style);
+        socket.emit('requestInitHistory');
     }
     
     // ------------- DRAWING FUNCTIONS, FOLLOWED BY EVENT LISTENERS FOR THEM. -----------
     
-    var startDraw = function( view, model, event ) {
+    var startDraw = function( event ) {
         var canvas = view.canvas;
         var localBrush = model.localBrush;
         var p = canvas.getPos( event );
@@ -182,7 +188,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         localBrush.drawing = true; 
     }
     
-    var continueDraw = function( view, model, event ) {
+    var continueDraw = function( event ) {
         var canvas = view.canvas;
         var localBrush = model.localBrush;
         var p = canvas.getPos( event );
@@ -193,28 +199,28 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         localBrush.y = fy;
     }
     
-    var stopDraw = function( model ) {
+    var stopDraw = function() {
         model.localBrush.drawing = false;
     }
     
-    setMouseEventListeners = function( view, model ) {
+    setMouseEventListeners = function() {
         var canvas = view.canvas;
         var localBrush = model.localBrush;
         
         canvas.DOMElement.addEventListener('mousedown', function( event ) {
-            startDraw( view, model, event );
+            startDraw( event );
         }, false);
         canvas.DOMElement.addEventListener('mousemove', function( event ) {
             if (localBrush.drawing) {
-                continueDraw( view, model, event );
+                continueDraw( event );
             }
         }, false);
         canvas.DOMElement.addEventListener('mouseup', function() {
-            stopDraw( model );
+            stopDraw();
         }, false);
     };
     
-    var setTouchEventListeners = function( view, model ) {
+    var setTouchEventListeners = function() {
         var canvas = view.canvas;
         var localBrush = model.localBrush;
         
@@ -222,20 +228,20 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             
             // Don't want to disable pinch and zoom.
             if (event.touches.length === 1) {
-                startDraw( view, model, event.touches[0] );
+                startDraw( event.touches[0] );
                 event.preventDefault();
             } else {
-                stopDraw( model );
+                stopDraw();
             }
         }, false);
         canvas.DOMElement.addEventListener('touchmove', function( event ) {
             if (localBrush.drawing && event.touches.length === 1) {
-                continueDraw( view, model, event.changedTouches[0] );
+                continueDraw( event.changedTouches[0] );
                 event.preventDefault();
             }
         }, false);
         canvas.DOMElement.addEventListener('touchend', function( event ) {
-            stopDraw( model );
+            stopDraw();
         }, false);
     }
         
@@ -268,7 +274,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     
     colorPanelsController = new ElementsController();
     
-    colorPanelsController.init = function( view, model ) {
+    colorPanelsController.init = function() {
         var panel;
         var pageSelector = '#' + view.pageId;
         
@@ -302,7 +308,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
 
     palettesColumnController = new ElementsController();
     
-    palettesColumnController.init = function( view, model ) {
+    palettesColumnController.init = function() {
         var pageSelector = '#' + view.pageId;
                 
         // Populate the palettes column.
@@ -341,76 +347,33 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     // -------------------- CONTROLLER INIT --------------------------
 
     init = function() {
-
-        var models = APP.models = [];
-        var views = APP.views = [];
-        var model, view;
         
         var i, len;
-        var configArray = APP.config;
-        var config;
-        var pageSelector;
-        var pageVariables = [];
+        var config = APP.config;
+        var pageId = '#mainPage';
+        var pageSelector = $('#mainPage');
         
-        // Create the main html blocks. 
-        for (i = 0, len = configArray.length; i < len; i++) {
-            pageVariables.push({
-                instanceNum: i,
-                title: configArray[i].APP_TITLE
-            });
-        }
-        $( '#pageTemplate' ).tmpl( pageVariables ).appendTo( 'body' );
+        // Create the model and view.
+        model = new APP.Model( config );
+        view = new APP.View( config );
         
-        // Create the models and views.
-        for (i = 0, len = configArray.length; i < len; i++) {
-            
-            config = configArray[i];
-            model = new APP.Model( config );
-            models.push( model );
-            view = new APP.View( config, i );
-            views.push( view );
-            
-            setMiscellaneousUserControls( view, model, i );
-            setErrorControls( view );
-            if (util.isTouchSupported()) {
-                setTouchEventListeners( view, model );
-            } else {
-                setMouseEventListeners( view, model );
-            }
-                        
-            // Attention: this is just a temporary thing now. We need to rethink
-            // whether we want to support multiple views on the same page.
-            // currently this will erase the previous event listeners every time we iterate
-            // through this loop, if there is more than one view on the page.
-            setSocketIOEventListeners( view );
-            socket.emit('registerBrush', model.localBrush.style);
-            socket.emit('requestInitHistory');
-                        
-            colorPanelsController.init( view, model );
-            loadPalettes.add( i );
+        // Set the controls.
+        setMiscellaneousUserControls();
+        setErrorControls();
+        if (util.isTouchSupported()) {
+            setTouchEventListeners();
+        } else {
+            setMouseEventListeners();
         }
+        setSocketIO();
+        colorPanelsController.init();
+
         $( 'body' ).css('display', 'block');
     };
     
     //----------- module interface -----------------
     
-    return {
-        
-        // We need init right now.
-        // We might need the rest of this stuff in a later version of this app.
-
-        requestFromColourloversAPI: requestFromColourloversAPI,
-        loadPalettes: loadPalettes,
-
-        setMiscellaneousUserControls: setMiscellaneousUserControls,
-        setErrorControls: setErrorControls,
-        setMouseEventListeners: setMouseEventListeners,
-
-        colorPanelsController: colorPanelsController,
-        palettesColumnController: palettesColumnController,
-
-        init: init
-    };
+    return { init: init };
 })();
 
 $( function () {
