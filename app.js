@@ -4,6 +4,8 @@ var app = require('http').createServer(handler)
   , parse = require('url').parse
   , join = require('path').join
   , history = []
+  , lastUserId = 0
+  , userIdGen = 0
   , waitingForClearCanvasConfirmation = false;
   
 /*
@@ -29,6 +31,8 @@ io.configure('development', function(){
 */
 
 io.sockets.on('connection', function(socket) {
+  var userId = userIdGen++;
+  var lastUserSegment = {};
     
   // Get a new browser up to date.
   socket.on('requestInitHistory', function() {
@@ -47,6 +51,35 @@ io.sockets.on('connection', function(socket) {
       waitingForClearCanvasConfirmation = false;
       io.sockets.emit('finalClear');
     }
+    
+    // REWRITE THESE COMMENTS WHEN I'M THINKING STRAIGHT.
+    // Various properties being present tell us what's happening here.
+    // If ix, iy, width and color exist, it's a new stroke with a new brush.
+    // If only fx and fy exist, it's the continuation of a stroke.
+    // If only ix and iy exist, it's a new stroke with the same brush.
+    
+    // If a new brush has been sent from the user, or if the user's ongoing
+    // brush is different from the one in the last history element that happens
+    // to have been broadcast (channelBrush), then broadcast brush information.
+    if (segment.color != null) {
+      lastUserSegment.width = segment.color;
+      lastUserSegment.color = segment.color;
+    } 
+    
+    // We're continuing a stroke, so make sure we don't jump back and forth between brushes.
+    else if (userId !== lastUserId) {
+      segment.ix = lastUserSegment.fx;
+      segment.iy = lastUserSegment.fy;
+      segment.width = lastUserSegment.width;
+      segment.color = lastUserSegment.color;
+    }
+    
+    // Now set it up for the next round. Don't actually 
+    // care about the initial coordinates here.
+    lastUserSegment.fx = segment.fx;
+    lastUserSegment.fy = segment.fy;
+
+    lastUserId = userId;
     history.push(segment);
     io.sockets.emit('stroke', segment)
   });
@@ -60,7 +93,7 @@ io.sockets.on('connection', function(socket) {
   });
 });
 
-app.listen(3000);
+app.listen(3000, '10.0.1.2');
 
 function handler (req, res) {
   var url = parse(req.url);

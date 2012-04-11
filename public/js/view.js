@@ -79,7 +79,12 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         this._height = height;
         this._backgroundColor = backgroundColor;
         this._history = [];
-
+        
+        // We may make lineCap & lineJoin configurable at some 
+        // point in the future, but not now.
+        this._context.lineCap = 'round';
+        this._context.lineJoin = 'round';
+        
         this._border = (borderLeftPx) ? parseInt(borderLeftPx, 10) : 16;
         
         $( DOMElement ).attr( 'width', width );
@@ -93,8 +98,9 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
 
         var r = this.DOMElement.getBoundingClientRect();
         var coords = {
-          // No attempt to cater to IE here. We'll try to do that later.
-        
+          // No attempt to cater to IE here (doesn't support
+          // pageX/YOffset). We'll try to do that later.
+
           x : event.pageX - (r.left + window.pageXOffset) - this._border,
           y : event.pageY - (r.top + window.pageYOffset) - this._border
         };
@@ -103,13 +109,14 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
 
     Canvas.prototype._applyStyle = function( style ) {
         var c = this._context;
-        
+
         c.lineWidth = style.width;
         c.strokeStyle = "#" + style.color;
         
-        // Don't know why we have to do this when the properties
-        // should be set already, but if we find out,
-        // we should make the same fix to paper.js.
+        // Don't know why I have to do this here with 
+        // these parameters that are already set, but
+        // if I figure it out I can tell paper.js how to 
+        // similarly fix their stuff.
         c.lineCap = 'round';
         c.lineJoin = 'round';
     };
@@ -117,47 +124,49 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
     // The 'segment' argument is an object containing all the 
     // properties of BrushStyle object, plus the two starting 
     // and two ending coordinates of the segment.
-    
-    Canvas.prototype._startStroke = function( segment ) {
-        var c = this._context;
-        var x = segment.ix;
-        var y = segment.iy;
-
-        // load the style.
-        this._applyStyle( segment );
-        
-        // draw a dot the diameter of the brush
-        var r = c.lineWidth / 2;
-        c.fillStyle = c.strokeStyle;
-        c.beginPath();
-        c.moveTo( x, y );
-        c.arc( x, y, r, 0, Math.PI * 2 );
-        c.fill();
-    };
+    // REDO THIS COMMENT TO REFLECT THE NEW REALITY.
     
     Canvas.prototype.stroke = function( segment ) {
+        var c = this._context; 
+        var r;
+            
+        var ix = segment.ix,
+            iy = segment.iy,
+            fx = segment.fx,
+            fy = segment.fy,
+            color = segment.color;
+
+        // load the style if we've been sent a new one at all,
+        // otherwise we're supposed to go with the one we already have loaded.
+        if (segment.color) {
+          this._applyStyle( segment );
+        }
+
+        // Move the brush if it should be moved, 
+        // (indicated by two sets of identical coordinates)
+        if (ix !== fx || iy !== fy) {
+            
+            // Reset the brush if we've been sent initial coordinates.
+            if (ix != null) {
+                c.beginPath();
+                c.moveTo( ix, iy );              
+            }
+            c.lineTo( fx, fy );
+            c.stroke();              
+        } 
         
-        // If there's no final coordinates, run 
-        // _startStroke to just draw a dot.
-        if (segment.fx == null) {
-            this._startStroke( segment );
-        } else {
-            var c = this._context;
-            var ix = segment.ix,
-                iy = segment.iy,
-                fx = segment.fx,
-                fy = segment.fy;
-
-            // load the style.
-            this._applyStyle( segment );
-
-            // go to the location where the brush was last seen.
+        // If it's not a move but just a click,
+        // draw a dot the diameter of the brush.
+        else {
+            console.log('circle');
+            r = c.lineWidth / 2;
+            c.fillStyle = c.strokeStyle;
             c.beginPath();
             c.moveTo( ix, iy );
-
-            // draw to new coordinates.
-            c.lineTo( fx, fy );
-            c.stroke();
+            c.arc( ix, iy, r, 0, Math.PI * 2 );
+            c.fill();
+            // Clear path for next move.
+            c.beginPath();
         }
     };
 
