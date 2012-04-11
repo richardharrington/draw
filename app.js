@@ -4,7 +4,7 @@ var app = require('http').createServer(handler)
   , parse = require('url').parse
   , join = require('path').join
   , history = []
-  , lastUserId = 0
+  , mostRecentUserId = 0
   , userIdGen = 0
   , waitingForClearCanvasConfirmation = false;
   
@@ -31,8 +31,10 @@ io.configure('development', function(){
 */
 
 io.sockets.on('connection', function(socket) {
-  var userId = userIdGen++;
-  var lastUserSegment = {};
+  var userId = userIdGen++
+    , location = {}
+    , brushStyle = {}
+    , brushIsNew;
     
   // Get a new browser up to date.
   socket.on('requestInitHistory', function() {
@@ -43,53 +45,64 @@ io.sockets.on('connection', function(socket) {
     }
   });
   
-  socket.on('move', function(segment) {
-    // Wipe the history if this is the 
-    // first move after a request to clear the canvas.
-    if (waitingForClearCanvasConfirmation) {
-      history = [];
-      waitingForClearCanvasConfirmation = false;
-      io.sockets.emit('finalClear');
-    }
-    
-    // REWRITE THESE COMMENTS WHEN I'M THINKING STRAIGHT.
-    // Various properties being present tell us what's happening here.
-    // If ix, iy, width and color exist, it's a new stroke with a new brush.
-    // If only fx and fy exist, it's the continuation of a stroke.
-    // If only ix and iy exist, it's a new stroke with the same brush.
-    
-    // If a new brush has been sent from the user, or if the user's ongoing
-    // brush is different from the one in the last history element that happens
-    // to have been broadcast (channelBrush), then broadcast brush information.
-    if (segment.color != null) {
-      lastUserSegment.width = segment.color;
-      lastUserSegment.color = segment.color;
-    } 
-    
-    // We're continuing a stroke, so make sure we don't jump back and forth between brushes.
-    else if (userId !== lastUserId) {
-      segment.ix = lastUserSegment.fx;
-      segment.iy = lastUserSegment.fy;
-      segment.width = lastUserSegment.width;
-      segment.color = lastUserSegment.color;
-    }
-    
-    // Now set it up for the next round. Don't actually 
-    // care about the initial coordinates here.
-    lastUserSegment.fx = segment.fx;
-    lastUserSegment.fy = segment.fy;
-
-    lastUserId = userId;
-    history.push(segment);
-    io.sockets.emit('stroke', segment)
-  });
   socket.on('requestClear', function() {
-    waitingForClearCanvasConfirmation = true;
     io.sockets.emit('tempClear');
+    waitingForClearCanvasConfirmation = true;
   });
   socket.on('requestRestore', function() {
-    waitingForClearCanvasConfirmation = false;
     io.sockets.emit('drawHistory', history);
+    waitingForClearCanvasConfirmation = false;
+  });
+  socket.on('registerBrush', function(style) {
+      brushStyle = style;
+      brushIsNew = true;
+  });
+  
+  // point will be an object with properties x and y.
+  socket.on('start', function(dot) {
+    
+    // Wipe the history if this is the first click after
+    // a request to clear the canvas.
+    if (waitingForClearCanvasConfirmation) {
+      io.sockets.emit('finalClear');
+      history = [];
+      waitingForClearCanvasConfirmation = false;
+    }
+    
+    // Only broadcast brush info if it's a new brush, 
+    // or if we're switching back to this user from somebody else.
+    if (brushIsNew || (userId !== mostRecentUserId)) {
+      dot.width = brushStyle.width;
+      dot.color = brushStyle.color;
+    }
+    io.sockets.emit('dot', dot);
+    
+    // Now set it up for the next round. 
+    history.push(dot);
+    location.x = dot.x;
+    location.y = dot.y;
+    mostRecentUserId = userId;
+    brushIsNew = false;
+  });
+
+  // segment will be an object with properties fx and fy.
+  socket.on('move', function(segment) {
+    
+    // Set initial coordinates and brush style 
+    // only if we're switching back to this user from somebody else.
+    if (userId !== mostRecentUserId) {
+      segment.ix = location.x;
+      segment.iy = location.y;
+      segment.width = brushStyle.width;
+      segment.color = brushStyle.color;
+    }
+    io.sockets.emit('seg', segment);
+    
+    // Now set it up for the next round. 
+    history.push(segment);
+    location.x = segment.fx;
+    location.y = segment.fy;
+    mostRecentUserId = userId;
   });
 });
 

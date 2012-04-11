@@ -229,26 +229,12 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
             localPalette.activeStyle()
         );
         
-        // TEST OF CONCEPT
-        
-        // Initialize testBrush to be operated by the keyboard, in preparation
-        // for testing remote events from a Node.js server, from someone else's mouse.
-        var testBrush = new Brush(
-            localPalette.activeStyle() 
-        );
-        testBrush.x = 50;
-        testBrush.y = 50;
-        
-                
         //----------- MODULE INTERFACE ----------------
 
         this.paletteList = paletteList;
         this.localPalette = localPalette;
         this.localBrush = localBrush;
         
-        // TEST OF CONCEPT
-        
-        this.testBrush = testBrush;
     };
 
     //----------- MODULE INTERFACE ----------------

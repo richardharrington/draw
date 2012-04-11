@@ -127,6 +127,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         $( pageSelector + ' .brush-size' ).change( function() {
             model.localPalette.activeSize( this.value );
             model.localBrush.style = model.localPalette.activeStyle();
+            socket.emit('registerBrush', model.localBrush.style);
         });        
 
         $( pageSelector + ' .search-button' ).click( function() {
@@ -144,7 +145,10 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     setSocketIOEventListeners = function ( view ) {
         var canvas = view.canvas;
         socket = io.connect();
-        socket.on('stroke', function( segment ) {
+        socket.on('dot', function( dot ) {
+            canvas.startStroke( dot );
+        });
+        socket.on('seg', function( segment ) {
             canvas.stroke( segment );
         });
         socket.on('drawHistory', function( history ) {
@@ -172,7 +176,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var p = canvas.getPos( event );
         var x = p.x;
         var y = p.y;
-        socket.emit('move', {ix: x, iy: y, fx: x, fy: y, color: localBrush.style.color, width: localBrush.style.width} );
+        socket.emit('start', {x: x, y: y} );
         localBrush.x = x;
         localBrush.y = y;
         localBrush.drawing = true; 
@@ -288,6 +292,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             model.localPalette.activeColorPanelIdx( i );
             model.localBrush.style = model.localPalette.activeStyle();
             
+            // Tell the server about it.
+            socket.emit('registerBrush', model.localBrush.style);
+            
             // Turn the selected one pink.
             colorPanelsController.highlightElement( element );
         });
@@ -322,6 +329,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             model.localPalette.load( title, colors );
             colorPanelsController.init( view, model );
             model.localBrush.style = model.localPalette.activeStyle();
+            
+            // Tell the server about it.
+            socket.emit('registerBrush', model.localBrush.style);
             
             // Turn the selected one pink.
             palettesColumnController.highlightElement( element, ".palette-image" );
@@ -373,6 +383,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             // currently this will erase the previous event listeners every time we iterate
             // through this loop, if there is more than one view on the page.
             setSocketIOEventListeners( view );
+            socket.emit('registerBrush', model.localBrush.style);
             socket.emit('requestInitHistory');
                         
             colorPanelsController.init( view, model );

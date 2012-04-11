@@ -121,52 +121,51 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         c.lineJoin = 'round';
     };
     
-    // The 'segment' argument is an object containing all the 
-    // properties of BrushStyle object, plus the two starting 
-    // and two ending coordinates of the segment.
-    // REDO THIS COMMENT TO REFLECT THE NEW REALITY.
+    Canvas.prototype.startStroke = function( dot ) {
+        var c = this._context
+          , r
+          , x = dot.x
+          , y = dot.y;
+        
+        // Apply new style if we've been supplied one.
+        if (dot.color) {
+            this._applyStyle( dot );
+        }
+        
+        // Draw a dot.
+        r = c.lineWidth / 2;
+        c.fillStyle = c.strokeStyle;
+        c.moveTo( x, y );
+        c.beginPath();
+        c.arc( x, y, r, 0, Math.PI * 2 );
+        c.fill();
+
+        // Clear circle path and start line path in preparation for next stroke.
+        moveTo( x, y );
+        c.beginPath();
+    }
     
-    Canvas.prototype.stroke = function( segment ) {
+    Canvas.prototype.stroke = function( seg ) {
         var c = this._context; 
         var r;
             
-        var ix = segment.ix,
-            iy = segment.iy,
-            fx = segment.fx,
-            fy = segment.fy,
-            color = segment.color;
+        var ix = seg.ix
+          , iy = seg.iy
+          , fx = seg.fx
+          , fy = seg.fy;
 
-        // load the style if we've been sent a new one at all,
-        // otherwise we're supposed to go with the one we already have loaded.
-        if (segment.color) {
-          this._applyStyle( segment );
+        // Apply new style if we've been supplied one.
+        if (seg.color) {
+            this._applyStyle( seg );
         }
 
-        // Move the brush if it should be moved, 
-        // (indicated by two sets of identical coordinates)
-        if (ix !== fx || iy !== fy) {
-            
-            // Reset the brush if we've been sent initial coordinates.
-            if (ix != null) {
-                c.beginPath();
-                c.moveTo( ix, iy );              
-            }
-            c.lineTo( fx, fy );
-            c.stroke();              
-        } 
-        
-        // If it's not a move but just a click,
-        // draw a dot the diameter of the brush.
-        else {
-            r = c.lineWidth / 2;
-            c.fillStyle = c.strokeStyle;
-            c.beginPath();
-            c.moveTo( ix, iy );
-            c.arc( ix, iy, r, 0, Math.PI * 2 );
-            c.fill();
-            // Clear path for next move.
+        // Reset the brush if we've been supplied initial coordinates.
+        if (ix != null) {
+            c.moveTo( ix, iy );           
             c.beginPath();
         }
+        c.lineTo( fx, fy );
+        c.stroke();
     };
 
     Canvas.prototype.clear = function() {
@@ -179,15 +178,20 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
     Canvas.prototype.drawHistory = function( history ) {
         var c = this._context;
         var i, len;
+        var el;
         
         this.clear();
         
-        // This next loop checks for the existence of segment.fx
-        // because that will tell us whether it's an initial dot or a continuing stroke
-        // (ix stands for initial x and fx stands for final x).
+        // This next loop checks for the existence of el.fx (a final x-coordinate)
+        // to find out if we should stroke a path or just make a dot.
         
         for (var i = 0, len = history.length; i < len; i++) {
-            this.stroke(history[i]);
+            el = history[i];
+            if (typeof el.fx === 'number') {
+                this.stroke(el);
+            } else {
+                this.startStroke(el);
+            }
         }
     };
     
