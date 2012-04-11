@@ -180,11 +180,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var canvas = view.canvas;
         var localBrush = model.localBrush;
         var p = canvas.getPos( event );
-        var ix = localBrush.x;
-        var iy = localBrush.y;
         var fx = p.x;
         var fy = p.y;
-        socket.emit('move', $.extend({}, localBrush.style, {ix: ix, iy: iy, fx: fx, fy: fy} ));
+        socket.emit('move', {fx: fx, fy: fy} );
         localBrush.x = fx;
         localBrush.y = fy;
     }
