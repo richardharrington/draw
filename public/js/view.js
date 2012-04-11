@@ -158,7 +158,6 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         // If it's not a move but just a click,
         // draw a dot the diameter of the brush.
         else {
-            console.log('circle');
             r = c.lineWidth / 2;
             c.fillStyle = c.strokeStyle;
             c.beginPath();
