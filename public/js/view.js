@@ -140,8 +140,10 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         c.fill();
 
         // Clear the circle path and move the cursor in preparation for the next stroke.
+        // Not sure why we have to do the lineTo() here, but it keeps it from skipping.
         c.beginPath();
-        moveTo( x, y );
+        c.moveTo( x, y );
+        
     }
     
     Canvas.prototype.stroke = function( seg ) {
