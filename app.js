@@ -71,15 +71,11 @@ io.sockets.on('connection', function(socket) {
   });
   
   socket.on('startOver', function(dot) {
-    // Wipe the history if this is the first click after
-    // a request to clear the canvas.
-    if (waitingForClearCanvasConfirmation) {
-      io.sockets.emit('finalClear');
-      history = [];
-      waitingForClearCanvasConfirmation = false;
-    }
+    io.sockets.emit('finalClear');
     io.sockets.emit('dot', dot);
+    history = [];
     history.push(dot);
+    waitingForClearCanvasConfirmation = false;
   });
 });
 
