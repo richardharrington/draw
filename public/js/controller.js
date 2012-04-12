@@ -73,6 +73,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     // to the constructor. The anonymous function is invoked with the new, extended argument list.
     
     loadPalettes = function( data ) {
+        console.log('inside loadPalettes');
         if (model.paletteList.load( data )) {
             palettesColumnController.init();
             view.theStatus.report();   // no arguments means all clear, no errors to report.  
@@ -129,8 +130,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             socket.emit('registerBrush', model.localBrush.style);
         });        
 
-        $( pageSelector + ' .search-button' ).click( function() {
-            requestFromColourloversAPI( view, model, instanceNumber );
+        $( pageSelector + ' .search-button' ).click( function( event ) {
+            requestFromColourloversAPI();
         });
         $( pageSelector + ' .search-field' ).keydown( function( event ) {
             var code = event.which;
@@ -377,7 +378,10 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     
     //----------- module interface -----------------
     
-    return { init: init };
+    return { 
+        init: init,
+        loadPalettes: loadPalettes 
+    };
 })();
 
 $( function () {
