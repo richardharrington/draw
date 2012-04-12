@@ -73,9 +73,6 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     // to the constructor. The anonymous function is invoked with the new, extended argument list.
     
     loadPalettes = function( data ) {
-        var model = APP.model;
-        var view = APP.view;
-        
         if (model.paletteList.load( data )) {
             palettesColumnController.init();
             view.theStatus.report();   // no arguments means all clear, no errors to report.  
@@ -372,7 +369,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         setSocketIO();
         colorPanelsController.init();
 
-        $( 'body' ).css('display', 'block');
+        if (!$('html').hasClass('ie')) {
+            pageSelector.css('display', 'block');
+        }
         
     };
     

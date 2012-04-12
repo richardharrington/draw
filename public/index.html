@@ -2,13 +2,23 @@
 
 <!-- license: https://github.com/richardharrington/draw/blob/master/README.md -->
 
-<html lang="en">
+<!--[if lt IE 9 ]> <html class="ie"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--> <html lang="en-US"> <!--<![endif]-->
+
 <head>
     <link rel="stylesheet" href="draw.css" />
     <meta charset="utf-8">
     <title>draw</title>
 </head>
 <body>
+    
+<!-- section which will only be shown to IE8 and below users -->
+<div class="ie8-and-below">
+    <p>It looks like you're using a version of Internet Explorer less than IE9. We could load the drawing site for you, but it would be sad, like this sandwich (soon I will insert a picture of a sandwich here, a sandwich that was not very good in the first place and was photographed under very bad lighting).</p> 
+    <p>It's best if you download IE9, or IE10 when it comes out, or any recent version of Chrome, Safari, Firefox or Opera. Thank you very much and have a nice day.</p>
+</div>
+    
+<!-- the main section, which will only be shown to people who are using modern browsers -->
 <div class="page" id="mainPage">
 
     <div class="left-column">  
@@ -77,7 +87,13 @@
     </div>
 </script>
 
-<!-- These fallback options will allow people to use the basic drawing app without Internet access. (The API search will of course not work.) -->
+<!-- We want no JavaScript to run if it's a version of IE earlier than 9. Just so people won't get those -->
+<!-- annoying script failure messages, in addition to having such sad browsers to begin with. So: -->
+
+<!--[if (gte IE 9)|!(IE)]><!-->
+
+<!-- These fallback options will allow people to use the basic drawing app without Internet access, -->
+<!-- on a WiFi network (The API search will of course not work.) -->
 
 <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline. Got this from html5boilerplate. -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -87,9 +103,6 @@
 <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
 <script>window.jQuery || document.write('<script src="js/libs/jquery.tmpl-beta1.js"><\/script>')</script>
 
-<!-- Canvas feature emulator for lt IE 9 -->
-<!--[if lt IE 9]><script type="text/javascript" src="js/libs/excanvas.js"></script><![endif]-->
-
 <script src="/socket.io/socket.io.js"></script>
 
 <script src="js/config.js"></script>
@@ -97,6 +110,8 @@
 <script src="js/model.js"></script>
 <script src="js/view.js"></script>
 <script src="js/controller.js"></script>
+
+<!--<![endif]-->
 
 </body>
 </html>
