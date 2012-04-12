@@ -231,6 +231,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             view.clearRestoreCanvas.showRestore();
             canvas.clear();
             waitingForClearCanvasConfirmation = true;
+            console.log('received the tempClear event');
         });
         
         // Swap out the 'Restore canvas' button for the 'Clear canvas' button.
@@ -470,7 +471,6 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         } else {
             setMouseEventListeners();
         }
-        console.log(model.localBrush.style.color);
         
         setSocketIO();
         colorPanelsController.init();
@@ -478,7 +478,6 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         if (!$('html').hasClass('ie')) {
             pageSelector.css('display', 'block');
         }
-        
     };
     
     //----------- module interface -----------------
