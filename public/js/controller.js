@@ -191,7 +191,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         }
         var drawHistory = function( history ) {
             var i, len;
-            var el, style, previousBrushId;
+            var el;
 
             // This next loop checks for the existence of el.fx (a final x-coordinate)
             // to find out if we should stroke a path or just make a dot.
@@ -241,9 +241,12 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         
         // Init
         socket.emit('init', function(response) {
+            var history = response.history;
+            var brushStyles = response.brushStyles;
             
-            for (var style in response.brushStyles) {
-                model.brushes.style = style;
+            for (var id in brushStyles) {
+                model.brushes[id] = {};
+                model.brushes[id].style = brushStyles[id];
             }
             // History will not have been sent from the server if some other user pressed
             // the clear canvas button and the users' canvases have all
@@ -251,8 +254,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             // the history. This new user should not have the option to 
             // restore that history, although if it later gets restored by 
             // somebody else, the new user will then see it.
-            if (response.history) {
-                drawHistory( response.history );
+            if (history) {
+                drawHistory( history );
             }
             
             // Register the first brush.
