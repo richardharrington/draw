@@ -148,8 +148,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     setSocketIO = function () {
         var canvas = view.canvas;
         var currentBrush = model.currentBrush;
-        socket = io.connect();
-        socket.on('dot', function( dot ) {
+        
+        var drawDot = function( dot ) {
             var id = dot.id;
             var brush = model.brushes[id];
             
@@ -166,10 +166,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             }
             canvas.startStroke( dot );
             brush.x = dot.x;
-            brush.y = dot.y;
-        });
-
-        socket.on('seg', function( segment ) {
+            brush.y = dot.y;            
+        }
+        var strokeSegment = function( segment ) {
             var id = segment.id;
             var brush = model.brushes[id];
             
@@ -189,15 +188,35 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             canvas.stroke( segment );
             brush.x = segment.fx;
             brush.y = segment.fy;
-        });
+        }
+        var drawHistory = function( history ) {
+            var i, len;
+            var el, style, previousBrushId;
+
+            // This next loop checks for the existence of el.fx (a final x-coordinate)
+            // to find out if we should stroke a path or just make a dot.
+
+            for (i = 0, len = history.length; i < len; i++) {
+                el = history[i];
+                if (el.fx == null) {
+                    drawDot(el);
+                } else {
+                    strokeSegment(el);
+                }
+            }
+        };
+        
+        socket = io.connect();
+        
+        socket.on('dot', drawDot);
+        socket.on('seg', strokeSegment);
+        
         socket.on('restoreHistory', function( history ) {
             view.clearRestoreCanvas.showClear();
-            canvas.drawHistory( history );
+            drawHistory( history );
             waitingForClearCanvasConfirmation = false;
         });
         socket.on('newBrushStyle', function( brushStyle ) {
-            console.dir(brushStyle);
-            console.dir(model.brushes);
             var brush = model.brushes[brushStyle.id] = {};
             brush.style = {};
             brush.style.color = brushStyle.color;
@@ -226,14 +245,14 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             for (var style in response.brushStyles) {
                 model.brushes.style = style;
             }
-            // History will not have been sent if some other user pressed
+            // History will not have been sent from the server if some other user pressed
             // the clear canvas button and the users' canvases have all
             // been temporarily cleared pending final approval to wipe
             // the history. This new user should not have the option to 
             // restore that history, although if it later gets restored by 
             // somebody else, the new user will then see it.
             if (response.history) {
-                canvas.drawHistory( response.history );
+                drawHistory( response.history );
             }
             
             // Register the first brush.

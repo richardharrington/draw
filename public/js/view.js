@@ -36,7 +36,6 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         } else {
             this._jQElement.html( '&nbsp;' );
         }
-
     }
 
     // ----- Clear or Restore canvas button (toggles between the two). ---------
@@ -102,8 +101,8 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
           // pageX/YOffset). We'll try to do that later.
           // But actually this seems to work in IE9.
 
-          x : event.pageX - (r.left + window.pageXOffset) - this._border,
-          y : event.pageY - (r.top + window.pageYOffset) - this._border
+          x : parseInt(event.pageX - (r.left + window.pageXOffset) - this._border, 10),
+          y : parseInt(event.pageY - (r.top + window.pageYOffset) - this._border, 10)
         };
         return coords;
     };
@@ -129,8 +128,8 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
           , y = dot.y;
         
         // Apply new style if we've been supplied one.
-        if (dot.style) {
-            this._applyStyle( dot.style );
+        if (dot.brushStyle) {
+            this._applyStyle( dot.brushStyle );
         }
         
         // Draw a dot.
@@ -151,8 +150,8 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
           , fy = seg.fy;
 
           // Apply new style if we've been supplied one.
-        if (seg.style) {
-            this._applyStyle( seg.style );
+        if (seg.brushStyle) {
+            this._applyStyle( seg.brushStyle );
         }
         
         // Make it so, Number One.
@@ -167,26 +166,6 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
 
         c.fillStyle = "#" + this._backgroundColor;
         c.fillRect( 0, 0, this._width, this._height );
-    };
-    
-    Canvas.prototype.drawHistory = function( history ) {
-        var c = this._context;
-        var i, len;
-        var el;
-        
-        this.clear();
-        
-        // This next loop checks for the existence of el.fx (a final x-coordinate)
-        // to find out if we should stroke a path or just make a dot.
-        
-        for (i = 0, len = history.length; i < len; i++) {
-            el = history[i];
-            if (el.fx != null) {
-                this.stroke(el);
-            } else {
-                this.startStroke(el);
-            }
-        }
     };
     
     // -------------------- wrapper for DOM color panels --------------------------
