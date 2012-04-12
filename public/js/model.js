@@ -9,9 +9,6 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
     
     var util = APP.util;
 
-    var BrushStyle,
-        brushChildrenProto;
-
     var PaletteList,
         Palette,
         Brush;
@@ -208,7 +205,9 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
     init = function( config ) {
         var paletteList,
             localPalette,
-            localBrush;
+            localBrush,
+            currentBrush,
+            brushes;
             
         // Initialize paletteList.
         paletteList = new PaletteList();
@@ -229,11 +228,22 @@ APP.Model = (typeof APP.Model !== 'undefined') ? APP.Model :
             localPalette.activeStyle()
         );
         
+        // Initialize the hash of brushes that will be used
+        // by all the users on the canvas
+        brushes = {};
+        
+        // Initialize currentBrush which is used to compare 
+        // to brushStyle ids that come down from the server.
+        currentBrush = {};
+        currentBrush.id = 0;
+        
         //----------- MODULE INTERFACE ----------------
 
         this.paletteList = paletteList;
         this.localPalette = localPalette;
-        this.localBrush = localBrush;
+        this.localBrush = localBrush,
+        this.currentBrush = currentBrush,
+        this.brushes = brushes;
         
     };
 

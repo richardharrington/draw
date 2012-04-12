@@ -1,11 +1,11 @@
-var app = require('http').createServer(handler)
+var app = require('http').createServer(handler).listen(3000)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
   , parse = require('url').parse
   , mime = require('mime')
   , history = []
-  , mostRecentUserId = 0
-  , userIdGen = 0
+  , brushStyles = {}
+  , brushStyleIdGen = 0
   , waitingForClearCanvasConfirmation = false;
   
 /*
@@ -31,18 +31,17 @@ io.configure('development', function(){
 */
 
 io.sockets.on('connection', function(socket) {
-  var userId = userIdGen++
-    , location = {}
-    , brushStyle = {}
-    , brushIsNew;
     
   // Get a new browser up to date.
-  socket.on('requestInitHistory', function() {
-    // As long as someone hasn't just cleared the canvas
-    // in preparation for clearing the history...
+  socket.on('init', function(init) {
+      
+    // Send the brushes, and long as someone hasn't just cleared the canvas
+    // in preparation for clearing the history, send the full history too.
+    var response = {brushStyles: brushStyles};
     if (!waitingForClearCanvasConfirmation) {
-      socket.emit('drawHistory', history);      
+      response.history = history;
     }
+    init(response);
   });
   
   socket.on('requestClear', function() {
@@ -50,17 +49,28 @@ io.sockets.on('connection', function(socket) {
     waitingForClearCanvasConfirmation = true;
   });
   socket.on('requestRestore', function() {
-    io.sockets.emit('drawHistory', history);
+    io.sockets.emit('restoreHistory', history);
     waitingForClearCanvasConfirmation = false;
   });
-  socket.on('registerBrush', function(style) {
-      brushStyle = style;
-      brushIsNew = true;
+  socket.on('registerBrushStyle', function(brushStyle, returnNewId) {
+      brushStyleIdGen++;
+      var id = brushStyle.id = brushStyleIdGen;
+      io.sockets.emit('newBrushStyle', brushStyle);
+      brushStyles[id] = brushStyle;
+      returnNewId(id);
   });
   
-  // point will be an object with properties x and y.
+  socket.on('move', function(segment) {
+    io.sockets.emit('seg', segment);
+    history.push(segment);
+  });
+  
   socket.on('start', function(dot) {
-    
+    io.sockets.emit('dot', dot);
+    history.push(dot);
+  });
+  
+  socket.on('startOver', function(dot) {
     // Wipe the history if this is the first click after
     // a request to clear the canvas.
     if (waitingForClearCanvasConfirmation) {
@@ -68,45 +78,10 @@ io.sockets.on('connection', function(socket) {
       history = [];
       waitingForClearCanvasConfirmation = false;
     }
-    
-    // Only broadcast brush info if it's a new brush, 
-    // or if we're switching back to this user from somebody else.
-    if (brushIsNew || (userId !== mostRecentUserId)) {
-      dot.width = brushStyle.width;
-      dot.color = brushStyle.color;
-    }
     io.sockets.emit('dot', dot);
-    
-    // Now set it up for the next round. 
     history.push(dot);
-    location.x = dot.x;
-    location.y = dot.y;
-    mostRecentUserId = userId;
-    brushIsNew = false;
-  });
-
-  // segment will be an object with properties fx and fy.
-  socket.on('move', function(segment) {
-    
-    // Set initial coordinates and brush style 
-    // only if we're switching back to this user from somebody else.
-    if (userId !== mostRecentUserId) {
-      segment.ix = location.x;
-      segment.iy = location.y;
-      segment.width = brushStyle.width;
-      segment.color = brushStyle.color;
-    }
-    io.sockets.emit('seg', segment);
-    
-    // Now set it up for the next round. 
-    history.push(segment);
-    location.x = segment.fx;
-    location.y = segment.fy;
-    mostRecentUserId = userId;
   });
 });
-
-app.listen(3000);
 
 function handler (req, res) {
   var url = parse(req.url);

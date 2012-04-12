@@ -21,7 +21,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     var colorPanelsController;
     var palettesColumnController;
     
-    var socket;
+    var socket,
+        waitingForClearCanvasConfirmation = true;
     
     var view
       , model
@@ -127,7 +128,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         $( pageSelector + ' .brush-size' ).change( function() {
             model.localPalette.activeSize( this.value );
             model.localBrush.style = model.localPalette.activeStyle();
-            socket.emit('registerBrush', model.localBrush.style);
+            socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
+                model.localBrush.id = id;
+            });
         });        
 
         $( pageSelector + ' .search-button' ).click( function( event ) {
@@ -144,32 +147,100 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
 
     setSocketIO = function () {
         var canvas = view.canvas;
+        var currentBrush = model.currentBrush;
         socket = io.connect();
         socket.on('dot', function( dot ) {
+            var id = dot.id;
+            var brush = model.brushes[id];
+            
+            // If the brush info is different from what's 
+            // currently being used, (either because this user 
+            // is starting with a new brush themselves or because
+            // the last 'dot' or 'seg' event to be processed
+            // happened to be somebody else's, then pass the brush
+            // into to the canvas as part of the dot object, 
+            // and then update the currentBrush.
+            if (id !== currentBrush.id) {
+                dot.brushStyle = brush.style;
+                currentBrush = brush;
+            }
             canvas.startStroke( dot );
+            brush.x = dot.x;
+            brush.y = dot.y;
         });
+
         socket.on('seg', function( segment ) {
+            var id = segment.id;
+            var brush = model.brushes[id];
+            
+            // Similar to last one.
+            if (id !== currentBrush.id) {
+                segment.brushStyle = brush.style;
+                currentBrush = brush;
+            }
+            
+            // Pass along the last coordinates of this brush.
+            // We draw in tiny pieces, starting a new segment each
+            // time, because that's better than re-stroking the path
+            // with every little move.
+            segment.ix = brush.x;
+            segment.iy = brush.y;
+            
             canvas.stroke( segment );
+            brush.x = segment.fx;
+            brush.y = segment.fy;
         });
-        socket.on('drawHistory', function( history ) {
+        socket.on('restoreHistory', function( history ) {
             view.clearRestoreCanvas.showClear();
             canvas.drawHistory( history );
+            waitingForClearCanvasConfirmation = false;
+        });
+        socket.on('newBrushStyle', function( brushStyle ) {
+            console.dir(brushStyle);
+            console.dir(model.brushes);
+            var brush = model.brushes[brushStyle.id] = {};
+            brush.style = {};
+            brush.style.color = brushStyle.color;
+            brush.style.width = brushStyle.width;
+            brush.id = brushStyle.id;
+            // x and y coordinates will be added to 
+            // model.brushes[brushStyle.id] when it's first used
         });
         
         // Clear canvas and show the 'Restore canvas' undo button.
         socket.on('tempClear', function() {
             view.clearRestoreCanvas.showRestore();
             canvas.clear();
+            waitingForClearCanvasConfirmation = true;
         });
         
         // Swap out the 'Restore canvas' button for the 'Clear canvas' button.
         socket.on('finalClear', function() {
             view.clearRestoreCanvas.showClear();
+            waitingForClearCanvasConfirmation = false;
         });
         
         // Init
-        socket.emit('registerBrush', model.localBrush.style);
-        socket.emit('requestInitHistory');
+        socket.emit('init', function(response) {
+            
+            for (var style in response.brushStyles) {
+                model.brushes.style = style;
+            }
+            // History will not have been sent if some other user pressed
+            // the clear canvas button and the users' canvases have all
+            // been temporarily cleared pending final approval to wipe
+            // the history. This new user should not have the option to 
+            // restore that history, although if it later gets restored by 
+            // somebody else, the new user will then see it.
+            if (response.history) {
+                canvas.drawHistory( response.history );
+            }
+            
+            // Register the first brush.
+            socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
+                model.localBrush.id = id;
+            });
+        });
     }
     
     // ------------- DRAWING FUNCTIONS, FOLLOWED BY EVENT LISTENERS FOR THEM. -----------
@@ -180,7 +251,13 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var p = canvas.getPos( event );
         var x = p.x;
         var y = p.y;
-        socket.emit('start', {x: x, y: y} );
+        // Drawing (by any user) is what confirms the 
+        // clear canvas command.
+        if (waitingForClearCanvasConfirmation) {
+            socket.emit('startOver', {x: x, y: y, id: localBrush.id} );
+        } else {
+            socket.emit('start', {x: x, y: y, id: localBrush.id} );
+        }
         localBrush.x = x;
         localBrush.y = y;
         localBrush.drawing = true; 
@@ -190,11 +267,11 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var canvas = view.canvas;
         var localBrush = model.localBrush;
         var p = canvas.getPos( event );
-        var fx = p.x;
-        var fy = p.y;
-        socket.emit('move', {fx: fx, fy: fy} );
-        localBrush.x = fx;
-        localBrush.y = fy;
+        var x = p.x;
+        var y = p.y;
+        socket.emit('move', {fx: x, fy: y, id: localBrush.id} );
+        localBrush.x = x;
+        localBrush.y = y;
     }
     
     var stopDraw = function() {
@@ -297,7 +374,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             model.localBrush.style = model.localPalette.activeStyle();
             
             // Tell the server about it.
-            socket.emit('registerBrush', model.localBrush.style);
+            socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
+                model.localBrush.id = id;
+            });
             
             // Turn the selected one pink.
             colorPanelsController.highlightElement( element );
@@ -335,7 +414,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             model.localBrush.style = model.localPalette.activeStyle();
             
             // Tell the server about it.
-            socket.emit('registerBrush', model.localBrush.style);
+            socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
+                model.localBrush.id = id;
+            });
             
             // Turn the selected one pink.
             palettesColumnController.highlightElement( element, ".palette-image" );
@@ -367,6 +448,8 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         } else {
             setMouseEventListeners();
         }
+        console.log(model.localBrush.style.color);
+        
         setSocketIO();
         colorPanelsController.init();
 

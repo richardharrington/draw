@@ -98,8 +98,9 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
 
         var r = this.DOMElement.getBoundingClientRect();
         var coords = {
-          // No attempt to cater to IE here (doesn't support
+          // No attempt to cater to IE here (I've heard they don't support
           // pageX/YOffset). We'll try to do that later.
+          // But actually this seems to work in IE9.
 
           x : event.pageX - (r.left + window.pageXOffset) - this._border,
           y : event.pageY - (r.top + window.pageYOffset) - this._border
@@ -128,8 +129,8 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
           , y = dot.y;
         
         // Apply new style if we've been supplied one.
-        if (dot.color) {
-            this._applyStyle( dot );
+        if (dot.style) {
+            this._applyStyle( dot.style );
         }
         
         // Draw a dot.
@@ -138,12 +139,6 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         c.beginPath();
         c.arc( x, y, r, 0, Math.PI * 2 );
         c.fill();
-
-        // Clear the circle path and move the cursor in preparation for the next stroke.
-        // Not sure why we have to do the lineTo() here, but it keeps it from skipping.
-        c.beginPath();
-        c.moveTo( x, y );
-        
     }
     
     Canvas.prototype.stroke = function( seg ) {
@@ -155,16 +150,14 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
           , fx = seg.fx
           , fy = seg.fy;
 
-        // Apply new style if we've been supplied one.
-        if (seg.color) {
-            this._applyStyle( seg );
+          // Apply new style if we've been supplied one.
+        if (seg.style) {
+            this._applyStyle( seg.style );
         }
-
-        // Reset the brush if we've been supplied initial coordinates.
-        if (ix != null) {
-            c.beginPath();
-            c.moveTo( ix, iy );           
-        }
+        
+        // Make it so, Number One.
+        c.beginPath();
+        c.moveTo( ix, iy );
         c.lineTo( fx, fy );
         c.stroke();
     };
@@ -186,7 +179,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         // This next loop checks for the existence of el.fx (a final x-coordinate)
         // to find out if we should stroke a path or just make a dot.
         
-        for (var i = 0, len = history.length; i < len; i++) {
+        for (i = 0, len = history.length; i < len; i++) {
             el = history[i];
             if (el.fx != null) {
                 this.stroke(el);
