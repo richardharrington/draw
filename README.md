@@ -1,5 +1,7 @@
 # Draw
 
+***This readme is out of date as it makes no mention of real-time collaboration. I'm going to fix it up soon.***
+
 An experiment in using Canvas to create a simple browser-based drawing app.
 
 In its current form, it uses a search engine to grab color palettes from the API of a color-sharing website called colourlovers.com. 
