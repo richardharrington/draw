@@ -2,7 +2,7 @@ var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
   , parse = require('url').parse
-  , join = require('path').join
+  , mime = require('mime')
   , history = []
   , mostRecentUserId = 0
   , userIdGen = 0
@@ -106,7 +106,7 @@ io.sockets.on('connection', function(socket) {
   });
 });
 
-app.listen(3000, '10.0.1.2');
+app.listen(3000);
 
 function handler (req, res) {
   var url = parse(req.url);
@@ -125,6 +125,9 @@ function handler (req, res) {
         res.end('Internal Server Error');
       }
     } else {
+      var type = mime.lookup(path);
+      var charset = mime.charsets.lookup(type);
+      res.setHeader('Content-Type', type + (charset ? '; charset=' + charset : ''));
       res.setHeader('Content-Length', stat.size);
       var stream = fs.createReadStream(path);
       stream.pipe(res);
