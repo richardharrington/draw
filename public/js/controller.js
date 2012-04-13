@@ -296,9 +296,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         
         // Don't bother the server or add to the history for 
         // distances of less than two pixels in any direction.
-        if (Math.abs(localBrush.x - x) >= 2 || Math.abs(localBrush.y - y) >= 2)
-        
-        if (util.distance(x, y, localBrush.x, localBrush.y) > 1.5) {
+        if (Math.abs(localBrush.x - x) >= 2 || Math.abs(localBrush.y - y) >= 2) {
             socket.emit('move', {fx: x, fy: y, id: localBrush.id} );
             localBrush.x = x;
             localBrush.y = y;
