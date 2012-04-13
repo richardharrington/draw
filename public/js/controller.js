@@ -286,15 +286,23 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         localBrush.drawing = true; 
     }
     
+    
     var continueDraw = function( event ) {
         var canvas = view.canvas;
         var localBrush = model.localBrush;
         var p = canvas.getPos( event );
         var x = p.x;
         var y = p.y;
-        socket.emit('move', {fx: x, fy: y, id: localBrush.id} );
-        localBrush.x = x;
-        localBrush.y = y;
+        
+        // Don't bother the server or add to the history for 
+        // distances of less than two pixels in any direction.
+        if (Math.abs(localBrush.x - x) >= 2 || Math.abs(localBrush.y - y) >= 2)
+        
+        if (util.distance(x, y, localBrush.x, localBrush.y) > 1.5) {
+            socket.emit('move', {fx: x, fy: y, id: localBrush.id} );
+            localBrush.x = x;
+            localBrush.y = y;
+        }
     }
     
     var stopDraw = function() {

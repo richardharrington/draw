@@ -14,7 +14,8 @@ APP.util = (typeof APP.util !== 'undefined') ? APP.util :
         parseSQLDate,
         object,
         forEach,
-        isTouchSupported;
+        isTouchSupported,
+        distance;
     
     // PRIVATE METHODS
     
@@ -144,6 +145,11 @@ APP.util = (typeof APP.util !== 'undefined') ? APP.util :
         el = null;
         return isSupported;
     }
+    
+    // Calculate distance between two points
+    distance = function(x, y, xprime, yprime) {
+        return Math.sqrt(Math.pow(x - xprime, 2) + Math.pow(y - yprime, 2))
+    }
 
     // object is an object inheritor function. (NOT USED IN THE CURRENT VERSION OF THE SCRIPT)
 
@@ -165,6 +171,7 @@ APP.util = (typeof APP.util !== 'undefined') ? APP.util :
         object: object,
         forEach: forEach,
         isTouchSupported: isTouchSupported,
+        distance: distance,
         
         PropertyToParameter: PropertyToParameter
     };
