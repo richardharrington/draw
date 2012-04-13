@@ -15,27 +15,6 @@ q:before, q:after { content:''; }
 
 /* end reset code */
 
-.ie8-and-below {
-    display: none;
-}
-
-html.ie div.ie8-and-below {
-    display: block;
-}
-
-html.ie div.ie8-and-below  {
-    width: 300px;
-    margin: 50px auto 0 auto;
-    margin-top: 50px;
-    padding: 30px 30px 10px 30px;
-    border: solid green 1px;
-    background-color: white;
-}
-
-html.ie div.ie8-and-below p {
-    margin-bottom: 20px;
-}
-
 body {
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;  
     background-image: url(./images/furley_bg.png);
@@ -46,8 +25,9 @@ h1 {
     font-weight: bold;
 }
 
-/* Once the page loads, javascript code turns on the .page element, */
-/* provided the user is not using IE < 9 */
+/* Once the page loads, javascript code displays the .page element, 
+   provided the user is not using IE < 9. In that case, see the styles
+   at the bottom of this page. */
 
 .page {
     padding-top: 5px;
@@ -214,4 +194,33 @@ h1 {
     -moz-border-radius: 16px;
     border-radius: 16px;
 }
+
+/* ie < 9 special notice section */
+
+.ie8-and-below {
+    display: none;
+}
+
+html.ie .ie8-and-below  {
+    display: block;
+    width: 400px;
+    /* 'margin: auto' won't work in IE5.5, but I really can't be bothered 
+       to come up with a fallback for that. It'll just be flush left. */
+    margin: 50px auto 0 auto;
+    margin-top: 50px;
+    padding: 30px 30px 10px 30px;
+    border: solid #59E01B 1px;
+    background-color: white;
+    /* For IE 8 */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#204F09')";
+    /* For IE 5.5 - 7 */
+    filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#204F09');
+}
+
+html.ie div.ie8-and-below p {
+    margin-bottom: 20px;
+}
+
+/* end ie < 9 section */
+
 
