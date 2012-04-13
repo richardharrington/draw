@@ -1,10 +1,10 @@
 {
-  "name": "draw",
-  "subdomain": "draw",
+  "name": "draw-dev",
+  "subdomain": "draw-dev",
   "scripts": {
     "start": "app.js"
   },
-  "version": "0.2.3-1",
+  "version": "0.2.3-4",
   "engines": {
     "node": "0.6.x"
   },
