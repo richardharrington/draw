@@ -1,4 +1,4 @@
-var app = require('http').createServer(handler).listen(3000)
+var app = require('http').createServer(handler).listen(3000) 
   , io = require('socket.io').listen(app)
   , fs = require('fs')
   , parse = require('url').parse
@@ -6,16 +6,16 @@ var app = require('http').createServer(handler).listen(3000)
   , history = []
   , brushStyles = {}
   , brushStyleIdGen = 0
-  , waitingForClearCanvasConfirmation = false;
+  , clearConfirmPending = false;
   
 /*
 
 io.configure('production', function(){
-  io.enable('browser client minification');  // send minified client
+  io.enable('browser client minification');  // send minified client 
   io.enable('browser client etag');          // apply etag caching logic based on version number
   io.enable('browser client gzip');          // gzip the file
   io.set('log level', 1);                    // reduce logging
-  io.set('transports', [                     // enable all transports (optional if you want flashsocket)
+  io.set('transports', [                     // enable all transports (optional ifyou want flashsocket)
       'websocket'
     , 'flashsocket'
     , 'htmlfile'
@@ -37,8 +37,11 @@ io.sockets.on('connection', function(socket) {
       
     // Send the brushes, and long as someone hasn't just cleared the canvas
     // in preparation for clearing the history, send the full history too.
-    var response = {brushStyles: brushStyles};
-    if (!waitingForClearCanvasConfirmation) {
+    var response = {
+        brushStyles: brushStyles,
+        clearConfirmPending: clearConfirmPending
+    };
+    if (!clearConfirmPending) {
       response.history = history;
     }
     init(response);
@@ -46,11 +49,11 @@ io.sockets.on('connection', function(socket) {
   
   socket.on('requestClear', function() {
     io.sockets.emit('tempClear');
-    waitingForClearCanvasConfirmation = true;
+    clearConfirmPending = true;
   });
   socket.on('requestRestore', function() {
     io.sockets.emit('restoreHistory', history);
-    waitingForClearCanvasConfirmation = false;
+    clearConfirmPending = false;
   });
   socket.on('registerBrushStyle', function(brushStyle, returnNewId) {
       brushStyleIdGen++;
@@ -75,7 +78,7 @@ io.sockets.on('connection', function(socket) {
     io.sockets.emit('dot', dot);
     history = [];
     history.push(dot);
-    waitingForClearCanvasConfirmation = false;
+    clearConfirmPending = false;
   });
 });
 

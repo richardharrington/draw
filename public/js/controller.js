@@ -22,7 +22,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     var palettesColumnController;
     
     var socket,
-        waitingForClearCanvasConfirmation = true;
+        clearConfirmPending;
     
     var view
       , model
@@ -214,7 +214,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         socket.on('restoreHistory', function( history ) {
             view.clearRestoreCanvas.showClear();
             drawHistory( history );
-            waitingForClearCanvasConfirmation = false;
+            clearConfirmPending = false;
         });
         socket.on('newBrushStyle', function( brushStyle ) {
             var brush = model.brushes[brushStyle.id] = {};
@@ -230,18 +230,19 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         socket.on('tempClear', function() {
             view.clearRestoreCanvas.showRestore();
             canvas.clear();
-            waitingForClearCanvasConfirmation = true;
+            clearConfirmPending = true;
             console.log('received the tempClear event');
         });
         
         // Swap out the 'Restore canvas' button for the 'Clear canvas' button.
         socket.on('finalClear', function() {
             view.clearRestoreCanvas.showClear();
-            waitingForClearCanvasConfirmation = false;
+            clearConfirmPending = false;
         });
         
         // Init
         socket.emit('init', function(response) {
+            clearConfirmPending = response.clearConfirmPending;
             var history = response.history;
             var brushStyles = response.brushStyles;
             
@@ -249,16 +250,11 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
                 model.brushes[id] = {};
                 model.brushes[id].style = brushStyles[id];
             }
-            // History will not have been sent from the server if some other user pressed
-            // the clear canvas button and the users' canvases have all
-            // been temporarily cleared pending final approval to wipe
-            // the history. This new user should not have the option to 
-            // restore that history, although if it later gets restored by 
-            // somebody else, the new user will then see it.
+            // Don't draw the history if we're in "clear canvas" confirmation
+            // pending mode. (Actually, the history will not have been sent anyway.)
             if (history) {
                 drawHistory( history );
             }
-            
             // Register the first brush.
             socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
                 model.localBrush.id = id;
@@ -276,7 +272,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var y = p.y;
         // Drawing (by any user) is what confirms the 
         // clear canvas command.
-        if (waitingForClearCanvasConfirmation) {
+        if (clearConfirmPending) {
             socket.emit('startOver', {x: x, y: y, id: localBrush.id} );
         } else {
             socket.emit('start', {x: x, y: y, id: localBrush.id} );
@@ -294,7 +290,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var x = p.x;
         var y = p.y;
         
-        // Don't bother the server or add to the history for 
+        // Don't bother the server or add to the history for  
         // distances of less than two pixels in any direction.
         if (Math.abs(localBrush.x - x) >= 2 || Math.abs(localBrush.y - y) >= 2) {
             socket.emit('move', {fx: x, fy: y, id: localBrush.id} );
