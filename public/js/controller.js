@@ -252,8 +252,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             }
             // Don't draw the history if we're in "clear canvas" confirmation
             // pending mode. (Actually, the history will not have been sent anyway.)
-            if (history) {
+            if (!clearConfirmPending) {
                 drawHistory( history );
+                view.clearRestoreCanvas.showClear();
             }
             // Register the first brush.
             socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
