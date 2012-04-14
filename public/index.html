@@ -63,20 +63,25 @@
             </div>
         </div>
     </div>
+    <!-- github banner -->
+    <a href="http://github.com/richardharrington/draw"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub"></a>
 
 </div><!-- page -->
+
 
 <!-- section which will only be shown to IE8 and below users -->
 <div class="ie8-and-below">
     <p>Hello.</p>
     <p>This app is a work in progress. One of the things we're working on making progress in is supporting versions of Internet Explorer older than IE9.</p>
-    <p>It looks like you're using one of these older versions of IE. We could load the site for you, but it would look sad, like this sandwich (soon I will insert a picture of a sandwich here, a sandwich that was not very good in the first place and was photographed under very bad lighting).</p> 
+    <p>It looks like you're using one of these older versions of IE. We could load the site for you, but it would look sad, like this sandwich.</p> 
+    <div class="picture">
+      <img id="sad_sandwich" alt="It's even sadder than we thought. You'll need JavaScript turned on to see the sandwich." />
+    </div>
     <p>We're sorry to disappoint you. We know how it feels to see a notice like this when you just wanted to start drawing. But there's a solution: if you want to draw now, you can download <a href="http://www.microsoft.com/download/en/details.aspx?id=13950">IE9</a>, or IE10 when it comes out, or any recent version of <a href="https://www.google.com/chrome">Chrome</a>, <a href="http://www.apple.com/safari/download/">Safari</a>, <a href="http://www.mozilla.org/en-US/firefox/new/">Firefox</a> or <a href="http://www.opera.com/download/">Opera</a>.</p>
     <p>Thank you very much and have a nice day.</p>
 </div>
     
-<!-- github banner -->
-<a href="http://github.com/richardharrington/draw"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub"></a>
+<!-- templates -->
 
 <script id="colorPanelsTemplate" type="text/x-jquery-tmpl">
     <div class="color-panel ${klass}"></div>
@@ -93,13 +98,13 @@
     </div>
 </script>
 
-<!-- We want no JavaScript to run if it's a version of IE earlier than 9. Just so people won't get those -->
-<!-- annoying script failure messages, in addition to having such sad browsers to begin with. So: -->
+<!-- We want none of these big scripts to run if it's a version of IE earlier than 9. Just so people won't get those
+     annoying script failure messages, in addition to having such sad browsers to begin with. So: -->
 
 <!--[if (gte IE 9)|!(IE)]><!-->
 
-<!-- These fallback options will allow people to use the basic drawing app without Internet access, -->
-<!-- on a WiFi network (The API search will of course not work.) -->
+<!-- These fallback options will allow people to use the basic drawing app without Internet access,
+     on a WiFi network (The API search will of course not work.) -->
 
 <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline. Got this from html5boilerplate. -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -118,6 +123,18 @@
 <script src="js/controller.js"></script>
 
 <!--<![endif]-->
+
+<!-- In the case of ID < 9 we just want to run the following, which loads the picture of the sad sandwich. 
+     No need to load it otherwise.  Come to think of it, the subtle background picture is 
+     something we don't really need on mobile phones and might as well not download. TODO. -->
+
+<!--[if lt IE 9 ]> 
+<script>
+  window.onload = function() {
+      document.getElementById('sad_sandwich').src = "images/sad_sandwich.jpg";
+  }
+</script> 
+<![endif]-->
 
 </body>
 </html>

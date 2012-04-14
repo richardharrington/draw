@@ -25,9 +25,10 @@ h1 {
     font-weight: bold;
 }
 
-/* Once the page loads, javascript code displays the .page element, 
-   provided the user is not using IE < 9. In that case, see the styles
-   at the bottom of this page. */
+/* Once the page loads, javascript code in controllers.js displays 
+   the .page element, provided the user is not using IE < 9. In 
+   that case, the .page element remains hidden and the css
+   code at the bottom of this page applies. */
 
 .page {
     padding-top: 5px;
@@ -195,32 +196,48 @@ h1 {
     border-radius: 16px;
 }
 
-/* ie < 9 special notice section */
+/* ----------------------------- */
+/* IE < 9 special notice section */
+/* ----------------------------- */
+
 
 .ie8-and-below {
     display: none;
 }
 
+html.ie body {
+    background-color: #eee;
+    /* Centers block elements in IE5.5, needs to be overriden for text inside the element. */
+    text-align: center;
+}
+
 html.ie .ie8-and-below  {
     display: block;
     width: 400px;
-    /* 'margin: auto' won't work in IE5.5, but I really can't be bothered 
-       to come up with a fallback for that. It'll just be flush left. */
-    margin: 50px auto 0 auto;
-    margin-top: 50px;
-    padding: 30px 30px 10px 30px;
+    margin: 35px auto 25px;
+    padding: 20px 30px 15px;
     border: solid #59E01B 1px;
     background-color: white;
+    text-align: justify;
     /* For IE 8 */
     -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#204F09')";
     /* For IE 5.5 - 7 */
     filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#204F09');
 }
 
-html.ie div.ie8-and-below p {
-    margin-bottom: 20px;
+html.ie p {
+    padding-bottom: 15px;
 }
 
-/* end ie < 9 section */
+html.ie div.picture {
+    /* Centers picture in IE5.5 */
+    text-align: center;
+    margin: 10px auto 25px;
+}
+
+html.ie img {
+    display: block;
+    margin: 0 auto;
+}
 
 
