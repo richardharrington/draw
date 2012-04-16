@@ -312,28 +312,35 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         var LEFT_BUTTON = 1, 
             RIGHT_BUTTON = 3;
         var localBrush = model.localBrush;
-        var isLeftButtonDown = false;
-        var lastX = 0, 
-            lastY = 0;
-        var slope;
+        var canvasEl = view.canvas.DOMElement;
         
         // Have to use document instead of the canvas element,
         // because it's the easiest way to deal with stuff entering 
         // and exiting the canvas. We have to have access to the click and move
         // events just off the canvas anyway, when people are drawing really quickly.
         
+        // Note: we cannot do this for touch events, because we don't want to 
+        // prevent the default behavior of scrolling around the screen, when the user
+        // is outside the canvas. But this is not as much of an issue, because 
+        // the touch events weren't messing up the drawing like the mouse events were.
+        
+        // I know it's controversial to disable right-click, but I think people can handle it
+        // in this case. It's just one element.
+        $(canvasEl).on('contextmenu', function( event ) {
+            event.preventDefault();
+        });
+        $(document).on('click', function ( event ) {
+            if (event.which === RIGHT_BUTTON) {
+                toggleDraw( event );
+            }
+        });
+        
         $(document).on('mousedown', function( event ) {
             if (event.which === LEFT_BUTTON) {
                 startDraw( event );
             }
         });
-        $(document).on('click', function ( event ) {
-            if (event.which === RIGHT_BUTTON) {
-                toggleDraw( event );
-                event.preventDefault();
-            }
-        });
-        $(document).on('mousemove', function( event ) {
+         $(document).on('mousemove', function( event ) {
             if (localBrush.drawing) {
                 continueDraw( event );
             }
