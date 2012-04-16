@@ -324,17 +324,12 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // is outside the canvas. But this is not as much of an issue, because 
         // the touch events weren't messing up the drawing like the mouse events were.
         
-        // I know it's controversial to disable right-click, but I think people can handle it
-        // in this case. It's just one element.
+        // I know, it's kind of controversial to disable the context menu.
         $(canvasEl).on('contextmenu', function( event ) {
             event.preventDefault();
+            toggleDraw( event );
         });
-        $(document).on('click', function ( event ) {
-            if (event.which === RIGHT_BUTTON) {
-                toggleDraw( event );
-            }
-        });
-        
+
         $(document).on('mousedown', function( event ) {
             if (event.which === LEFT_BUTTON) {
                 startDraw( event );
