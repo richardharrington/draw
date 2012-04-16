@@ -17,6 +17,7 @@ q:before, q:after { content:''; }
 
 body {
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;  
+    background-color: #f0f0f0;
     background-image: url(./images/furley_bg.png);
 }
 
