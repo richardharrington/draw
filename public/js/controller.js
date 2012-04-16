@@ -300,28 +300,56 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         model.localBrush.drawing = false;
     }
     
-    setMouseEventListeners = function() {
-        var canvas = view.canvas;
-        var localBrush = model.localBrush;
-        
-        canvas.DOMElement.addEventListener('mousedown', function( event ) {
+    var toggleDraw = function( event ) {
+        if (model.localBrush.drawing) {
+            stopDraw();
+        } else {
             startDraw( event );
-        }, false);
-        canvas.DOMElement.addEventListener('mousemove', function( event ) {
+        }
+    }
+    
+    setMouseEventListeners = function() {
+        var LEFT_BUTTON = 1, 
+            RIGHT_BUTTON = 3;
+        var localBrush = model.localBrush;
+        var isLeftButtonDown = false;
+        var lastX = 0, 
+            lastY = 0;
+        var slope;
+        
+        // Have to use document instead of the canvas element,
+        // because it's the easiest way to deal with stuff entering 
+        // and exiting the canvas. We have to have access to the click and move
+        // events just off the canvas anyway, when people are drawing really quickly.
+        
+        $(document).on('mousedown', function( event ) {
+            if (event.which === LEFT_BUTTON) {
+                startDraw( event );
+            }
+        });
+        $(document).on('click', function ( event ) {
+            if (event.which === RIGHT_BUTTON) {
+                toggleDraw( event );
+                event.preventDefault();
+            }
+        });
+        $(document).on('mousemove', function( event ) {
             if (localBrush.drawing) {
                 continueDraw( event );
             }
-        }, false);
-        canvas.DOMElement.addEventListener('mouseup', function() {
-            stopDraw();
-        }, false);
+        });
+        $(document).on('mouseup', function( event ) {
+            if (event.which === LEFT_BUTTON) {
+                stopDraw();
+            }
+        });        
     };
     
     var setTouchEventListeners = function() {
-        var canvas = view.canvas;
+        var canvasEl = view.canvas.DOMElement;
         var localBrush = model.localBrush;
         
-        canvas.DOMElement.addEventListener('touchstart', function( event ) {
+        canvasEl.addEventListener('touchstart', function( event ) {
             
             // Don't want to disable pinch and zoom.
             if (event.touches.length === 1) {
@@ -331,13 +359,13 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
                 stopDraw();
             }
         }, false);
-        canvas.DOMElement.addEventListener('touchmove', function( event ) {
+        canvasEl.addEventListener('touchmove', function( event ) {
             if (localBrush.drawing && event.touches.length === 1) {
                 continueDraw( event.changedTouches[0] );
                 event.preventDefault();
             }
         }, false);
-        canvas.DOMElement.addEventListener('touchend', function( event ) {
+        canvasEl.addEventListener('touchend', function( event ) {
             stopDraw();
         }, false);
     }
