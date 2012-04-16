@@ -48,9 +48,6 @@
             </div>
             <div class="canvas-container">
 
-                <p class="instructions">Click and drag to draw</p> 
-                <p class="instructions">Right-click (control-click on a Mac) to toggle drawing on and off</p>
-
                 <div class="canvas-controls">
                     <span class="brush-size-label">Brush size:</span>         
                     <select class="brush-size">
@@ -66,6 +63,11 @@
                          
                     <input type="button" class="clear-restore-button" value="Clear canvas" />
                 </div>
+
+                <p class="instructions">Click and drag to draw.</p> 
+                
+                <!-- COMMENTING OUT THE ABILITY TO TOGGLE, FOR THE TIME BEING. -->
+                <!-- <p class="instructions">Right-click (control-click on a Mac) to toggle drawing on and off</p> -->
 
                 <!--- width and height are defaults, will be overridden by javascript -->
                 <canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>

@@ -1,10 +1,10 @@
 {
-  "name": "draw",
-  "subdomain": "draw",
+  "name": "kelly",
+  "subdomain": "kelly",
   "scripts": {
     "start": "app.js"
   },
-  "version": "0.2.4-5",
+  "version": "0.2.4-8",
   "engines": {
     "node": "0.6.x"
   },
