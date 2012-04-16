@@ -504,9 +504,6 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         setSocketIO();
         colorPanelsController.init();
 
-        if (!$('html').hasClass('ie')) {
-            pageSelector.css('display', 'block');
-        }
     };
     
     //----------- module interface -----------------

@@ -33,7 +33,6 @@ h1 {
 .page {
     padding-top: 5px;
     padding-bottom: 30px;
-    display: none;
 }
 
 .left-column {
@@ -149,7 +148,7 @@ h1 {
 }
 
 .color-panel {
-    background-color: #486D57;
+    background-color: #ccc;
     width: 90px;
     height: 45px;
     padding: 5px;
@@ -204,9 +203,14 @@ h1 {
 /* IE < 9 special notice section */
 /* ----------------------------- */
 
-
+/* Disable IE < 9 message under normal circumstances */
 .ie8-and-below {
     display: none;
+}
+
+/* Disable normal display of page under IE < 9 circumstances */
+html.ie .page {
+  display: none;
 }
 
 html.ie body {
