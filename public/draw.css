@@ -178,7 +178,7 @@ h1 {
     padding-right: 10px;
 }
 
-.brush-size-label {
+.brush-size-label, .instructions {
     font-size: 0.8em;
 }
 
