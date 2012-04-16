@@ -187,8 +187,12 @@ h1 {
     margin-left: 30px;
 }
 
+.canvas-controls {
+  margin-top: 10px;
+}
+
 .canvas {
-    margin-top: 20px;
+    margin-top: 10px;
     margin-bottom: 10px;
     border: solid #2c7 16px;
     -webkit-border-radius: 16px;
