@@ -207,11 +207,11 @@ a:active {
     top: -10px; 
     background: #fff;
     padding: 30px;
-    -o-box-shadow:    3px 3px 3px 5px rgba(150,150,150, 0.7);
-    -ms-box-shadow:    3px 3px 3px 5px rgba(150,150,150, 0.7);
-    -moz-box-shadow:    3px 3px 3px 5px rgba(150,150,150, 0.7);
-    -webkit-box-shadow: 3px 3px 3px 5px rgba(150,150,150, 0.7);
-    box-shadow:         3px 3px 3px 5px rgba(150,150,150, 0.7);
+    -o-box-shadow:    2px 2px 3px 3px rgba(150,150,150, 0.7);
+    -ms-box-shadow:    2px 2px 3px 3px rgba(150,150,150, 0.7);
+    -moz-box-shadow:    2px 2px 3px 3px rgba(150,150,150, 0.7);
+    -webkit-box-shadow: 2px 2px 3px 3px rgba(150,150,150, 0.7);
+    box-shadow:         2px 2px 3px 3px rgba(150,150,150, 0.7);
     border-radius: 10px;
     width: 200px;
     -o-transition: opacity 0.5s ease;
