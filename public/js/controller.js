@@ -499,6 +499,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         APP.view = view;
         
         // Set the controls.
+        colorPanelsController.init();
         setMiscellaneousUserControls();
         setErrorControls();
         if (util.isTouchSupported()) {
@@ -506,10 +507,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         } else {
             setMouseEventListeners();
         }
-        
         setSocketIO();
-        colorPanelsController.init();
-
     };
     
     //----------- module interface -----------------
