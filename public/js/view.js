@@ -13,7 +13,8 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         Canvas,
         ColorPanels,
         PalettesColumn,
-        ClearRestoreCanvas;
+        ClearRestoreCanvas,
+        PopupBox;
         
     var init;
 
@@ -37,7 +38,30 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
             this._jQElement.html( '&nbsp;' );
         }
     }
-
+    
+    PopupBox = function( linkEl, displayEl, closeEl ) {
+        this._jQLink = $(linkEl);
+        this._jQDisplay = $(displayEl);
+        this._jQClose = $(closeEl);
+    }
+    
+    PopupBox.prototype.init = function() {
+        var self = this;
+        var box = this._jQDisplay;
+        this._jQLink.on('click', function( event ) {
+            self._jQDisplay.css("display", "block");
+            setTimeout(function() {
+                self._jQDisplay.css("opacity", "1");
+            }, 50);
+        });
+        this._jQClose.on('click', function() {
+            self._jQDisplay.css("opacity", "0");
+            setTimeout(function() {
+                self._jQDisplay.css("display", "none");                
+            }, 550);
+        });
+    }
+    
     // ----- Clear or Restore canvas button (toggles between the two). ---------
     
     ClearRestoreCanvas = function( element ) {
@@ -250,7 +274,8 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
         var theStatus,
             canvas,
             colorPanels,
-            palettesColumn;
+            palettesColumn,
+            instructionBox;
             
         var pageId = config.PAGE_ID;
         var pageSelector = '#' + pageId;
@@ -262,12 +287,18 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
             colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
             palettesColumnElement = $( pageSelector + ' .palette-list' )[0],
             palettesTitleElement =  $( pageSelector + ' .successful-keywords' )[0];
+            instructionsLink =      $( pageSelector + ' .instructions-link' )[0];
+            instructionsElement =   $( pageSelector + ' .instructions' )[0]; 
+            instructionsClose =     $( pageSelector + ' .close' )[0];
             
         // Initialize status reporting.
         theStatus = new TheStatus( statusReportElement );
         
         // Initialize canvas clearing and restoring button.
         clearRestoreCanvas = new ClearRestoreCanvas( clearRestoreElement );
+        
+        // Initialize instruction box.
+        instructionBox = new PopupBox( instructionsLink, instructionsElement, instructionsClose );
         
         // Initialize canvas.
         canvas = new Canvas( canvasElement, config.CANVAS_WIDTH, config.CANVAS_HEIGHT, 
@@ -284,6 +315,7 @@ APP.View = (typeof APP.View !== 'undefined') ? APP.View :
 
         this.theStatus = theStatus;
         this.clearRestoreCanvas = clearRestoreCanvas;
+        this.instructionBox = instructionBox;
         this.canvas = canvas;
         this.colorPanels = colorPanels;
         this.palettesColumn = palettesColumn;

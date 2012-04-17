@@ -115,7 +115,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // bind the event handlers for toggling the brush size and 
         // entering search keywords. Also for toggling the clear and
         // restore canvas buttons, which are dynamically swapped out
-        // for each other.
+        // for each other. Also for the instruction link.
+        
+        view.instructionBox.init();
 
         $( pageSelector ).on('click', '.clear-canvas', function() {
             socket.emit('requestClear');
