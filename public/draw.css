@@ -26,11 +26,6 @@ h1 {
     font-weight: bold;
 }
 
-/* Once the page loads, javascript code in controllers.js displays 
-   the .page element, provided the user is not using IE < 9. In 
-   that case, the .page element remains hidden and the css
-   code at the bottom of this page applies. */
-
 .page {
     padding-top: 5px;
     padding-bottom: 30px;
