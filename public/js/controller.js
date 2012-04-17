@@ -326,21 +326,13 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // is outside the canvas. But this is not as much of an issue, because 
         // the touch events weren't messing up the drawing like the mouse events were.
         
-        // COMMENTING OUT THE ABILITY TO TOGGLE, FOR THE TIME BEING.
-        
-        /*
-        
-        // I know, it's kind of controversial to disable the context menu.
-        $(canvasEl).on('contextmenu', function( event ) {
-            event.preventDefault();
-            toggleDraw( event );
-        });
-        
-        */
-
         $(document).on('mousedown', function( event ) {
             if (event.which === LEFT_BUTTON) {
-                startDraw( event );
+                if (event.altKey) {
+                    toggleDraw( event );
+                } else {
+                    startDraw( event );
+                }
             }
         });
          $(document).on('mousemove', function( event ) {
@@ -349,7 +341,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             }
         });
         $(document).on('mouseup', function( event ) {
-            if (event.which === LEFT_BUTTON) {
+            if (event.which === LEFT_BUTTON && !event.altKey) {
                 stopDraw();
             }
         });        
