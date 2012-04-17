@@ -221,7 +221,7 @@ a:active {
     transition: opacity 0.5s ease;
 }
 
-.canvas-controls .instructions p {
+.canvas-controls .instructions li {
   margin-top: 8px;
   text-align: left;
 }

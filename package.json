@@ -1,10 +1,10 @@
 {
-  "name": "kelly",
-  "subdomain": "kelly",
+  "name": "joshcarterofmars",
+  "subdomain": "joshcarterofmars",
   "scripts": {
     "start": "app.js"
   },
-  "version": "0.2.4-10",
+  "version": "0.2.4-12",
   "engines": {
     "node": "0.6.x"
   },
