@@ -119,11 +119,11 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         
         view.instructionBox.init();
 
-        $( pageSelector ).on('click', '.clear-canvas', function() {
+        $( pageSelector ).on('click', '.clear-canvas', function( event ) {
             socket.emit('requestClear');
         });
         
-        $( pageSelector ).on('click', '.restore-canvas', function() {
+        $( pageSelector ).on('click', '.restore-canvas', function( event ) {
             socket.emit('requestRestore');
         });
         
@@ -216,7 +216,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         socket.on('restoreHistory', function( history ) {
             view.clearRestoreCanvas.showClear();
             drawHistory( history );
-            clearConfirmPending = false;
+            clearConfirmPending = false;            
         });
         socket.on('newBrushStyle', function( brushStyle ) {
             var brush = model.brushes[brushStyle.id] = {};
@@ -225,7 +225,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             brush.style.width = brushStyle.width;
             brush.id = brushStyle.id;
             // x and y coordinates will be added to 
-            // model.brushes[brushStyle.id] when it's first used
+            // model.brushes[brushStyle.id] when it's first used            
         });
         
         // Clear canvas and show the 'Restore canvas' undo button.
@@ -233,7 +233,6 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
             view.clearRestoreCanvas.showRestore();
             canvas.clear();
             clearConfirmPending = true;
-            console.log('received the tempClear event');
         });
         
         // Swap out the 'Restore canvas' button for the 'Clear canvas' button.
@@ -311,8 +310,7 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
     }
     
     setMouseEventListeners = function() {
-        var LEFT_BUTTON = 1, 
-            RIGHT_BUTTON = 3;
+        var LEFT_BUTTON = 1;
         var localBrush = model.localBrush;
         var canvasEl = view.canvas.DOMElement;
         
@@ -327,7 +325,9 @@ APP.controller = (typeof APP.controller !== 'undefined') ? APP.controller :
         // the touch events weren't messing up the drawing like the mouse events were.
         
         $(document).on('mousedown', function( event ) {
-            if (event.which === LEFT_BUTTON) {
+            // Don't treat this as a drawing click if 
+            // someone just clicked the clear or restore button.
+            if (event.which === LEFT_BUTTON && !$(event.target).hasClass('clear-restore-button')) {
                 if (event.altKey) {
                     toggleDraw( event );
                 } else {
