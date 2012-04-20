@@ -25,6 +25,7 @@ body {
 h1 {
     font-size: 2.5em;
     font-weight: bold;
+    margin-bottom: 15px;
 }
 
 a {
@@ -124,7 +125,8 @@ a:active {
     text-align: center;
 }
 
-.header {
+.header p {
+    margin-bottom: 7px;
 }
 
 .search-label {
@@ -148,7 +150,7 @@ a:active {
 }
 
 .current-palette-header {
-    margin-top: 15px;
+    margin-bottom: 10px;
     font-size: 1.2em;
 }
 
