@@ -249,6 +249,12 @@ a:active {
     border-radius: 16px;
 }
 
+.copyright {
+    padding-top: 10px;
+    font-size:75%;
+    color: #777;
+}
+
 /* ----------------------------- */
 /* IE < 9 special notice section */
 /* ----------------------------- */
