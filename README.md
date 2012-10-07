@@ -1,6 +1,6 @@
 # Draw
 
-An experiment in using Canvas, Node and Socket.io to create a multi-user browser-based drawing app. You can see the other people drawing with you in real-time, even if they're on another continent.
+An experiment in using Canvas, Node and Socket.io to create a multi-user browser-based drawing app. You can see the other people drawing with you in real-time, even if they're on another continent. Check out the live site, hosted by Nodejitsu, at [draw.jit.su](http://draw.jit.su). Make sure to open it on two devices at the same time!
 
 In its current form, it uses a search engine to grab color palettes from the API of a color-sharing website called colourlovers.com. 
 
