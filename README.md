@@ -1,15 +1,13 @@
 # Draw
 
-***This readme is out of date as it makes no mention of real-time collaboration. I'm going to fix it up soon.***
-
-An experiment in using Canvas to create a simple browser-based drawing app.
+An experiment in using Canvas, Node and Socket.io to create a multi-user browser-based drawing app. You can see the other people drawing with you in real-time, even if they're on another continent.
 
 In its current form, it uses a search engine to grab color palettes from the API of a color-sharing website called colourlovers.com. 
 
 In the future, it may or may not incorporate the following features:
 
 * The ability to take snapshots of the canvas and save them to disk or upload them to social media sites or email them.
-* The ability to have two people in different browsers drawing on the same canvas.
+* The ability to grab from other palette collections.
 * Other fun stuff. Ideas?
 
 Upcoming near-term feature changes can be found in the Issues tab.
@@ -17,7 +15,7 @@ Upcoming near-term feature changes can be found in the Issues tab.
 
 ## Origin
 
-This project came out of an assignment in the November 2011 Advanced Javascript class taught by Pedro Ha at NYU SCPS. Pedro had created a basic version of the app, and our assignment was to add the API search functionality and also to significantly refactor the code. His original concise and elegant version can be found in the folder "original-files." Our job as students (along with adding search functionality) was to organize it so that it was more scalable. I have also added a few minor enhancements and features (like the 'clear canvas' button).
+This project came out of an assignment in the November 2011 Advanced Javascript class taught by Pedro Ha at NYU SCPS. Pedro had created a basic version of the app, and our assignment was to add the API search functionality and also to significantly refactor the code. His original concise and elegant version can be found in the folder "original-files." Our job as students (along with adding search functionality) was to organize it so that it was more scalable. I have also added a few minor enhancements and features (like the 'clear canvas' button). to the basic app, but most importantly, I have used Node.js to make it into a multi-user experience.
 
 
 ## License
