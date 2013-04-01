@@ -1,6 +1,6 @@
 define(function() {
-	
-	var isArray,
+    
+    var isArray,
         keyList;
         
     var PropertyToParameter;

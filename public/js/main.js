@@ -1,28 +1,28 @@
 requirejs.config({
     paths: {
-		'jquery': 'libs/jquery-1.8.3.min',
-		'jquery.tmpl': 'libs/jquery.tmpl-beta1' 
+        'jquery': 'libs/jquery-1.8.3.min',
+        'jquery.tmpl': 'libs/jquery.tmpl-beta1' 
     },
-	shim: {
-		'jquery.tmpl': ['jquery']
-	}
+    shim: {
+        'jquery.tmpl': ['jquery']
+    }
 });
 
 
 requirejs([
-	'jquery',
-	'util',
-	'model',
-	'view',
-	'config'
+    'jquery',
+    'util',
+    'model',
+    'view',
+    'config'
 ], function(
-	$,
-	util,
-	Model,
-	View,
-	config
+    $,
+    util,
+    Model,
+    View,
+    config
 ) {
-	
+    
     var view = new View();
     var model = new Model();
 
@@ -51,7 +51,7 @@ requirejs([
                 $( pageSelector + ' .colourLoversUrl' ).remove();
             }
             colourLoversScript = document.createElement( 'script' );
-        	$( colourLoversScript ).addClass( 'colourLoversUrl' );
+            $( colourLoversScript ).addClass( 'colourLoversUrl' );
             document.getElementById( view.pageId ).appendChild( colourLoversScript );
 
             // Change spaces to plus signs for insertion into search query.
@@ -146,9 +146,9 @@ requirejs([
     };
 
     var socket;
-	var clearConfirmPending;
+    var clearConfirmPending;
 
-	var setSocketIO = function () {
+    var setSocketIO = function () {
         var canvas = view.canvas;
         var currentBrush = model.currentBrush;
 
@@ -494,9 +494,9 @@ requirejs([
         setSocketIO();
     };
 
-	// Make it so.
-	$(initialize);
-	
+    // Make it so.
+    $(initialize);
+    
 });
 
 
