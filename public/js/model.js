@@ -213,7 +213,7 @@ define(['util'], function(util) {
 
         // Initialize localBrush.
         var localBrush = new Brush(
-            this.localPalette.activeStyle()
+            localPalette.activeStyle()
         );
 
         // Initialize the hash of brushes that will be used
