@@ -23,8 +23,8 @@ requirejs([
     config
 ) {
 
-    var view = new View();
-    var model = new Model();
+    var view = new View(config);
+    var model = new Model(config);
 
     // -- the event handler for requesting data from colourlovers.com
 
