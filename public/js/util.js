@@ -129,17 +129,17 @@ define(function() {
         }
         el = null;
         return isSupported;
-    }
+    };
 
     // Calculate distance between two points (NOT USED IN THE CURRENT VERSION OF THE SCRIPT)
     distance = function(x, y, xprime, yprime) {
-        return Math.sqrt(Math.pow(x - xprime, 2) + Math.pow(y - yprime, 2))
-    }
+        return Math.sqrt(Math.pow(x - xprime, 2) + Math.pow(y - yprime, 2));
+    };
 
     // object is an object inheritor function. (NOT USED IN THE CURRENT VERSION OF THE SCRIPT)
 
     object = function ( o, vals ) {
-        function F() {};
+        function F() {}
         F.prototype = o;
         var instance = new F();
         for (var p in vals) {
