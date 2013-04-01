@@ -2,9 +2,8 @@
 
 <!-- license: https://github.com/richardharrington/draw/blob/master/README.md -->
 
-<!--[if lt IE 9 ]> <html lang="en-US" class="ie"> [endif]-->
-<!--[if (gte IE 9)|!(IE)]> <html lang="en-US"> [endif]-->
-<html lang="en-US">
+<!--[if lt IE 9 ]> <html lang="en-US" class="ie"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--> <html lang="en-US"> <!--<![endif]-->
 
 <head>
     <link rel="stylesheet" href="draw.css" />
@@ -142,28 +141,26 @@
      annoying script failure messages, in addition to having such sad browsers to begin with. So the two scripts that
      are the heart of the app are placed inside an IE conditional tag: -->
 
-<!--[if (gte IE 9)|!(IE)]
+<!--[if (gte IE 9)|!(IE)]><!-->
 
 <script src="/socket.io/socket.io.js"></script>
 <script data-main="js/main" src="js/libs/require.js"></script>
 
-[endif]-->
-
-<script src="/socket.io/socket.io.js"></script>
-<script data-main="js/main" src="js/libs/require.js"></script>
+<!--<![endif]-->
 
 
 <!-- In the case of ID < 9 we just want to run the following, which loads the picture of the sad sandwich.
      No need to load it otherwise.  Come to think of it, the subtle background picture is
      something we don't really need on mobile phones and might as well not download. TODO. -->
 
-<!--[if lt IE 9 ]
+
+<!--[if (lt IE 9)]>
 <script>
   window.onload = function() {
       document.getElementById('sad_sandwich').src = "images/sad_sandwich_drawing.png";
   }
 </script>
-[endif]-->
+<![endif]-->
 
 </body>
 </html>
