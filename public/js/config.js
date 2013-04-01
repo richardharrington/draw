@@ -1,5 +1,5 @@
 define({
-	PAGE_ID: 'mainPage',
+    PAGE_ID: 'mainPage',
     DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
     MAX_COLORS: 10,
     DEFAULT_PALETTE_TITLE: "default palette",

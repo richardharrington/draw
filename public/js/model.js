@@ -1,237 +1,237 @@
 define(['util'], function(util) {
-	
-	// Returns a constructor function called Model.
-	
-	return function(config) {
-		
-		var PaletteList,
-	        Palette,
-	        Brush;
 
-	    // --- A note about PaletteList, Palette and Brush:
+    // Returns a constructor function called Model.
 
-	    // There is one instance each of each of these objects for each
-	    // instance of the app on the page. An array with the default settings
-	    // for each instance can be found in the config.js file.    
+    return function(config) {
 
-	    // --- Set up the Palette constructor.
+        var PaletteList,
+            Palette,
+            Brush;
 
-	    Palette = function( args ) {
-	        this._maxColors = args.maxColors;
-	        this._smallBrushWidth = args.smallBrushWidth;
-	        this._largeBrushWidth = args.largeBrushWidth;
+        // --- A note about PaletteList, Palette and Brush:
 
-	        this.load( args.title, args.colors );
-	        this.activeSize( args.activeSize );
-	        this.activeColorPanelIdx( args.activeColorPanelIdx );
-	    };
+        // There is one instance each of each of these objects for each
+        // instance of the app on the page. An array with the default settings
+        // for each instance can be found in the config.js file.
 
-	    // Load in a new set of colors with their title.
+        // --- Set up the Palette constructor.
 
-	    Palette.prototype.load = function( title, colors ) {
-	        var i, len;
-	        var color;
-	        var small, large;
+        Palette = function( args ) {
+            this._maxColors = args.maxColors;
+            this._smallBrushWidth = args.smallBrushWidth;
+            this._largeBrushWidth = args.largeBrushWidth;
 
-	        // We can only fit this.maxColors number of panels,
-	        // so truncate the array if necessary. 
-	        this.colors = colors.slice( 0, this._maxColors );
-	        this.title = title; 
+            this.load( args.title, args.colors );
+            this.activeSize( args.activeSize );
+            this.activeColorPanelIdx( args.activeColorPanelIdx );
+        };
 
-	        this._brushStyles = [];
+        // Load in a new set of colors with their title.
 
-	        // brushStyles alternate between small brushes and large brushes.    
-	        for (i = 0, len = colors.length; i < len; i++) {
-	            this._brushStyles.push({
-	                color: colors[i],
-	                width: this._smallBrushWidth
-	            });
-	            this._brushStyles.push({
-	                color: colors[i],
-	                width: this._largeBrushWidth                
-	            });
-	        }
-	    };
+        Palette.prototype.load = function( title, colors ) {
+            var i, len;
+            var color;
+            var small, large;
 
-	    // styleIdx is a number that has two values
-	    // for every one that colorPanelIdx has,
-	    // because styleIdx takes into account
-	    // whether a brush is small or large.
+            // We can only fit this.maxColors number of panels,
+            // so truncate the array if necessary.
+            this.colors = colors.slice( 0, this._maxColors );
+            this.title = title;
 
-	    // activeSize and activeColorPanelIdx are overloaded as both 
-	    // getters and setters, depending on the number of arguments.
+            this._brushStyles = [];
 
-	    // activeStyle is just a getter.
+            // brushStyles alternate between small brushes and large brushes.
+            for (i = 0, len = colors.length; i < len; i++) {
+                this._brushStyles.push({
+                    color: colors[i],
+                    width: this._smallBrushWidth
+                });
+                this._brushStyles.push({
+                    color: colors[i],
+                    width: this._largeBrushWidth
+                });
+            }
+        };
 
-	    Palette.prototype.activeStyle = function( size, colorPanelIdx ) {
-	        return this._brushStyles[ this._styleIdx ];
-	    };
+        // styleIdx is a number that has two values
+        // for every one that colorPanelIdx has,
+        // because styleIdx takes into account
+        // whether a brush is small or large.
 
-	    Palette.prototype.activeSize = function( size /* optional */) {
-	        var styleIdx = this._styleIdx || 0;
-	        var oldSize = (styleIdx % 2) ? "large" : "small";
+        // activeSize and activeColorPanelIdx are overloaded as both
+        // getters and setters, depending on the number of arguments.
 
-	        // get
-	        if (arguments.length === 0) {
-	            return oldSize;
+        // activeStyle is just a getter.
 
-	        // set
-	        } else {
-	            styleIdx += (oldSize === size) ? 0 : 
-	                        (size === "small") ? -1 : 1;
-	            this._styleIdx = styleIdx;
-	        }
-	    };
+        Palette.prototype.activeStyle = function( size, colorPanelIdx ) {
+            return this._brushStyles[ this._styleIdx ];
+        };
 
-	    Palette.prototype.activeColorPanelIdx = function( colorPanelIdx /* optional */) {
-	        var styleIdx = this._styleIdx || 0;
-	        var oldColorPanelIdx = Math.floor( styleIdx / 2 );
+        Palette.prototype.activeSize = function( size /* optional */) {
+            var styleIdx = this._styleIdx || 0;
+            var oldSize = (styleIdx % 2) ? "large" : "small";
 
-	        // get
-	        if (arguments.length === 0) {
-	            return oldColorPanelIdx;
+            // get
+            if (arguments.length === 0) {
+                return oldSize;
 
-	        // set        
-	        } else {
-	            styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
-	            this._styleIdx = styleIdx;
-	        }
-	    };
+            // set
+            } else {
+                styleIdx += (oldSize === size) ? 0 :
+                            (size === "small") ? -1 : 1;
+                this._styleIdx = styleIdx;
+            }
+        };
 
-	    // --- Set up a brush.
+        Palette.prototype.activeColorPanelIdx = function( colorPanelIdx /* optional */) {
+            var styleIdx = this._styleIdx || 0;
+            var oldColorPanelIdx = Math.floor( styleIdx / 2 );
 
-	    Brush = function( brushStyle ) {
-	        this.drawing = false;
-	        this.style = brushStyle;
-	        // also will set this.x and this.y, dynamically
-	    };
+            // get
+            if (arguments.length === 0) {
+                return oldColorPanelIdx;
 
-	    // PaletteList objects are the objects into which we'll be adding the data from
-	    // colourlovers.com. (There's only one instance created by the PaletteList constructor
-	    // in the current version of the app.) 
+            // set
+            } else {
+                styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
+                this._styleIdx = styleIdx;
+            }
+        };
 
-	    // The PaletteList constructor prototype contains a method to load the data.
-	    // Each paletteList object contains a string with the search keywords and 
-	    // an array with the returned data.
+        // --- Set up a brush.
 
-	    // After we add properties on the fly it will look like this:
+        Brush = function( brushStyle ) {
+            this.drawing = false;
+            this.style = brushStyle;
+            // also will set this.x and this.y, dynamically
+        };
 
-	    // paletteList = { 
-	    //   keywords: 'summer apple tree',
-	    //   data: [
-	    //     { imageUrl: 'http://myimage.jpg',
-	    //       title: 'my palette',
-	    //       userName: 'richard', 
-	    //       dateCreated: 'July 4, 1545', 
-	    //       description: 'this is my palette',
-	    //       colors: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F']
-	    //     },
-	    //     { imageUrl: 'http://myotherimage.jpg',
-	    //       title: 'my other palette',
-	    //       userName: 'harrington', 
-	    //       dateCreated: 'July 9, 1970', 
-	    //       description: 'this is my otherpalette',
-	    //       colors: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F']
-	    //     },
-	    //   ]
-	    // }
+        // PaletteList objects are the objects into which we'll be adding the data from
+        // colourlovers.com. (There's only one instance created by the PaletteList constructor
+        // in the current version of the app.)
+
+        // The PaletteList constructor prototype contains a method to load the data.
+        // Each paletteList object contains a string with the search keywords and
+        // an array with the returned data.
+
+        // After we add properties on the fly it will look like this:
+
+        // paletteList = {
+        //   keywords: 'summer apple tree',
+        //   data: [
+        //     { imageUrl: 'http://myimage.jpg',
+        //       title: 'my palette',
+        //       userName: 'richard',
+        //       dateCreated: 'July 4, 1545',
+        //       description: 'this is my palette',
+        //       colors: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F']
+        //     },
+        //     { imageUrl: 'http://myotherimage.jpg',
+        //       title: 'my other palette',
+        //       userName: 'harrington',
+        //       dateCreated: 'July 9, 1970',
+        //       description: 'this is my otherpalette',
+        //       colors: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F']
+        //     },
+        //   ]
+        // }
 
 
-	    // This function does a deep copy of data from the feed
-	    // downloaded from the colourlovers website into the paletteList object.
+        // This function does a deep copy of data from the feed
+        // downloaded from the colourlovers website into the paletteList object.
 
-	    PaletteList = function() {};
-	    PaletteList.MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 
-	                       'July', 'August', 'September', 'October', 'November', 'December'];
+        PaletteList = function() {};
+        PaletteList.MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                           'July', 'August', 'September', 'October', 'November', 'December'];
 
-	    PaletteList.prototype.load = function( data ) {
-	        if (!data || data.length === 0) {
-	            return false;
-	        }
+        PaletteList.prototype.load = function( data ) {
+            if (!data || data.length === 0) {
+                return false;
+            }
 
-	        var i, len;
-	        var date;
-	        var self = this;
+            var i, len;
+            var date;
+            var self = this;
 
-	        this.data = [];
+            this.data = [];
 
-	        for (i = 0, len = data.length; i < len; i++) {
-	            (function( idx ) {
-	                var entry;
-	                var desc;
-	                var newPalette = {};
+            for (i = 0, len = data.length; i < len; i++) {
+                (function( idx ) {
+                    var entry;
+                    var desc;
+                    var newPalette = {};
 
-	                entry = data[idx];
+                    entry = data[idx];
 
-	                util.copy( newPalette, entry, [
-	                    "colors", 
-	                    "imageUrl", 
-	                    "title", 
-	                    "userName", 
-	                    "description", 
-	                    "dateCreated"] ); // omitting last argument
-	                                      // makes it a deep copy
+                    util.copy( newPalette, entry, [
+                        "colors",
+                        "imageUrl",
+                        "title",
+                        "userName",
+                        "description",
+                        "dateCreated"] ); // omitting last argument
+                                          // makes it a deep copy
 
-	                // Now make "dateCreated" a more readable string.
+                    // Now make "dateCreated" a more readable string.
 
-	                date = util.parseSQLDate( newPalette.dateCreated );
-	                newPalette.dateCreated = PaletteList.MONTHS[date.getMonth()] + " " + 
-	                                         date.getDate() + ", " + 
-	                                         date.getFullYear();
+                    date = util.parseSQLDate( newPalette.dateCreated );
+                    newPalette.dateCreated = PaletteList.MONTHS[date.getMonth()] + " " +
+                                             date.getDate() + ", " +
+                                             date.getFullYear();
 
-	                // Many of the descriptions on colourlovers.com
-	                // are long garbage strings of html, so exclude those
-	                // by checking if the string is too long.
+                    // Many of the descriptions on colourlovers.com
+                    // are long garbage strings of html, so exclude those
+                    // by checking if the string is too long.
 
-	                desc = newPalette.description;
-	                newPalette.description = (desc.length < 200) ? desc : "";
+                    desc = newPalette.description;
+                    newPalette.description = (desc.length < 200) ? desc : "";
 
-	                // Load the new palette into the main database object.
+                    // Load the new palette into the main database object.
 
-	                self.data[idx] = newPalette;
+                    self.data[idx] = newPalette;
 
-	            }( i ));
-	        }
-	        return true;
-	    };
+                }( i ));
+            }
+            return true;
+        };
 
-		// Model init. ----------- //
+        // Model init. ----------- //
 
-	    // Initialize paletteList.
-	    var paletteList = new PaletteList();
+        // Initialize paletteList.
+        var paletteList = new PaletteList();
 
-	    // Initialize localPalette.
-	    var localPalette = new Palette({
-	        title:               config.DEFAULT_PALETTE_TITLE,
-	        colors:              config.DEFAULT_PALETTE_COLORS, 
-	        maxColors:           config.MAX_COLORS,
-	        smallBrushWidth:     config.SMALL_BRUSH_WIDTH, 
-	        largeBrushWidth:     config.LARGE_BRUSH_WIDTH,
-	        activeSize:          config.DEFAULT_BRUSH_SIZE,
-	        activeColorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX
-	    });
+        // Initialize localPalette.
+        var localPalette = new Palette({
+            title:               config.DEFAULT_PALETTE_TITLE,
+            colors:              config.DEFAULT_PALETTE_COLORS,
+            maxColors:           config.MAX_COLORS,
+            smallBrushWidth:     config.SMALL_BRUSH_WIDTH,
+            largeBrushWidth:     config.LARGE_BRUSH_WIDTH,
+            activeSize:          config.DEFAULT_BRUSH_SIZE,
+            activeColorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX
+        });
 
-	    // Initialize localBrush.
-	    var localBrush = new Brush(
-	        this.localPalette.activeStyle()
-	    );
+        // Initialize localBrush.
+        var localBrush = new Brush(
+            localPalette.activeStyle()
+        );
 
-	    // Initialize the hash of brushes that will be used
-	    // by all the users on the canvas
-	    var brushes = {};
+        // Initialize the hash of brushes that will be used
+        // by all the users on the canvas
+        var brushes = {};
 
-	    // Initialize currentBrush which is used to compare 
-	    // to brushStyle ids that come down from the server.
-	    var currentBrush = { id: 0 };
+        // Initialize currentBrush which is used to compare
+        // to brushStyle ids that come down from the server.
+        var currentBrush = { id: 0 };
 
         //----------- MODULE INTERFACE ----------------
 
         this.paletteList = paletteList;
-		this.localPalette = localPalette;
-		this.localBrush = localBrush;
-		this.brushes = brushes;
-		this.currentBrush = currentBrush;
-		
-	}
-	
+        this.localPalette = localPalette;
+        this.localBrush = localBrush;
+        this.brushes = brushes;
+        this.currentBrush = currentBrush;
+
+    }
+
 });
