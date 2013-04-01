@@ -2,8 +2,8 @@
 
 <!-- license: https://github.com/richardharrington/draw/blob/master/README.md -->
 
-<!--[if lt IE 9 ]> <html class="ie"> <![endif]-->
-<!--[if (gte IE 9)|!(IE)]><!--> <html lang="en-US"> <!--<![endif]-->
+<!--[if lt IE 9 ]> <html lang="en-US" class="ie"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]> <html lang="en-US"> <![endif]-->
 
 <head>
     <link rel="stylesheet" href="draw.css" />
@@ -138,30 +138,15 @@
 </script>
 
 <!-- We want none of these big scripts to run if it's a version of IE earlier than 9. Just so people won't get those
-     annoying script failure messages, in addition to having such sad browsers to begin with. So: -->
+     annoying script failure messages, in addition to having such sad browsers to begin with. So the two scripts that
+     are the heart of the app are placed inside an IE conditional tag: -->
 
-<!--[if (gte IE 9)|!(IE)]><!-->
-
-<!-- These fallback options will allow people to use the basic drawing app without Internet access,
-     on a WiFi network (The API search will of course not work.) -->
-
-<!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline. Got this from html5boilerplate. -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script>window.jQuery || document.write('<script src="js/libs/jquery-1.7.1.min.js"><\/script>')</script>
-
-<!-- Ditto with Microsoft CDN's jQuery template -->
-<script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
-<script>window.jQuery || document.write('<script src="js/libs/jquery.tmpl-beta1.js"><\/script>')</script>
+<!--[if (gte IE 9)|!(IE)]>
 
 <script src="/socket.io/socket.io.js"></script>
+<script data-main="js/main" src="js/libs/require.js">
 
-<script src="js/config.js"></script>
-<script src="js/util.js"></script>
-<script src="js/model.js"></script>
-<script src="js/view.js"></script>
-<script src="js/controller.js"></script>
-
-<!--<![endif]-->
+<![endif]-->
 
 <!-- In the case of ID < 9 we just want to run the following, which loads the picture of the sad sandwich. 
      No need to load it otherwise.  Come to think of it, the subtle background picture is 

@@ -1,11 +1,6 @@
-;
-
-var APP = (typeof APP !== 'undefined') ? APP : {};
-APP.util = (typeof APP.util !== 'undefined') ? APP.util : 
-
-(function() {
-    
-    var isArray,
+define(function() {
+	
+	var isArray,
         keyList;
         
     var PropertyToParameter;
@@ -37,15 +32,6 @@ APP.util = (typeof APP.util !== 'undefined') ? APP.util :
     };
 
     // PUBLIC CONSTRUCTORS AND METHODS
-    
-    // Very basic iterator function, used only for debugging
-    // so far.
-
-    forEach = function( array, action ) {
-        for (var i = 0, len = array.length; i < len; i++) {
-            action( array[i], i );
-        }
-    };
     
     // PropertyToParameter takes a function (func) and creates
     // an object with a series of properties, all added by the 
@@ -146,7 +132,7 @@ APP.util = (typeof APP.util !== 'undefined') ? APP.util :
         return isSupported;
     }
     
-    // Calculate distance between two points
+    // Calculate distance between two points (NOT USED IN THE CURRENT VERSION OF THE SCRIPT)
     distance = function(x, y, xprime, yprime) {
         return Math.sqrt(Math.pow(x - xprime, 2) + Math.pow(y - yprime, 2))
     }
@@ -168,11 +154,12 @@ APP.util = (typeof APP.util !== 'undefined') ? APP.util :
     return {
         copy: copy,
         parseSQLDate: parseSQLDate,
-        object: object,
-        forEach: forEach,
         isTouchSupported: isTouchSupported,
-        distance: distance,
+
+        // object: object,
+        // distance: distance,
         
         PropertyToParameter: PropertyToParameter
     };
-})();
+    
+});
