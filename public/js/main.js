@@ -1,7 +1,7 @@
 requirejs.config({
     paths: {
         'jquery': 'libs/jquery-1.8.3.min',
-        'jquery.tmpl': 'libs/jquery.tmpl-beta1' 
+        'jquery.tmpl': 'libs/jquery.tmpl-beta1'
     },
     shim: {
         'jquery.tmpl': ['jquery']
@@ -22,7 +22,7 @@ requirejs([
     View,
     config
 ) {
-    
+
     var view = new View();
     var model = new Model();
 
@@ -59,7 +59,7 @@ requirejs([
             // in our callback function, APP.controller.loadPalettes
 
             encodedKeywords = keywords.replace( /\s+/g, '+' );
-            searchURL = 'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords + 
+            searchURL = 'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords +
                         '&jsonCallback=APP.controller.loadPalettes'
             colourLoversScript.setAttribute( 'src', searchURL);
         }
@@ -75,15 +75,15 @@ requirejs([
         console.log('inside loadPalettes');
         if (model.paletteList.load( data )) {
             palettesColumnController.init();
-            view.theStatus.report();   // no arguments means all clear, no errors to report.  
+            view.theStatus.report();   // no arguments means all clear, no errors to report.
         } else {
-            view.theStatus.report( 'No palettes matched the keyword or keywords "' + 
+            view.theStatus.report( 'No palettes matched the keyword or keywords "' +
                                     model.paletteList.keywords + '." Try again.' );
         };
     };
 
     var setErrorControls = function() {
-        // Set up error handlers for all current and future cases of 
+        // Set up error handlers for all current and future cases of
         // the manual script tag that downloads the data from colourlovers
         // (using jQuery .delegate()).
 
@@ -106,11 +106,11 @@ requirejs([
         var pageSelector = '#' + view.pageId;
         var code;
 
-        // Set active brush size HTML select element, 
+        // Set active brush size HTML select element,
         // because Firefox preserves state even when it's refreshed.
-        $( pageSelector + ' .brush-size' ).val( model.localPalette.activeSize() );  
+        $( pageSelector + ' .brush-size' ).val( model.localPalette.activeSize() );
 
-        // bind the event handlers for toggling the brush size and 
+        // bind the event handlers for toggling the brush size and
         // entering search keywords. Also for toggling the clear and
         // restore canvas buttons, which are dynamically swapped out
         // for each other. Also for the instruction link.
@@ -131,7 +131,7 @@ requirejs([
             socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
                 model.localBrush.id = id;
             });
-        });        
+        });
 
         $( pageSelector + ' .search-button' ).click( function( event ) {
             requestFromColourloversAPI();
@@ -156,12 +156,12 @@ requirejs([
             var id = dot.id;
             var brush = model.brushes[id];
 
-            // If the brush info is different from what's 
-            // currently being used, (either because this user 
+            // If the brush info is different from what's
+            // currently being used, (either because this user
             // is starting with a new brush themselves or because
             // the last 'dot' or 'seg' event to be processed
             // happened to be somebody else's, then pass the brush
-            // into to the canvas as part of the dot object, 
+            // into to the canvas as part of the dot object,
             // and then update the currentBrush.
             if (id !== currentBrush.id) {
                 dot.brushStyle = brush.style;
@@ -169,7 +169,7 @@ requirejs([
             }
             canvas.startStroke( dot );
             brush.x = dot.x;
-            brush.y = dot.y;            
+            brush.y = dot.y;
         }
         var strokeSegment = function( segment ) {
             var id = segment.id;
@@ -217,7 +217,7 @@ requirejs([
         socket.on('restoreHistory', function( history ) {
             view.clearRestoreCanvas.showClear();
             drawHistory( history );
-            clearConfirmPending = false;            
+            clearConfirmPending = false;
         });
         socket.on('newBrushStyle', function( brushStyle ) {
             var brush = model.brushes[brushStyle.id] = {};
@@ -225,8 +225,8 @@ requirejs([
             brush.style.color = brushStyle.color;
             brush.style.width = brushStyle.width;
             brush.id = brushStyle.id;
-            // x and y coordinates will be added to 
-            // model.brushes[brushStyle.id] when it's first used            
+            // x and y coordinates will be added to
+            // model.brushes[brushStyle.id] when it's first used
         });
 
         // Clear canvas and show the 'Restore canvas' undo button.
@@ -273,7 +273,7 @@ requirejs([
         var p = canvas.getPos( event );
         var x = p.x;
         var y = p.y;
-        // Drawing (by any user) is what confirms the 
+        // Drawing (by any user) is what confirms the
         // clear canvas command.
         if (clearConfirmPending) {
             socket.emit('startOver', {x: x, y: y, id: localBrush.id} );
@@ -282,7 +282,7 @@ requirejs([
         }
         localBrush.x = x;
         localBrush.y = y;
-        localBrush.drawing = true; 
+        localBrush.drawing = true;
     }
 
 
@@ -316,17 +316,17 @@ requirejs([
         var canvasEl = view.canvas.DOMElement;
 
         // Have to use document instead of the canvas element,
-        // because it's the easiest way to deal with stuff entering 
+        // because it's the easiest way to deal with stuff entering
         // and exiting the canvas. We have to have access to the click and move
         // events just off the canvas anyway, when people are drawing really quickly.
 
-        // Note: we cannot do this for touch events, because we don't want to 
+        // Note: we cannot do this for touch events, because we don't want to
         // prevent the default behavior of scrolling around the screen, when the user
-        // is outside the canvas. But this is not as much of an issue, because 
+        // is outside the canvas. But this is not as much of an issue, because
         // the touch events weren't messing up the drawing like the mouse events were.
 
         $(document).on('mousedown', function( event ) {
-            // Don't treat this as a drawing click if 
+            // Don't treat this as a drawing click if
             // someone just clicked the clear or restore button.
             if (event.which === LEFT_BUTTON && !$(event.target).hasClass('clear-restore-button')) {
                 if (event.altKey) {
@@ -345,7 +345,7 @@ requirejs([
             if (event.which === LEFT_BUTTON && !event.altKey) {
                 stopDraw();
             }
-        });        
+        });
     };
 
     var setTouchEventListeners = function() {
@@ -379,7 +379,7 @@ requirejs([
     var ElementsController = function() {};
 
     // highlightElement operates on either an element and its siblings,
-    // or descendants of the top-level element and all the corresponding 
+    // or descendants of the top-level element and all the corresponding
     // descendants of the siblings of the top-level element.
 
     ElementsController.prototype.highlightElement = function( element, descendant ) {
@@ -407,7 +407,7 @@ requirejs([
         var pageSelector = '#' + view.pageId;
 
         // Populate the color panels.
-        view.colorPanels.populate( model.localPalette.title, model.localPalette.colors ); 
+        view.colorPanels.populate( model.localPalette.title, model.localPalette.colors );
 
         // Reset the localPalette's activeColorPanelIdx if it was set to a panel that no longer
         // exists (because a new palette has fewer colors than the old one)
@@ -473,7 +473,7 @@ requirejs([
 
             // Turn the selected one pink.
             palettesColumnController.highlightElement( element, ".palette-image" );
-        });        
+        });
     };
 
     // -------------------- APP INIT --------------------------
@@ -496,7 +496,7 @@ requirejs([
 
     // Make it so.
     $(initialize);
-    
+
 });
 
 

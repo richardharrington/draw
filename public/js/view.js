@@ -1,27 +1,27 @@
 define([
     'jquery',
     'util',
-    
+
     'jquery.tmpl'
-    
+
 ], function(
     $,
     util
 ) {
-    
+
     // Returns a constructor function called View.
-    
+
     return function(config) {
-        
+
         var TheStatus,
             Canvas,
             ColorPanels,
             PalettesColumn,
             ClearRestoreCanvas,
             PopupBox;
-        
+
         // ------------------ Status reporting mechanism. --------------------------
-    
+
         // (would be called just "Status," but one of the browsers
         // doesn't like that. I forget which one.)
 
@@ -29,7 +29,7 @@ define([
             this._jQElement = $( element );
         };
 
-        TheStatus.prototype.report = function( str ) {  
+        TheStatus.prototype.report = function( str ) {
 
             // If we've got something to report
             if (arguments.length) {
@@ -40,13 +40,13 @@ define([
                 this._jQElement.html( '&nbsp;' );
             }
         }
-    
+
         PopupBox = function( linkEl, displayEl, closeEl ) {
             this._jQLink = $(linkEl);
             this._jQDisplay = $(displayEl);
             this._jQClose = $(closeEl);
         }
-    
+
         PopupBox.prototype.init = function() {
             var self = this;
             var box = this._jQDisplay;
@@ -59,17 +59,17 @@ define([
             this._jQClose.on('click', function() {
                 self._jQDisplay.css("opacity", "0");
                 setTimeout(function() {
-                    self._jQDisplay.css("display", "none");                
+                    self._jQDisplay.css("display", "none");
                 }, 550);
             });
         }
-    
+
         // ----- Clear or Restore canvas button (toggles between the two). ---------
-    
+
         ClearRestoreCanvas = function( element ) {
             this._jQElement = $( element );
         };
-    
+
         ClearRestoreCanvas.prototype.showClear = function() {
             var el = this._jQElement;
             el.addClass('clear-canvas');
@@ -87,34 +87,34 @@ define([
         // --------------------- Wrapper for DOM Canvas ----------------------------
 
         Canvas = function( DOMElement, width, height, backgroundColor ) {
-            var borderLeftPx = (window.getComputedStyle) ? 
+            var borderLeftPx = (window.getComputedStyle) ?
                                 window.getComputedStyle( DOMElement, null )['border-left-width'] :
                                 DOMElement.currentStyle.border; // TODO: check in IE6, IE7, IE8
-                            
+
             this.DOMElement = DOMElement;
             this.drawing = false;
 
             this._context = DOMElement.getContext( "2d" );
-        
+
             // Possibly make these configurable in the future.
             this._context.lineCap = 'round';
             this._context.lineJoin = 'round';
-        
+
             this._width = width;
             this._height = height;
             this._backgroundColor = backgroundColor;
             this._history = [];
-        
-            // We may make lineCap & lineJoin configurable at some 
+
+            // We may make lineCap & lineJoin configurable at some
             // point in the future, but not now.
             this._context.lineCap = 'round';
             this._context.lineJoin = 'round';
-        
+
             this._border = (borderLeftPx) ? parseInt(borderLeftPx, 10) : 16;
-        
+
             $( DOMElement ).attr( 'width', width );
             $( DOMElement ).attr( 'height', height );
-                
+
             this.clear();
         };
 
@@ -138,26 +138,26 @@ define([
 
             c.lineWidth = style.width;
             c.strokeStyle = "#" + style.color;
-        
-            // Don't know why I have to do this here with 
+
+            // Don't know why I have to do this here with
             // these parameters that are already set, but
-            // if I figure it out I can tell paper.js how to 
+            // if I figure it out I can tell paper.js how to
             // similarly fix their stuff.
             c.lineCap = 'round';
             c.lineJoin = 'round';
         };
-    
+
         Canvas.prototype.startStroke = function( dot ) {
             var c = this._context
               , r
               , x = dot.x
               , y = dot.y;
-        
+
             // Apply new style if we've been supplied one.
             if (dot.brushStyle) {
                 this._applyStyle( dot.brushStyle );
             }
-        
+
             // Draw a dot.
             r = c.lineWidth / 2;
             c.fillStyle = c.strokeStyle;
@@ -165,11 +165,11 @@ define([
             c.arc( x, y, r, 0, Math.PI * 2 );
             c.fill();
         }
-    
+
         Canvas.prototype.stroke = function( seg ) {
-            var c = this._context; 
+            var c = this._context;
             var r;
-            
+
             var ix = seg.ix
               , iy = seg.iy
               , fx = seg.fx
@@ -179,7 +179,7 @@ define([
             if (seg.brushStyle) {
                 this._applyStyle( seg.brushStyle );
             }
-        
+
             // Make it so, Number One.
             c.beginPath();
             c.moveTo( ix, iy );
@@ -193,42 +193,42 @@ define([
             c.fillStyle = "#" + this._backgroundColor;
             c.fillRect( 0, 0, this._width, this._height );
         };
-    
+
         // -------------------- wrapper for DOM color panels --------------------------
-    
+
         ColorPanels = function( DOMContainer, DOMTitleSpan, title, colors ) {
             this.DOMContainer = DOMContainer;
             this.DOMTitleSpan = DOMTitleSpan;
-        
+
             this.populate( title, colors );
         };
-    
+
         ColorPanels.prototype.populate = function( title, colors ) {
             var i, len;
             var newLength, oldLength;
             var newColorPanels;
             var DOMElmntClasses = [];
             var newDOMElmntClasses;
-        
+
             var jQContainer = $( this.DOMContainer );
             var jQTitleSpan = $( this.DOMTitleSpan );
-        
+
             // Make the array of new DOM classes.
             for (i = 0, len = colors.length; i < len; i++) {
                 DOMElmntClasses.push( {klass: 'color-' + i} );
             }
-        
+
             // Set the title for this palette of colors.
             jQTitleSpan.text( title );
-        
+
             oldLength = jQContainer.children().length;
             newLength = DOMElmntClasses.length;
-        
+
             // Take away some if needed.
             for (i = oldLength; i > newLength; i--) {
                 jQContainer.children(':last-child').remove();
             }
-        
+
             // Add some if needed. (Will automatically be transparent.)
             newDOMElmntClasses = DOMElmntClasses.slice(oldLength, newLength);
             if (newDOMElmntClasses.length > 0) {
@@ -236,47 +236,47 @@ define([
                         .tmpl( newDOMElmntClasses )
                         .appendTo( jQContainer );
             }
-                
+
             // Now go through and set the new colors.
             jQContainer.children().each( function( i ) {
                 this.style.backgroundColor = '#' + colors[i];
             });
         };
-    
+
         ColorPanels.prototype.getDOMElmntClass = function( colorPanelIdx ) {
             return 'color-' + colorPanelIdx;
         };
-    
+
         // -------------------- wrapper for DOM palettes column --------------------------
-    
+
         PalettesColumn = function( DOMContainer, DOMTitleSpan ) {
             this.DOMContainer = DOMContainer;
             this.DOMTitleSpan = DOMTitleSpan;
         };
-    
+
         PalettesColumn.prototype.populate = function( paletteList ) {
-        
+
             // In the left column, show the heading with the keywords, and all the palettes below it,
             // along with their click handlers for loading colors into the drawing program.
-    
+
             var jQContainer = $( this.DOMContainer );
             var jQTitleSpan = $( this.DOMTitleSpan );
 
             jQTitleSpan.text( paletteList.keywords );
-        
+
             jQContainer.empty();
             $( '#paletteListTemplate' ).tmpl( paletteList.data ).appendTo( jQContainer );
-        
-            // Show it.    
+
+            // Show it.
             jQContainer.parent()[0].style.display = 'block';
         };
-    
+
         // View init. ----------- //
-    
+
         var pageId = config.PAGE_ID;
         var pageSelector = '#' + pageId;
-            
-        var statusReportElement =   $( pageSelector + ' .status-report' )[0], 
+
+        var statusReportElement =   $( pageSelector + ' .status-report' )[0],
             clearRestoreElement =   $( pageSelector + ' .clear-restore-button')[0];
             canvasElement =         $( pageSelector + ' .canvas' )[0],
             colorPanelsElement =    $( pageSelector + ' .color-panels' )[0],
@@ -284,26 +284,26 @@ define([
             palettesColumnElement = $( pageSelector + ' .palette-list' )[0],
             palettesTitleElement =  $( pageSelector + ' .successful-keywords' )[0];
             instructionsLink =      $( pageSelector + ' .instructions-link' )[0];
-            instructionsElement =   $( pageSelector + ' .instructions' )[0]; 
+            instructionsElement =   $( pageSelector + ' .instructions' )[0];
             instructionsClose =     $( pageSelector + ' .close' )[0];
-            
+
         // Initialize status reporting.
         var theStatus = new TheStatus( statusReportElement );
-        
+
         // Initialize canvas clearing and restoring button.
         var clearRestoreCanvas = new ClearRestoreCanvas( clearRestoreElement );
-        
+
         // Initialize instruction box.
         var instructionBox = new PopupBox( instructionsLink, instructionsElement, instructionsClose );
-        
+
         // Initialize canvas.
-        var canvas = new Canvas( canvasElement, config.CANVAS_WIDTH, config.CANVAS_HEIGHT, 
+        var canvas = new Canvas( canvasElement, config.CANVAS_WIDTH, config.CANVAS_HEIGHT,
                                  config.CANVAS_BACKGROUND_COLOR );
-        
+
         // Load the colors into the DOM.
-        var colorPanels = new ColorPanels ( colorPanelsElement, colorsTitleElement, 
+        var colorPanels = new ColorPanels ( colorPanelsElement, colorsTitleElement,
                                             config.DEFAULT_PALETTE_TITLE, config.DEFAULT_PALETTE_COLORS );
-                                           
+
         // Initialize empty palettesColumn object.
         var palettesColumn = new PalettesColumn( palettesColumnElement, palettesTitleElement );
 
@@ -317,5 +317,5 @@ define([
         this.palettesColumn = palettesColumn;
         this.pageId = pageId;
     };
-    
+
 })();

@@ -11,7 +11,7 @@ var app = require('http').createServer(handler).listen(3000),
 
 
 io.configure('production', function(){
-    io.enable('browser client minification');  // send minified client 
+    io.enable('browser client minification');  // send minified client
     io.enable('browser client etag');          // apply etag caching logic based on version number
     io.enable('browser client gzip');          // gzip the file
     io.set('log level', 1);                    // reduce logging
@@ -31,10 +31,10 @@ io.configure('development', function(){
 
 
 io.sockets.on('connection', function(socket) {
-    
+
     // Get a new browser up to date.
     socket.on('init', function(init) {
-        
+
         // Send the brushes, and long as someone hasn't just cleared the canvas
         // in preparation for clearing the history, send the full history too.
         var response = {
@@ -46,7 +46,7 @@ io.sockets.on('connection', function(socket) {
         }
         init(response);
     });
-  
+
     socket.on('requestClear', function() {
         io.sockets.emit('tempClear');
         clearConfirmPending = true;
@@ -62,17 +62,17 @@ io.sockets.on('connection', function(socket) {
         brushStyles[id] = brushStyle;
         returnNewId(id);
     });
-    
+
     socket.on('move', function(segment) {
         io.sockets.emit('seg', segment);
         history.push(segment);
     });
-    
+
     socket.on('start', function(dot) {
         io.sockets.emit('dot', dot);
         history.push(dot);
     });
-    
+
     socket.on('startOver', function(dot) {
         io.sockets.emit('finalClear');
         io.sockets.emit('dot', dot);
@@ -84,11 +84,11 @@ io.sockets.on('connection', function(socket) {
 
 function handler (req, res) {
     var url = parse(req.url);
-    var localPathname = (url.pathname === '/') 
-      ? '/index.html' 
+    var localPathname = (url.pathname === '/')
+      ? '/index.html'
       : url.pathname;
     var path = __dirname + '/public' + localPathname;
-  
+
     fs.stat(path, function(err, stat) {
         if (err) {
             if ('ENOENT' === err.code) {

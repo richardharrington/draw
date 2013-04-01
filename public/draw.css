@@ -17,7 +17,7 @@ a {text-decoration: none; color: #000; }
 /* end reset code */
 
 body {
-    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;  
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
     background-color: #f0f0f0;
     background-image: url(./images/furley_bg.png);
 }
@@ -53,7 +53,7 @@ a:active {
     margin-top: 10px;
     overflow-x: hidden;
     overflow-y: auto;
-    
+
     -webkit-transition: all 0.7s ease;
        -moz-transition: all 0.7s ease;
         -ms-transition: all 0.7s ease;
@@ -86,7 +86,7 @@ a:active {
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;
-  
+
 }
 
 .palette-container img.selected {
@@ -112,7 +112,7 @@ a:active {
 
 .main-box-wrapper {
     min-width: 730px;
-    
+
     -webkit-transition: margin-left 0.7s ease;
        -moz-transition: margin-left 0.7s ease;
         -ms-transition: margin-left 0.7s ease;
@@ -206,7 +206,7 @@ a:active {
     opacity: 0;
     display: none;
     left: 68%;
-    top: -10px; 
+    top: -10px;
     background: #fff;
     padding: 30px;
     -o-box-shadow:    2px 2px 3px 3px rgba(150,150,150, 0.7);

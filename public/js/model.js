@@ -1,9 +1,9 @@
 define(['util'], function(util) {
-    
+
     // Returns a constructor function called Model.
-    
+
     return function(config) {
-        
+
         var PaletteList,
             Palette,
             Brush;
@@ -12,7 +12,7 @@ define(['util'], function(util) {
 
         // There is one instance each of each of these objects for each
         // instance of the app on the page. An array with the default settings
-        // for each instance can be found in the config.js file.    
+        // for each instance can be found in the config.js file.
 
         // --- Set up the Palette constructor.
 
@@ -34,13 +34,13 @@ define(['util'], function(util) {
             var small, large;
 
             // We can only fit this.maxColors number of panels,
-            // so truncate the array if necessary. 
+            // so truncate the array if necessary.
             this.colors = colors.slice( 0, this._maxColors );
-            this.title = title; 
+            this.title = title;
 
             this._brushStyles = [];
 
-            // brushStyles alternate between small brushes and large brushes.    
+            // brushStyles alternate between small brushes and large brushes.
             for (i = 0, len = colors.length; i < len; i++) {
                 this._brushStyles.push({
                     color: colors[i],
@@ -48,7 +48,7 @@ define(['util'], function(util) {
                 });
                 this._brushStyles.push({
                     color: colors[i],
-                    width: this._largeBrushWidth                
+                    width: this._largeBrushWidth
                 });
             }
         };
@@ -58,7 +58,7 @@ define(['util'], function(util) {
         // because styleIdx takes into account
         // whether a brush is small or large.
 
-        // activeSize and activeColorPanelIdx are overloaded as both 
+        // activeSize and activeColorPanelIdx are overloaded as both
         // getters and setters, depending on the number of arguments.
 
         // activeStyle is just a getter.
@@ -77,7 +77,7 @@ define(['util'], function(util) {
 
             // set
             } else {
-                styleIdx += (oldSize === size) ? 0 : 
+                styleIdx += (oldSize === size) ? 0 :
                             (size === "small") ? -1 : 1;
                 this._styleIdx = styleIdx;
             }
@@ -91,7 +91,7 @@ define(['util'], function(util) {
             if (arguments.length === 0) {
                 return oldColorPanelIdx;
 
-            // set        
+            // set
             } else {
                 styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
                 this._styleIdx = styleIdx;
@@ -108,28 +108,28 @@ define(['util'], function(util) {
 
         // PaletteList objects are the objects into which we'll be adding the data from
         // colourlovers.com. (There's only one instance created by the PaletteList constructor
-        // in the current version of the app.) 
+        // in the current version of the app.)
 
         // The PaletteList constructor prototype contains a method to load the data.
-        // Each paletteList object contains a string with the search keywords and 
+        // Each paletteList object contains a string with the search keywords and
         // an array with the returned data.
 
         // After we add properties on the fly it will look like this:
 
-        // paletteList = { 
+        // paletteList = {
         //   keywords: 'summer apple tree',
         //   data: [
         //     { imageUrl: 'http://myimage.jpg',
         //       title: 'my palette',
-        //       userName: 'richard', 
-        //       dateCreated: 'July 4, 1545', 
+        //       userName: 'richard',
+        //       dateCreated: 'July 4, 1545',
         //       description: 'this is my palette',
         //       colors: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F']
         //     },
         //     { imageUrl: 'http://myotherimage.jpg',
         //       title: 'my other palette',
-        //       userName: 'harrington', 
-        //       dateCreated: 'July 9, 1970', 
+        //       userName: 'harrington',
+        //       dateCreated: 'July 9, 1970',
         //       description: 'this is my otherpalette',
         //       colors: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F']
         //     },
@@ -141,7 +141,7 @@ define(['util'], function(util) {
         // downloaded from the colourlovers website into the paletteList object.
 
         PaletteList = function() {};
-        PaletteList.MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 
+        PaletteList.MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
                            'July', 'August', 'September', 'October', 'November', 'December'];
 
         PaletteList.prototype.load = function( data ) {
@@ -164,19 +164,19 @@ define(['util'], function(util) {
                     entry = data[idx];
 
                     util.copy( newPalette, entry, [
-                        "colors", 
-                        "imageUrl", 
-                        "title", 
-                        "userName", 
-                        "description", 
+                        "colors",
+                        "imageUrl",
+                        "title",
+                        "userName",
+                        "description",
                         "dateCreated"] ); // omitting last argument
                                           // makes it a deep copy
 
                     // Now make "dateCreated" a more readable string.
 
                     date = util.parseSQLDate( newPalette.dateCreated );
-                    newPalette.dateCreated = PaletteList.MONTHS[date.getMonth()] + " " + 
-                                             date.getDate() + ", " + 
+                    newPalette.dateCreated = PaletteList.MONTHS[date.getMonth()] + " " +
+                                             date.getDate() + ", " +
                                              date.getFullYear();
 
                     // Many of the descriptions on colourlovers.com
@@ -203,9 +203,9 @@ define(['util'], function(util) {
         // Initialize localPalette.
         var localPalette = new Palette({
             title:               config.DEFAULT_PALETTE_TITLE,
-            colors:              config.DEFAULT_PALETTE_COLORS, 
+            colors:              config.DEFAULT_PALETTE_COLORS,
             maxColors:           config.MAX_COLORS,
-            smallBrushWidth:     config.SMALL_BRUSH_WIDTH, 
+            smallBrushWidth:     config.SMALL_BRUSH_WIDTH,
             largeBrushWidth:     config.LARGE_BRUSH_WIDTH,
             activeSize:          config.DEFAULT_BRUSH_SIZE,
             activeColorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX
@@ -220,7 +220,7 @@ define(['util'], function(util) {
         // by all the users on the canvas
         var brushes = {};
 
-        // Initialize currentBrush which is used to compare 
+        // Initialize currentBrush which is used to compare
         // to brushStyle ids that come down from the server.
         var currentBrush = { id: 0 };
 
@@ -231,7 +231,7 @@ define(['util'], function(util) {
         this.localBrush = localBrush;
         this.brushes = brushes;
         this.currentBrush = currentBrush;
-        
+
     }
-    
+
 });
