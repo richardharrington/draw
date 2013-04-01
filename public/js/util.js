@@ -21,9 +21,8 @@ define(function() {
     // keyList returns an array of all own property names in an object.
 
     keyList = function( obj ) {
-        var k, obj;
         var list = [];
-        for (k in obj) {
+        for (var k in obj) {
             if (obj.hasOwnProperty( k )) {
                 list.push( k );
             }
