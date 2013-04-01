@@ -318,4 +318,4 @@ define([
         this.pageId = pageId;
     };
 
-})();
+});
