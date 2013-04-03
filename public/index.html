@@ -122,18 +122,18 @@
 
 <!-- templates -->
 
-<script id="colorPanelsTemplate" type="text/x-jquery-tmpl">
-    <div class="color-panel ${klass}"></div>
+<script id="colorPanelsTemplate" type="text/html-tmpl">
+    <div class="color-panel <%= klass %>"></div>
 </script>
 
-<script id="paletteListTemplate" type="text/x-jquery-tmpl">
+<script id="paletteListTemplate" type="text/html-tmpl">
     <div class="palette-container">
-        <img class="palette-image" src="${imageUrl}" width="180" />
-        <p class="palette-title">${title}</p>
-        <p class="palette-info">created on ${dateCreated} by ${userName}.</p>
-        {{if description}}
-            <p class="palette-description">${description}</p>
-        {{/if}}
+        <img class="palette-image" src="<%= imageUrl %>" width="180" />
+        <p class="palette-title"><%= title %></p>
+        <p class="palette-info">created on <%= dateCreated %> by <%= userName %>.</p>
+        <% if (description) { %>
+            <p class="palette-description"><%= description %></p>
+        <% } %>
     </div>
 </script>
 

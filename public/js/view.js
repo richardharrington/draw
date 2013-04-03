@@ -1,12 +1,11 @@
 define([
     'jquery',
     'util',
-
-    'jquery.tmpl'
-
+    'lodash'
 ], function(
     $,
-    util
+    util,
+    _
 ) {
 
     // Returns a constructor function called View.
@@ -199,6 +198,7 @@ define([
         ColorPanels = function( DOMContainer, DOMTitleSpan, title, colors ) {
             this.DOMContainer = DOMContainer;
             this.DOMTitleSpan = DOMTitleSpan;
+            this.template = _.template($('#colorPanelsTemplate').html());
 
             this.populate( title, colors );
         };
@@ -231,11 +231,9 @@ define([
 
             // Add some if needed. (Will automatically be transparent.)
             newDOMElmntClasses = DOMElmntClasses.slice(oldLength, newLength);
-            if (newDOMElmntClasses.length > 0) {
-                newColorPanels = $( "#colorPanelsTemplate" )
-                        .tmpl( newDOMElmntClasses )
-                        .appendTo( jQContainer );
-            }
+            _.each(newDOMElmntClasses, function(klass) {
+                jQContainer.append(this.template( klass ));
+            });
 
             // Now go through and set the new colors.
             jQContainer.children().each( function( i ) {
@@ -264,8 +262,9 @@ define([
 
             jQTitleSpan.text( paletteList.keywords );
 
-            jQContainer.empty();
-            $( '#paletteListTemplate' ).tmpl( paletteList.data ).appendTo( jQContainer );
+            var paletteListTemplate = $('#paletteListTemplate').html();
+            var html = _.template(paletteListTemplate, paletteList.data);
+            jQContainer.html(html);
 
             // Show it.
             jQContainer.parent()[0].style.display = 'block';

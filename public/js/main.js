@@ -1,10 +1,7 @@
 requirejs.config({
     paths: {
         'jquery': 'libs/jquery-1.8.3.min',
-        'jquery.tmpl': 'libs/jquery.tmpl-beta1'
-    },
-    shim: {
-        'jquery.tmpl': ['jquery']
+        'lodash': 'libs/lodash.min'
     }
 });
 
