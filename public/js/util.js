@@ -32,30 +32,6 @@ define([], function() {
 
     // PUBLIC CONSTRUCTORS AND METHODS
 
-    // PropertyToParameter takes a function (func) and creates
-    // an object with a series of properties, all added by the
-    // method "add," each of which is a function that takes an arbitrary number of arguments,
-    // adds its own property name to the beginning of the list of arguments that were passed to it,
-    // and then calls the original function "func" with the new argument list.
-
-    // This is a hack so that we can pass to a JSONP request the name of a callback
-    // function such that the name of the function itself will tell
-    // another function, when the AJAX request returns, which model
-    // instance is supposed to be filled.
-
-    PropertyToParameter = function( func ) {
-        this.func = func;
-    };
-
-    PropertyToParameter.prototype.add = function( prop ) {
-        this[prop] = (function( f ) {
-            return function() {
-                var args = Array.prototype.slice.call( arguments, 0 );
-                args.unshift( prop );
-                f.apply( null, args );
-            };
-        })(this.func);
-    };
 
     // copyProps is like jQuery.extend, except that it lacks
     // jQuery.extend's ability to copy from more than one object.
@@ -131,34 +107,12 @@ define([], function() {
         return isSupported;
     };
 
-    // Calculate distance between two points (NOT USED IN THE CURRENT VERSION OF THE SCRIPT)
-    distance = function(x, y, xprime, yprime) {
-        return Math.sqrt(Math.pow(x - xprime, 2) + Math.pow(y - yprime, 2));
-    };
-
-    // object is an object inheritor function. (NOT USED IN THE CURRENT VERSION OF THE SCRIPT)
-
-    object = function ( o, vals ) {
-        function F() {}
-        F.prototype = o;
-        var instance = new F();
-        for (var p in vals) {
-            instance[p] = vals[p];
-        }
-        return instance;
-    };
-
     // ------------ Module interface ------------------------
 
     return {
         copy: copy,
         parseSQLDate: parseSQLDate,
         isTouchSupported: isTouchSupported,
-
-        // object: object,
-        // distance: distance,
-
-        PropertyToParameter: PropertyToParameter
     };
 
 });

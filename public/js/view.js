@@ -207,22 +207,22 @@ define([
             var i, len;
             var newLength, oldLength;
             var newColorPanels;
-            var DOMElmntClasses = [];
-            var newDOMElmntClasses;
+            var DOMElmntClassObjects = [];
+            var newDOMElmntClassObjects;
 
             var jQContainer = $( this.DOMContainer );
             var jQTitleSpan = $( this.DOMTitleSpan );
 
             // Make the array of new DOM classes.
             for (i = 0, len = colors.length; i < len; i++) {
-                DOMElmntClasses.push( {klass: 'color-' + i} );
+                DOMElmntClassObjects.push( {klass: 'color-' + i} );
             }
 
             // Set the title for this palette of colors.
             jQTitleSpan.text( title );
 
             oldLength = jQContainer.children().length;
-            newLength = DOMElmntClasses.length;
+            newLength = DOMElmntClassObjects.length;
 
             // Take away some if needed.
             for (i = oldLength; i > newLength; i--) {
@@ -230,10 +230,12 @@ define([
             }
 
             // Add some if needed. (Will automatically be transparent.)
-            newDOMElmntClasses = DOMElmntClasses.slice(oldLength, newLength);
-            _.each(newDOMElmntClasses, function(klass) {
-                jQContainer.append(this.template( klass ));
-            });
+            var template = this.template;
+            newDOMElmntClassObjects = DOMElmntClassObjects.slice(oldLength, newLength);
+            var html = _.map(newDOMElmntClassObjects, function(classObject) {
+                return template(classObject);
+            }).join('\n');
+            jQContainer.append(html);
 
             // Now go through and set the new colors.
             jQContainer.children().each( function( i ) {
@@ -250,6 +252,7 @@ define([
         PalettesColumn = function( DOMContainer, DOMTitleSpan ) {
             this.DOMContainer = DOMContainer;
             this.DOMTitleSpan = DOMTitleSpan;
+            this.template = _.template($('#paletteListTemplate').html());
         };
 
         PalettesColumn.prototype.populate = function( paletteList ) {
@@ -262,9 +265,11 @@ define([
 
             jQTitleSpan.text( paletteList.keywords );
 
-            var paletteListTemplate = $('#paletteListTemplate').html();
-            var html = _.template(paletteListTemplate, paletteList.data);
-            jQContainer.html(html);
+            var template = this.template;
+            var html = _.map(paletteList.data, function(palette) {
+                return template(palette);
+            }).join('\n');
+            jQContainer.append(html);
 
             // Show it.
             jQContainer.parent()[0].style.display = 'block';

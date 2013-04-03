@@ -1,4 +1,4 @@
-requirejs.config({
+require.config({
     paths: {
         'jquery': 'libs/jquery-1.8.3.min',
         'lodash': 'libs/lodash.min'
@@ -6,7 +6,7 @@ requirejs.config({
 });
 
 
-requirejs([
+require([
     'jquery',
     'util',
     'model',
@@ -57,19 +57,13 @@ requirejs([
 
             encodedKeywords = keywords.replace( /\s+/g, '+' );
             searchURL = 'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords +
-                        '&jsonCallback=APP.controller.loadPalettes'
+                        '&jsonCallback=loadPalettes'
             colourLoversScript.setAttribute( 'src', searchURL);
         }
         return false;
     };
 
-    // Remember: PropertyToParameter will create a hash (loadPalettes) whose values are functions
-    // that, when called, take their own property names, add them to the front of the argument
-    // list that was passed to them, and then call the anonymous function that was originally passed
-    // to the constructor. The anonymous function is invoked with the new, extended argument list.
-
     var loadPalettes = function( data ) {
-        console.log('inside loadPalettes');
         if (model.paletteList.load( data )) {
             palettesColumnController.init();
             view.theStatus.report();   // no arguments means all clear, no errors to report.
@@ -78,6 +72,9 @@ requirejs([
                                     model.paletteList.keywords + '." Try again.' );
         };
     };
+
+    // Needs to be global to be exposed to JSONP.
+    window.loadPalettes = loadPalettes;
 
     var setErrorControls = function() {
         // Set up error handlers for all current and future cases of
