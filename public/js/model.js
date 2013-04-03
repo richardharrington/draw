@@ -132,8 +132,8 @@ define(['util'], function(util) {
         // }
 
 
-        // This function does a deep copy of data from the feed
-        // downloaded from the colourlovers website into the paletteList object.
+        // This function loads datafrom the colourlovers website
+        // into the paletteList object.
 
         PaletteList = function() {};
         PaletteList.MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -144,49 +144,35 @@ define(['util'], function(util) {
                 return false;
             }
 
-            var i, len;
-            var date;
-            var self = this;
+            this.data = _.map(data, function(entry) {
+                var newPalette = _.pick(entry,
+                    "colors",
+                    "imageUrl",
+                    "title",
+                    "userName",
+                    "description",
+                    "dateCreated"
+                );
 
-            this.data = [];
+                // Now make "dateCreated" a more readable string.
 
-            for (i = 0, len = data.length; i < len; i++) {
-                (function( idx ) {
-                    var entry;
-                    var desc;
-                    var newPalette = {};
+                var date = util.parseSQLDate( newPalette.dateCreated );
+                newPalette.dateCreated = PaletteList.MONTHS[date.getMonth()] + " " +
+                                         date.getDate() + ", " +
+                                         date.getFullYear();
 
-                    entry = data[idx];
 
-                    util.copy( newPalette, entry, [
-                        "colors",
-                        "imageUrl",
-                        "title",
-                        "userName",
-                        "description",
-                        "dateCreated"] ); // omitting last argument
-                                          // makes it a deep copy
+                // Many of the descriptions on colourlovers.com
+                // are long garbage strings of html, so exclude those
+                // by checking if the string is too long.
 
-                    // Now make "dateCreated" a more readable string.
+                if (newPalette.description.length > 200) {
+                    newPalette.description = "";
+                }
 
-                    date = util.parseSQLDate( newPalette.dateCreated );
-                    newPalette.dateCreated = PaletteList.MONTHS[date.getMonth()] + " " +
-                                             date.getDate() + ", " +
-                                             date.getFullYear();
+                return newPalette;
+            });
 
-                    // Many of the descriptions on colourlovers.com
-                    // are long garbage strings of html, so exclude those
-                    // by checking if the string is too long.
-
-                    desc = newPalette.description;
-                    newPalette.description = (desc.length < 200) ? desc : "";
-
-                    // Load the new palette into the main database object.
-
-                    self.data[idx] = newPalette;
-
-                }( i ));
-            }
             return true;
         };
 
