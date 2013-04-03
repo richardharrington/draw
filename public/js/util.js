@@ -1,16 +1,11 @@
 define([], function() {
 
-    var isArray,
-        keyList;
+    var isArray;
+    var keyList;
 
-    var PropertyToParameter;
-
-    var copy,
-        parseSQLDate,
-        object,
-        forEach,
-        isTouchSupported,
-        distance;
+    var copy;
+    var parseSQLDate;
+    var isTouchSupported;
 
     // PRIVATE METHODS
 
@@ -112,7 +107,7 @@ define([], function() {
     return {
         copy: copy,
         parseSQLDate: parseSQLDate,
-        isTouchSupported: isTouchSupported,
+        isTouchSupported: isTouchSupported
     };
 
 });

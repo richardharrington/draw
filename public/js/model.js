@@ -26,31 +26,26 @@ define(['util'], function(util) {
             this.activeColorPanelIdx( args.activeColorPanelIdx );
         };
 
+
         // Load in a new set of colors with their title.
 
         Palette.prototype.load = function( title, colors ) {
-            var i, len;
-            var color;
-            var small, large;
 
             // We can only fit this.maxColors number of panels,
             // so truncate the array if necessary.
             this.colors = colors.slice( 0, this._maxColors );
             this.title = title;
 
-            this._brushStyles = [];
+            // brushStyles alternate between small brushes and large brushes,
+            // so create an array with twice as many elements as the colors array.
 
-            // brushStyles alternate between small brushes and large brushes.
-            for (i = 0, len = colors.length; i < len; i++) {
-                this._brushStyles.push({
-                    color: colors[i],
-                    width: this._smallBrushWidth
-                });
-                this._brushStyles.push({
-                    color: colors[i],
-                    width: this._largeBrushWidth
-                });
-            }
+            this._brushStyles = _.flatten(_.map(colors, function(color) {
+                return [
+                    { color: color, width: this._smallBrushWidth },
+                    { color: color, width: this._largeBrushWidth }
+                ];
+            }, this));
+            console.log();
         };
 
         // styleIdx is a number that has two values
