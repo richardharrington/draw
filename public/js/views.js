@@ -86,6 +86,10 @@ define([
         this.DOMElement = DOMElement;
         this._context = DOMElement.getContext( "2d" );
 
+        // Stored as we go along so we don't have to constantly
+        // change brush styles
+        this._brushStyle = null;
+
         // Possibly make these configurable in the future.
         this._context.lineCap = 'round';
         this._context.lineJoin = 'round';
@@ -144,9 +148,9 @@ define([
               , x = dot.x
               , y = dot.y;
 
-            // Apply new style if we've been supplied one.
-            if (dot.brushStyle) {
+            if (this._brushStyle !== dot.brushStyle) {
                 this._applyStyle( dot.brushStyle );
+                this._brushStyle = dot.brushStyle;
             }
 
             // Draw a dot.
@@ -166,9 +170,9 @@ define([
               , fx = seg.fx
               , fy = seg.fy;
 
-              // Apply new style if we've been supplied one.
-            if (seg.brushStyle) {
+            if (this._brushStyle !== seg.brushStyle) {
                 this._applyStyle( seg.brushStyle );
+                this._brushStyle = seg.brushStyle;
             }
 
             // Make it so, Number One.

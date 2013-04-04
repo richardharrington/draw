@@ -232,17 +232,12 @@ require([
             var id = dot.id;
             var brush = brushes[id];
 
-            // If the brush info is different from what's
-            // currently being used, (either because this user
-            // is starting with a new brush themselves or because
-            // the last 'dot' or 'seg' event to be processed
-            // happened to be somebody else's, then pass the brush
+            // Pass the brush
             // into to the canvas as part of the dot object,
             // and then update the currentBrush.
-            if (id !== currentBrush.id) {
-                dot.brushStyle = brush.style;
-                currentBrush = brush;
-            }
+            dot.brushStyle = brush.style;
+            currentBrush = brush;
+
             canvas.startStroke( dot );
             brush.x = dot.x;
             brush.y = dot.y;
@@ -252,10 +247,8 @@ require([
             var brush = brushes[id];
 
             // Similar to last one.
-            if (id !== currentBrush.id) {
-                segment.brushStyle = brush.style;
-                currentBrush = brush;
-            }
+            segment.brushStyle = brush.style;
+            currentBrush = brush;
 
             // Pass along the last coordinates of this brush.
             // We draw in tiny pieces, starting a new segment each
@@ -349,11 +342,7 @@ require([
         var y = p.y;
 
         // Draw the first draft before sending info to the server.
-        if (currentBrush !== localBrush) {
-            canvas.startStroke({ x: x, y: y, brushStyle: localBrush.style });
-        } else {
-            canvas.startStroke({ x: x, y: y });
-        }
+        canvas.startStroke({ x: x, y: y, brushStyle: localBrush.style });
 
         // Drawing (by any user) is what confirms the
         // clear canvas command.
@@ -376,11 +365,7 @@ require([
         // Draw the first draft before sending info to the server.
         var ix = localBrush.x;
         var iy = localBrush.y;
-        if (currentBrush !== localBrush) {
-            canvas.stroke({ ix: ix, iy: iy, fx: fx, fy: fy, brushStyle: localBrush.style });
-        } else {
-            canvas.stroke({ ix: ix, iy: iy, fx: fx, fy: fy });
-        }
+        canvas.stroke({ ix: ix, iy: iy, fx: fx, fy: fy, brushStyle: localBrush.style });
 
         socket.emit('move', {fx: fx, fy: fy, id: localBrush.id} );
         localBrush.x = fx;
