@@ -347,6 +347,14 @@ require([
         var p = canvas.getPos( event );
         var x = p.x;
         var y = p.y;
+
+        // Draw the first draft before sending info to the server.
+        if (currentBrush !== localBrush) {
+            canvas.startStroke({ x: x, y: y, brushStyle: localBrush.style });
+        } else {
+            canvas.startStroke({ x: x, y: y });
+        }
+
         // Drawing (by any user) is what confirms the
         // clear canvas command.
         if (clearConfirmPending) {
@@ -362,12 +370,21 @@ require([
 
     var continueDraw = function( event ) {
         var p = canvas.getPos( event );
-        var x = p.x;
-        var y = p.y;
+        var fx = p.x;
+        var fy = p.y;
 
-        socket.emit('move', {fx: x, fy: y, id: localBrush.id} );
-        localBrush.x = x;
-        localBrush.y = y;
+        // Draw the first draft before sending info to the server.
+        var ix = localBrush.x;
+        var iy = localBrush.y;
+        if (currentBrush !== localBrush) {
+            canvas.stroke({ ix: ix, iy: iy, fx: fx, fy: fy, brushStyle: localBrush.style });
+        } else {
+            canvas.stroke({ ix: ix, iy: iy, fx: fx, fy: fy });
+        }
+
+        socket.emit('move', {fx: fx, fy: fy, id: localBrush.id} );
+        localBrush.x = fx;
+        localBrush.y = fy;
     }
 
     var stopDraw = function() {
