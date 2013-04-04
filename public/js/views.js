@@ -84,8 +84,6 @@ define([
                             DOMElement.currentStyle.border; // TODO: check in IE6, IE7, IE8
 
         this.DOMElement = DOMElement;
-        this.drawing = false;
-
         this._context = DOMElement.getContext( "2d" );
 
         // Possibly make these configurable in the future.
