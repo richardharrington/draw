@@ -9,19 +9,103 @@ require.config({
 require([
     'jquery',
     'util',
-    'model',
-    'view',
+    'models',
+    'views',
     'config'
 ], function(
     $,
     util,
-    Model,
-    View,
+    models,
+    views,
     config
 ) {
 
-    var view = new View(config);
-    var model = new Model(config);
+    // Data
+
+    var paletteList;
+    var localPalette;
+    var localBrush;
+    var brushes;
+    var currentBrush;
+
+    // DOM stuff
+
+    var theStatus;
+    var clearRestoreCanvas;
+    var instructionBox;
+    var canvas;
+    var colorPanels;
+    var palettesColumn;
+    var pageId;
+
+    var instantiateData = function(config) {
+
+        // Initialize paletteList.
+        paletteList = new models.PaletteList();
+
+        // Initialize localPalette.
+        localPalette = new models.Palette({
+            title:               config.DEFAULT_PALETTE_TITLE,
+            colors:              config.DEFAULT_PALETTE_COLORS,
+            maxColors:           config.MAX_COLORS,
+            smallBrushWidth:     config.SMALL_BRUSH_WIDTH,
+            largeBrushWidth:     config.LARGE_BRUSH_WIDTH,
+            activeSize:          config.DEFAULT_BRUSH_SIZE,
+            activeColorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX
+        });
+
+        // Initialize localBrush.
+        localBrush = new models.Brush(
+            localPalette.activeStyle()
+        );
+
+        // Initialize the hash of brushes that will be used
+        // by all the users on the canvas
+        brushes = {};
+
+        // Initialize currentBrush which is used to compare
+        // to brushStyle ids that come down from the server.
+        currentBrush = { id: 0 };
+
+    };
+
+    var instantiateDOMStuff = function(config) {
+
+        pageId = config.PAGE_ID;
+        var pageSelector = '#' + pageId;
+
+        var statusReportElement =   $( pageSelector + ' .status-report' )[0],
+            clearRestoreElement =   $( pageSelector + ' .clear-restore-button')[0];
+            canvasElement =         $( pageSelector + ' .canvas' )[0],
+            colorPanelsElement =    $( pageSelector + ' .color-panels' )[0],
+            colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
+            palettesColumnElement = $( pageSelector + ' .palette-list' )[0],
+            palettesTitleElement =  $( pageSelector + ' .successful-keywords' )[0];
+            instructionsLink =      $( pageSelector + ' .instructions-link' )[0];
+            instructionsElement =   $( pageSelector + ' .instructions' )[0];
+            instructionsClose =     $( pageSelector + ' .close' )[0];
+
+        // Initialize status reporting.
+        theStatus = new views.TheStatus( statusReportElement );
+
+        // Initialize canvas clearing and restoring button.
+        clearRestoreCanvas = new views.ClearRestoreCanvas( clearRestoreElement );
+
+        // Initialize instruction box.
+        instructionBox = new views.PopupBox( instructionsLink, instructionsElement, instructionsClose );
+
+        // Initialize canvas.
+        canvas = new views.Canvas( canvasElement, config.CANVAS_WIDTH, config.CANVAS_HEIGHT,
+                                 config.CANVAS_BACKGROUND_COLOR );
+
+        // Load the colors into the DOM.
+        colorPanels = new views.ColorPanels ( colorPanelsElement, colorsTitleElement,
+                                            config.DEFAULT_PALETTE_TITLE, config.DEFAULT_PALETTE_COLORS );
+
+        // Initialize empty palettesColumn object.
+        palettesColumn = new views.PalettesColumn( palettesColumnElement, palettesTitleElement );
+
+    };
 
     // -- the event handler for requesting data from colourlovers.com
 
@@ -30,16 +114,16 @@ require([
         var colourLoversScript;
         var searchURL;
 
-        var pageSelector = '#' + view.pageId;
+        var pageSelector = '#' + pageId;
         var searchField = $( pageSelector + ' .search-field' );
         var keywords = searchField.val();
 
         // if the user typed anything
         if (keywords) {
-            model.paletteList.keywords = keywords;
+            paletteList.keywords = keywords;
             searchField.val( '' );
 
-            view.theStatus.report( "Loading..." );
+            theStatus.report( "Loading..." );
 
             // First overwrite any previous script tags with the class 'colourLoversUrl',
             // than create the new one that makes the next http request to colourlovers.com.
@@ -49,7 +133,7 @@ require([
             }
             colourLoversScript = document.createElement( 'script' );
             $( colourLoversScript ).addClass( 'colourLoversUrl' );
-            document.getElementById( view.pageId ).appendChild( colourLoversScript );
+            document.getElementById( pageId ).appendChild( colourLoversScript );
 
             // Change spaces to plus signs for insertion into search query.
             // This query string tells colourlovers.com to pass back the data wrapped
@@ -64,12 +148,12 @@ require([
     };
 
     var loadPalettes = function( data ) {
-        if (model.paletteList.load( data )) {
+        if (paletteList.load( data )) {
             palettesColumnController.init();
-            view.theStatus.report();   // no arguments means all clear, no errors to report.
+            theStatus.report();   // no arguments means all clear, no errors to report.
         } else {
-            view.theStatus.report( 'No palettes matched the keyword or keywords "' +
-                                    model.paletteList.keywords + '." Try again.' );
+            theStatus.report( 'No palettes matched the keyword or keywords "' +
+                                    paletteList.keywords + '." Try again.' );
         };
     };
 
@@ -82,7 +166,7 @@ require([
         // (using jQuery .delegate()).
 
         var keywords;
-        var pageSelector = '#' + view.pageId;
+        var pageSelector = '#' + pageId;
         $( pageSelector ).delegate(' .colourLoversUrl', 'error', function () {
 
             // extract the search string from the colourlovers.com request url.
@@ -91,25 +175,25 @@ require([
             // unescape (changes plusses to spaces)
             keywords = keywords.replace( /\+/g, ' ' );
 
-            view.theStatus.report( 'Unable to load palettes for the keyword(s) "' + keywords + '." ' +
+            theStatus.report( 'Unable to load palettes for the keyword(s) "' + keywords + '." ' +
                                    'Probably a problem with either the colourlovers.com website or your internet connection.' );
         });
     };
 
     var setMiscellaneousUserControls = function() {
-        var pageSelector = '#' + view.pageId;
+        var pageSelector = '#' + pageId;
         var code;
 
         // Set active brush size HTML select element,
         // because Firefox preserves state even when it's refreshed.
-        $( pageSelector + ' .brush-size' ).val( model.localPalette.activeSize() );
+        $( pageSelector + ' .brush-size' ).val( localPalette.activeSize() );
 
         // bind the event handlers for toggling the brush size and
         // entering search keywords. Also for toggling the clear and
         // restore canvas buttons, which are dynamically swapped out
         // for each other. Also for the instruction link.
 
-        view.instructionBox.init();
+        instructionBox.init();
 
         $( pageSelector ).on('click', '.clear-canvas', function( event ) {
             socket.emit('requestClear');
@@ -120,10 +204,10 @@ require([
         });
 
         $( pageSelector + ' .brush-size' ).change( function() {
-            model.localPalette.activeSize( this.value );
-            model.localBrush.style = model.localPalette.activeStyle();
-            socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
-                model.localBrush.id = id;
+            localPalette.activeSize( this.value );
+            localBrush.style = localPalette.activeStyle();
+            socket.emit('registerBrushStyle', localBrush.style, function(id) {
+                localBrush.id = id;
             });
         });
 
@@ -143,12 +227,10 @@ require([
     var clearConfirmPending;
 
     var setSocketIO = function () {
-        var canvas = view.canvas;
-        var currentBrush = model.currentBrush;
 
         var drawDot = function( dot ) {
             var id = dot.id;
-            var brush = model.brushes[id];
+            var brush = brushes[id];
 
             // If the brush info is different from what's
             // currently being used, (either because this user
@@ -167,7 +249,7 @@ require([
         }
         var strokeSegment = function( segment ) {
             var id = segment.id;
-            var brush = model.brushes[id];
+            var brush = brushes[id];
 
             // Similar to last one.
             if (id !== currentBrush.id) {
@@ -209,30 +291,30 @@ require([
         socket.on('seg', strokeSegment);
 
         socket.on('restoreHistory', function( history ) {
-            view.clearRestoreCanvas.showClear();
+            clearRestoreCanvas.showClear();
             drawHistory( history );
             clearConfirmPending = false;
         });
         socket.on('newBrushStyle', function( brushStyle ) {
-            var brush = model.brushes[brushStyle.id] = {};
+            var brush = brushes[brushStyle.id] = {};
             brush.style = {};
             brush.style.color = brushStyle.color;
             brush.style.width = brushStyle.width;
             brush.id = brushStyle.id;
             // x and y coordinates will be added to
-            // model.brushes[brushStyle.id] when it's first used
+            // brushes[brushStyle.id] when it's first used
         });
 
         // Clear canvas and show the 'Restore canvas' undo button.
         socket.on('tempClear', function() {
-            view.clearRestoreCanvas.showRestore();
+            clearRestoreCanvas.showRestore();
             canvas.clear();
             clearConfirmPending = true;
         });
 
         // Swap out the 'Restore canvas' button for the 'Clear canvas' button.
         socket.on('finalClear', function() {
-            view.clearRestoreCanvas.showClear();
+            clearRestoreCanvas.showClear();
             clearConfirmPending = false;
         });
 
@@ -243,18 +325,18 @@ require([
             var brushStyles = response.brushStyles;
 
             for (var id in brushStyles) {
-                model.brushes[id] = {};
-                model.brushes[id].style = brushStyles[id];
+                brushes[id] = {};
+                brushes[id].style = brushStyles[id];
             }
             // Don't draw the history if we're in "clear canvas" confirmation
             // pending mode. (Actually, the history will not have been sent anyway.)
             if (!clearConfirmPending) {
                 drawHistory( history );
-                view.clearRestoreCanvas.showClear();
+                clearRestoreCanvas.showClear();
             }
             // Register the first brush.
-            socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
-                model.localBrush.id = id;
+            socket.emit('registerBrushStyle', localBrush.style, function(id) {
+                localBrush.id = id;
             });
         });
     }
@@ -262,8 +344,6 @@ require([
     // ------------- DRAWING FUNCTIONS, FOLLOWED BY EVENT LISTENERS FOR THEM. -----------
 
     var startDraw = function( event ) {
-        var canvas = view.canvas;
-        var localBrush = model.localBrush;
         var p = canvas.getPos( event );
         var x = p.x;
         var y = p.y;
@@ -281,8 +361,6 @@ require([
 
 
     var continueDraw = function( event ) {
-        var canvas = view.canvas;
-        var localBrush = model.localBrush;
         var p = canvas.getPos( event );
         var x = p.x;
         var y = p.y;
@@ -293,11 +371,11 @@ require([
     }
 
     var stopDraw = function() {
-        model.localBrush.drawing = false;
+        localBrush.drawing = false;
     }
 
     var toggleDraw = function( event ) {
-        if (model.localBrush.drawing) {
+        if (localBrush.drawing) {
             stopDraw();
         } else {
             startDraw( event );
@@ -306,8 +384,7 @@ require([
 
     var setMouseEventListeners = function() {
         var LEFT_BUTTON = 1;
-        var localBrush = model.localBrush;
-        var canvasEl = view.canvas.DOMElement;
+        var canvasEl = canvas.DOMElement;
 
         // Have to use document instead of the canvas element,
         // because it's the easiest way to deal with stuff entering
@@ -343,8 +420,7 @@ require([
     };
 
     var setTouchEventListeners = function() {
-        var canvasEl = view.canvas.DOMElement;
-        var localBrush = model.localBrush;
+        var canvasEl = canvas.DOMElement;
 
         canvasEl.addEventListener('touchstart', function( event ) {
 
@@ -398,31 +474,31 @@ require([
 
     colorPanelsController.init = function() {
         var panel;
-        var pageSelector = '#' + view.pageId;
+        var pageSelector = '#' + pageId;
 
         // Populate the color panels.
-        view.colorPanels.populate( model.localPalette.title, model.localPalette.colors );
+        colorPanels.populate( localPalette.title, localPalette.colors );
 
         // Reset the localPalette's activeColorPanelIdx if it was set to a panel that no longer
         // exists (because a new palette has fewer colors than the old one)
-        if (!model.localPalette.activeStyle()) {
-            model.localPalette.activeColorPanelIdx( 0 );
+        if (!localPalette.activeStyle()) {
+            localPalette.activeColorPanelIdx( 0 );
         }
 
         // Now make the already selected one pink.
-        panel = $( pageSelector + ' .' + view.colorPanels.getDOMElmntClass( model.localPalette.activeColorPanelIdx()) );
+        panel = $( pageSelector + ' .' + colorPanels.getDOMElmntClass( localPalette.activeColorPanelIdx()) );
         this.highlightElement( panel );
 
         // Add the event listeners.
-        this.addEventListeners( view.colorPanels, function( element, i ) {
+        this.addEventListeners( colorPanels, function( element, i ) {
 
             // Update localPalette and localBrush.
-            model.localPalette.activeColorPanelIdx( i );
-            model.localBrush.style = model.localPalette.activeStyle();
+            localPalette.activeColorPanelIdx( i );
+            localBrush.style = localPalette.activeStyle();
 
             // Tell the server about it.
-            socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
-                model.localBrush.id = id;
+            socket.emit('registerBrushStyle', localBrush.style, function(id) {
+                localBrush.id = id;
             });
 
             // Turn the selected one pink.
@@ -433,36 +509,36 @@ require([
     var palettesColumnController = new ElementsController();
 
     palettesColumnController.init = function() {
-        var pageSelector = '#' + view.pageId;
+        var pageSelector = '#' + pageId;
 
         // Populate the palettes column.
-        view.palettesColumn.populate( model.paletteList );
+        palettesColumn.populate( paletteList );
 
         // Adjust its height based on the height of the canvas.
         // TODO: Find a way to have this not happen, using CSS.
-        // For one thing, we're 'illegally' using the private property view.canvas._height
-        $( view.palettesColumn.DOMContainer ).parent().css( 'height', '' + (305 + view.canvas._height) );
+        // For one thing, we're 'illegally' using the private property canvas._height
+        $( palettesColumn.DOMContainer ).parent().css( 'height', '' + (305 + canvas._height) );
 
         // Widen the left column.
-        $( view.palettesColumn.DOMContainer ).parent().css( {'width': '220px', 'margin-left': '15px'} );
+        $( palettesColumn.DOMContainer ).parent().css( {'width': '220px', 'margin-left': '15px'} );
 
 
         // Slide the main box over.
         $( pageSelector + ' .main-box-wrapper' ).css ( 'margin-left', 240 );
 
         // Add the event handlers.
-        this.addEventListeners( view.palettesColumn, function( element, i ) {
+        this.addEventListeners( palettesColumn, function( element, i ) {
 
             // Load the localPalette with the new colors.
-            var title = model.paletteList.data[i].title;
-            var colors = model.paletteList.data[i].colors;
-            model.localPalette.load( title, colors );
-            colorPanelsController.init( view, model );
-            model.localBrush.style = model.localPalette.activeStyle();
+            var title = paletteList.data[i].title;
+            var colors = paletteList.data[i].colors;
+            localPalette.load( title, colors );
+            colorPanelsController.init();
+            localBrush.style = localPalette.activeStyle();
 
             // Tell the server about it.
-            socket.emit('registerBrushStyle', model.localBrush.style, function(id) {
-                model.localBrush.id = id;
+            socket.emit('registerBrushStyle', localBrush.style, function(id) {
+                localBrush.id = id;
             });
 
             // Turn the selected one pink.
@@ -475,6 +551,8 @@ require([
     var initialize = function() {
 
         // Set the controls.
+        instantiateData( config );
+        instantiateDOMStuff( config );
         colorPanelsController.init();
         setMiscellaneousUserControls();
         setErrorControls();
