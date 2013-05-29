@@ -211,6 +211,12 @@ require([
             });
         });
 
+        $( pageSelector + ' .brush-size' ).on('mousedown', function(event) {
+            event.stopPropagation();
+        });
+
+
+
         $( pageSelector + ' .search-button' ).click( function( event ) {
             requestFromColourloversAPI();
         });
