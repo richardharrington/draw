@@ -38,30 +38,15 @@
     <div class="main-box-wrapper">
         <div class="main-box">
             <div class="header">
-                <h1>Draw</h1>
-                <div>
-                    <p>Share the URL with your friends — this is an interactive real-time drawing app!</p>
-                    <p class="search-label">For more palettes, search colourlovers.com (try a season or a color):
-                        <input type="text" class="search-field"></input>
-                        <input type="button" class="search-button" value="search">
-                    </p>
-                </div>
+                <h1>Hacker School Collective Doodle Pad</h1>
 
-                <!-- a placeholder for spacing:  -->
-                <p class="status-report">&nbsp;</p>
-            </div>
+           </div>
 
-            <div class="color-panels-container-wrapper">
-                    <p class="current-palette-header">Current palette: <span class="current-palette-title">default palette</span></p>
-                    <div class="color-panels">
-                        <div class="color-panel color-0"></div>
-                        <div class="color-panel color-1"></div>
-                        <div class="color-panel color-2"></div>
-                        <div class="color-panel color-3"></div>
-                        <div class="color-panel color-4"></div>
-                    </div>
-            </div>
             <div class="canvas-container">
+
+                <canvas class="canvas">No CANVAS support!!</canvas>
+
+
 
                 <div class="canvas-controls">
                     <span class="brush-size-label">Brush size:</span>
@@ -77,26 +62,30 @@
                          in the middle of confirming a clear-canvas action. -->
 
                     <input type="button" class="clear-restore-button" value="Clear canvas" />
-                    <a class="instructions-link">Instructions</a>
-                    <!-- instruction box absolutely positioned -->
-                    <div class="instructions">
-                        <ol>
-                            <li>Click and drag to draw.</li>
-                            <li>Option-click (alt-click in Windows) to toggle drawing on and off.</li>
-                            <li>Make sure to share the URL for this page with your friends! It's much more fun when you draw with other people.</li>
-                        </ol>
-                        <!-- close box absolutely positioned -->
-                        <a class="close">Close [x]</a>
-                    </div>
                 </div>
 
-                <!--- width and height are defaults, will be overridden by javascript -->
-                <canvas class="canvas" width="600" height="400">No CANVAS support!!</canvas>
+                <div class="color-panels-container-wrapper">
+                        <div class="color-panels">
+                            <div class="color-panel color-0"></div>
+                            <div class="color-panel color-1"></div>
+                            <div class="color-panel color-2"></div>
+                            <div class="color-panel color-3"></div>
+                            <div class="color-panel color-4"></div>
+                        </div>
+                        <p class="current-palette-header">Current palette: <span class="current-palette-title">default palette</span></p>
+                        
+                </div>
+                <div>
+                    <p class="search-label">For more palettes, search colourlovers.com (try a season or a color):
+                        <input type="text" class="search-field"></input>
+                        <input type="button" class="search-button" value="search">
+                    </p>
+                </div>
+
+                <!-- a placeholder for spacing:  -->
+                <p class="status-report">&nbsp;</p>
 
             </div>
-            <div class="copyright">
-                &copy; Copyright 2011-2012, Richard Harrington
-            <div>
         </div>
     </div>
     <!-- instruction box -->

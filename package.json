@@ -1,10 +1,10 @@
 {
   "name": "draw",
-  "subdomain": "draw",
+  "subdomain": "hsdoodle",
   "scripts": {
     "start": "app.js"
   },
-  "version": "0.2.5-49",
+  "version": "0.2.5-55",
   "engines": {
     "node": "0.6.x"
   },
