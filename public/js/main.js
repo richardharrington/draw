@@ -71,19 +71,20 @@ require([
 
     var instantiateDOMStuff = function(config) {
 
-        pageId = config.PAGE_ID;
-        var pageSelector = '#' + pageId;
+        var instantiated = function(className) {
+            return $('#' + config.PAGE_ID + ' .' + className)[0];
+        };
 
-        var statusReportElement =   $( pageSelector + ' .status-report' )[0],
-            clearRestoreElement =   $( pageSelector + ' .clear-restore-button')[0];
-            canvasElement =         $( pageSelector + ' .canvas' )[0],
-            colorPanelsElement =    $( pageSelector + ' .color-panels' )[0],
-            colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
-            palettesColumnElement = $( pageSelector + ' .palette-list' )[0],
-            palettesTitleElement =  $( pageSelector + ' .successful-keywords' )[0];
-            instructionsLink =      $( pageSelector + ' .instructions-link' )[0];
-            instructionsElement =   $( pageSelector + ' .instructions' )[0];
-            instructionsClose =     $( pageSelector + ' .close' )[0];
+        var statusReportElement =   instantiated('status-report'),
+            clearRestoreElement =   instantiated('clear-restore-button'),
+            canvasElement =         instantiated('canvas'),
+            colorPanelsElement =    instantiated('color-panels'),
+            colorsTitleElement =    instantiated('current-palette-title'),
+            palettesColumnElement = instantiated('palette-list'),
+            palettesTitleElement =  instantiated('successful-keywords'),
+            instructionsLink =      instantiated('instructions-link'),
+            instructionsElement =   instantiated('instructions'),
+            instructionsClose =     instantiated('close');
 
         // Initialize status reporting.
         theStatus = new views.TheStatus( statusReportElement );
