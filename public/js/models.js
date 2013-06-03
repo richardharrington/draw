@@ -10,7 +10,7 @@ define(['util'], function(util) {
         this.load( args.title, args.colors );
         this.activeSize( args.activeSize );
         this.activeColorPanelIdx( args.activeColorPanelIdx );
-    };
+    }
 
     Palette.prototype = {
 
@@ -86,7 +86,7 @@ define(['util'], function(util) {
         this.drawing = false;
         this.style = brushStyle;
         // also will set this.x and this.y, dynamically
-    };
+    }
 
     // PaletteList objects are the objects into which we'll be adding the data from
     // colourlovers.com. (There's only one instance created by the PaletteList constructor
@@ -121,7 +121,7 @@ define(['util'], function(util) {
     var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
                        'July', 'August', 'September', 'October', 'November', 'December'];
 
-    function PaletteList() {};
+    function PaletteList() {}
 
     PaletteList.prototype = {
 
