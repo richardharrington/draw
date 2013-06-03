@@ -269,7 +269,7 @@ define([
         var html = _.map(paletteList.data, function(palette) {
             return template(palette);
         }).join('\n');
-        jQContainer.append(html);
+        jQContainer.empty().append(html);
 
         // Show it.
         jQContainer.parent()[0].style.display = 'block';
