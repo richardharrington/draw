@@ -51,29 +51,7 @@ define([
                 self._jQDisplay.css("display", "none");
             }, 550);
         });
-    }
-
-    // ----- Clear or Restore canvas button (toggles between the two). ---------
-
-    ClearRestoreCanvas = function( element ) {
-        this._jQElement = $( element );
     };
-
-    ClearRestoreCanvas.prototype = {
-        showClear: function() {
-            var el = this._jQElement;
-            el.addClass('clear-canvas');
-            el.removeClass('restore-canvas');
-            el.val('Clear canvas');
-        },
-        showRestore: function() {
-            var el = this._jQElement;
-            el.addClass('restore-canvas');
-            el.removeClass('clear-canvas');
-            el.val('Restore canvas');
-        }
-    };
-
 
 
     // --------------------- Wrapper for DOM Canvas ----------------------------
@@ -280,7 +258,6 @@ define([
     return {
         TheStatus: TheStatus,
         PopupBox: PopupBox,
-        ClearRestoreCanvas: ClearRestoreCanvas,
         Canvas: Canvas,
         ColorPanels: ColorPanels,
         PalettesColumn: PalettesColumn

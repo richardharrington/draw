@@ -195,7 +195,7 @@ a:active {
     font-size: 0.8em;
 }
 
-.canvas-controls .clear-restore-button, .canvas-controls .instructions-link {
+.canvas-controls .clear-canvas, .canvas-controls .instructions-link {
     margin-top: 0;
     margin-left: 30px;
 }

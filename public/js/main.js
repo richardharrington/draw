@@ -30,7 +30,6 @@ require([
     // DOM stuff
 
     var theStatus;
-    var clearRestoreCanvas;
     var instructionBox;
     var canvas;
     var colorPanels;
@@ -74,7 +73,6 @@ require([
         var pageSelector = '#' + pageId;
 
         var statusReportElement =   $( pageSelector + ' .status-report' )[0],
-            clearRestoreElement =   $( pageSelector + ' .clear-restore-button')[0];
             canvasElement =         $( pageSelector + ' .canvas' )[0],
             colorPanelsElement =    $( pageSelector + ' .color-panels' )[0],
             colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
@@ -86,9 +84,6 @@ require([
 
         // Initialize status reporting.
         theStatus = new views.TheStatus( statusReportElement );
-
-        // Initialize canvas clearing and restoring button.
-        clearRestoreCanvas = new views.ClearRestoreCanvas( clearRestoreElement );
 
         // Initialize instruction box.
         instructionBox = new views.PopupBox( instructionsLink, instructionsElement, instructionsClose );
@@ -199,10 +194,6 @@ require([
             socket.emit('requestClear');
         });
 
-        $( pageSelector ).on('click', '.restore-canvas', function( event ) {
-            socket.emit('requestRestore');
-        });
-
         $( pageSelector + ' .brush-size' ).change( function() {
             localPalette.activeSize( this.value );
             localBrush.style = localPalette.activeStyle();
@@ -280,11 +271,6 @@ require([
         socket.on('dot', drawDot);
         socket.on('seg', strokeSegment);
 
-        socket.on('restoreHistory', function( history ) {
-            clearRestoreCanvas.showClear();
-            drawHistory( history );
-            clearConfirmPending = false;
-        });
         socket.on('newBrushStyle', function( brushStyle ) {
             var brush = brushes[brushStyle.id] = {};
             brush.style = {};
@@ -295,35 +281,22 @@ require([
             // brushes[brushStyle.id] when it's first used
         });
 
-        // Clear canvas and show the 'Restore canvas' undo button.
-        socket.on('tempClear', function() {
-            clearRestoreCanvas.showRestore();
+        // Clear canvas
+        socket.on('clear', function() {
             canvas.clear();
-            clearConfirmPending = true;
-        });
-
-        // Swap out the 'Restore canvas' button for the 'Clear canvas' button.
-        socket.on('finalClear', function() {
-            clearRestoreCanvas.showClear();
-            clearConfirmPending = false;
         });
 
         // Init
         socket.emit('init', function(response) {
-            clearConfirmPending = response.clearConfirmPending;
-            var history = response.history;
+            var history = response.strokeHistory;
             var brushStyles = response.brushStyles;
 
             for (var id in brushStyles) {
                 brushes[id] = {};
                 brushes[id].style = brushStyles[id];
             }
-            // Don't draw the history if we're in "clear canvas" confirmation
-            // pending mode. (Actually, the history will not have been sent anyway.)
-            if (!clearConfirmPending) {
-                drawHistory( history );
-                clearRestoreCanvas.showClear();
-            }
+            drawHistory( history );
+
             // Register the first brush.
             socket.emit('registerBrushStyle', localBrush.style, function(id) {
                 localBrush.id = id;
@@ -341,13 +314,7 @@ require([
         // Draw the first draft before sending info to the server.
         canvas.startStroke({ x: x, y: y, brushStyle: localBrush.style });
 
-        // Drawing (by any user) is what confirms the
-        // clear canvas command.
-        if (clearConfirmPending) {
-            socket.emit('startOver', {x: x, y: y, id: localBrush.id} );
-        } else {
-            socket.emit('start', {x: x, y: y, id: localBrush.id} );
-        }
+        socket.emit('start', {x: x, y: y, id: localBrush.id} );
         localBrush.x = x;
         localBrush.y = y;
         localBrush.drawing = true;
@@ -397,13 +364,10 @@ require([
 
         $(document).on('mousedown', function( event ) {
             // Don't treat this as a drawing click if
-            // someone just clicked the clear or restore button.
-            if (event.which === LEFT_BUTTON && !$(event.target).hasClass('clear-restore-button')) {
-                if (event.altKey) {
-                    toggleDraw( event );
-                } else {
-                    startDraw( event );
-                }
+            // someone just clicked the clear button.
+            if (event.which === LEFT_BUTTON && !$(event.target).hasClass('clear-button')) {
+                var action = event.altKey ? toggleDraw : startDraw;
+                action( event );
             }
         });
          $(document).on('mousemove', function( event ) {
