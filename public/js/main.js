@@ -5,7 +5,6 @@ require.config({
     }
 });
 
-
 require([
     'jquery',
     'util',
@@ -80,9 +79,9 @@ require([
             colorPanelsElement =    $( pageSelector + ' .color-panels' )[0],
             colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
             palettesColumnElement = $( pageSelector + ' .palette-list' )[0],
-            palettesTitleElement =  $( pageSelector + ' .successful-keywords' )[0];
-            instructionsLink =      $( pageSelector + ' .instructions-link' )[0];
-            instructionsElement =   $( pageSelector + ' .instructions' )[0];
+            palettesTitleElement =  $( pageSelector + ' .successful-keywords' )[0],
+            instructionsLink =      $( pageSelector + ' .instructions-link' )[0],
+            instructionsElement =   $( pageSelector + ' .instructions' )[0],
             instructionsClose =     $( pageSelector + ' .close' )[0];
 
         // Initialize status reporting.
@@ -140,8 +139,9 @@ require([
             // in our callback function, APP.controller.loadPalettes
 
             encodedKeywords = keywords.replace( /\s+/g, '+' );
-            searchURL = 'http://www.colourlovers.com/api/palettes?keywords=search+' + encodedKeywords +
-                        '&jsonCallback=loadPalettes'
+            searchURL = 'http://www.colourlovers.com/api/palettes?keywords=search+' +
+                         encodedKeywords +
+                        '&jsonCallback=loadPalettes';
             colourLoversScript.setAttribute( 'src', searchURL);
         }
         return false;
@@ -154,7 +154,7 @@ require([
         } else {
             theStatus.report( 'No palettes matched the keyword or keywords "' +
                                     paletteList.keywords + '." Try again.' );
-        };
+        }
     };
 
     // Needs to be global to be exposed to JSONP.
@@ -215,8 +215,6 @@ require([
             event.stopPropagation();
         });
 
-
-
         $( pageSelector + ' .search-button' ).click( function( event ) {
             requestFromColourloversAPI();
         });
@@ -238,8 +236,7 @@ require([
             var id = dot.id;
             var brush = brushes[id];
 
-            // Pass the brush
-            // into to the canvas as part of the dot object,
+            // Pass the brush into to the canvas as part of the dot object,
             // and then update the currentBrush.
             dot.brushStyle = brush.style;
             currentBrush = brush;
@@ -247,7 +244,7 @@ require([
             canvas.startStroke( dot );
             brush.x = dot.x;
             brush.y = dot.y;
-        }
+        };
         var strokeSegment = function( segment ) {
             var id = segment.id;
             var brush = brushes[id];
@@ -266,22 +263,16 @@ require([
             canvas.stroke( segment );
             brush.x = segment.fx;
             brush.y = segment.fy;
-        }
-        var drawHistory = function( history ) {
-            var i, len;
-            var el;
+        };
 
-            // This next loop checks for the existence of el.fx (a final x-coordinate)
+        var drawHistory = function( history ) {
+            // Check for the existence of el.fx (a final x-coordinate)
             // to find out if we should stroke a path or just make a dot.
 
-            for (i = 0, len = history.length; i < len; i++) {
-                el = history[i];
-                if (el.fx == null) {
-                    drawDot(el);
-                } else {
-                    strokeSegment(el);
-                }
-            }
+            history.forEach(function(historyItem) {
+                var action = historyItem.hasOwnProperty("fx") ? strokeSegment : drawDot;
+                action(historyItem);
+            });
         };
 
         socket = io.connect();
@@ -338,7 +329,7 @@ require([
                 localBrush.id = id;
             });
         });
-    }
+    };
 
     // ------------- DRAWING FUNCTIONS, FOLLOWED BY EVENT LISTENERS FOR THEM. -----------
 
@@ -360,7 +351,7 @@ require([
         localBrush.x = x;
         localBrush.y = y;
         localBrush.drawing = true;
-    }
+    };
 
 
     var continueDraw = function( event ) {
@@ -449,7 +440,7 @@ require([
         canvasEl.addEventListener('touchend', function( event ) {
             stopDraw();
         }, false);
-    }
+    };
 
     // Now set up the controllers for the color panels and the palettes column,
     // which are quite similar so we're going to re-use the code.
@@ -461,12 +452,13 @@ require([
     // descendants of the siblings of the top-level element.
 
     ElementsController.prototype.highlightElement = function( element, descendant ) {
+        var el = $(element);
         if (arguments.length === 1) {
-            $( element ).addClass( 'selected' );
-            $( element ).siblings().removeClass( 'selected' );
+            el.addClass( 'selected' );
+            el.siblings().removeClass( 'selected' );
         } else {
-            $( element ).find( descendant ).addClass( 'selected' );
-            $( element ).siblings().find( descendant ).removeClass( 'selected' );
+            el.find( descendant ).addClass( 'selected' );
+            el.siblings().find( descendant ).removeClass( 'selected' );
         }
     };
 

@@ -3,12 +3,12 @@ var app = require('http').createServer(handler).listen(3000),
     fs = require('fs'),
     parse = require('url').parse,
     mime = require('mime'),
-    history = [],
-    brushStyles = {},
     brushStyleIdGen = 0,
     clearConfirmPending = false;
 
 
+    strokeHistory = [],
+    brushStyles = {},
 
 io.configure('production', function(){
     io.enable('browser client minification');  // send minified client
@@ -27,8 +27,6 @@ io.configure('production', function(){
 io.configure('development', function(){
     io.set('transports', ['websocket']);
 });
-
-
 
 io.sockets.on('connection', function(socket) {
 
@@ -65,7 +63,7 @@ io.sockets.on('connection', function(socket) {
 
     socket.on('move', function(segment) {
         io.sockets.emit('seg', segment);
-        history.push(segment);
+        strokeHistory.push(segment);
     });
 
     socket.on('start', function(dot) {
@@ -84,9 +82,7 @@ io.sockets.on('connection', function(socket) {
 
 function handler (req, res) {
     var url = parse(req.url);
-    var localPathname = (url.pathname === '/')
-      ? '/index.html'
-      : url.pathname;
+    var localPathname = (url.pathname === '/') ? '/index.html' : url.pathname;
     var path = __dirname + '/public' + localPathname;
 
     fs.stat(path, function(err, stat) {

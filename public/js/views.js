@@ -16,7 +16,7 @@ define([
 
     function TheStatus( element ) {
         this._jQElement = $( element );
-    };
+    }
 
     TheStatus.prototype.report = function( str ) {
 
@@ -28,7 +28,7 @@ define([
         } else {
             this._jQElement.html( '&nbsp;' );
         }
-    }
+    };
 
     function PopupBox( linkEl, displayEl, closeEl ) {
         this._jQLink = $(linkEl);
@@ -110,7 +110,7 @@ define([
         $( DOMElement ).attr( 'height', height );
 
         this.clear();
-    };
+    }
 
     Canvas.prototype = {
         getPos: function( event ) {
@@ -143,10 +143,10 @@ define([
         },
 
         startStroke: function( dot ) {
-            var c = this._context
-              , r
-              , x = dot.x
-              , y = dot.y;
+            var c = this._context,
+                r,
+                x = dot.x,
+                y = dot.y;
 
             if (this._brushStyle !== dot.brushStyle) {
                 this._applyStyle( dot.brushStyle );
@@ -165,10 +165,10 @@ define([
             var c = this._context;
             var r;
 
-            var ix = seg.ix
-              , iy = seg.iy
-              , fx = seg.fx
-              , fy = seg.fy;
+            var ix = seg.ix,
+                iy = seg.iy,
+                fx = seg.fx,
+                fy = seg.fy;
 
             if (this._brushStyle !== seg.brushStyle) {
                 this._applyStyle( seg.brushStyle );
@@ -198,7 +198,7 @@ define([
         this.template = _.template($('#colorPanelsTemplate').html());
 
         this.populate( title, colors );
-    };
+    }
 
     ColorPanels.prototype = {
         getDOMElmntClass: function( colorPanelIdx ) {
