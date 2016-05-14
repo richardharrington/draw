@@ -449,7 +449,7 @@ var views = {
 // Data
 
 var paletteList;
-var localPalette;
+var mainPalette;
 var Brush;
 var brushes;
 
@@ -467,8 +467,8 @@ var instantiateData = function(config) {
     // Initialize paletteList.
     paletteList = new models.PaletteList();
 
-    // Initialize localPalette.
-    localPalette = new models.Palette({
+    // Initialize mainPalette.
+    mainPalette = new models.Palette({
         title:               config.DEFAULT_PALETTE_TITLE,
         colors:              config.DEFAULT_PALETTE_COLORS,
         smallBrushWidth:     config.SMALL_BRUSH_WIDTH,
@@ -479,7 +479,7 @@ var instantiateData = function(config) {
 
     // Initialize currentBrush.
     currentBrush = new models.Brush(
-        localPalette.activeStyle()
+        mainPalette.activeStyle()
     );
 
     // Initialize the hash of brushes that will be used
@@ -602,7 +602,7 @@ var setMiscellaneousUserControls = function() {
 
     // Set active brush size HTML select element,
     // because Firefox preserves state even when it's refreshed.
-    $( pageSelector + ' .brush-size' ).val( localPalette.activeSize() );
+    $( pageSelector + ' .brush-size' ).val( mainPalette.activeSize() );
 
     // bind the event handlers for toggling the brush size and
     // entering search keywords. Also for toggling the clear and
@@ -616,8 +616,8 @@ var setMiscellaneousUserControls = function() {
     });
 
     $( pageSelector + ' .brush-size' ).change( function() {
-        localPalette.activeSize( this.value );
-        currentBrush.style = localPalette.activeStyle();
+        mainPalette.activeSize( this.value );
+        currentBrush.style = mainPalette.activeStyle();
     });
 
     $( pageSelector + ' .brush-size' ).on('mousedown', function(event) {
@@ -742,24 +742,24 @@ colorPanelsController.init = function() {
     var pageSelector = '#' + pageId;
 
     // Populate the color panels.
-    colorPanels.populate( localPalette.title, localPalette.colors );
+    colorPanels.populate( mainPalette.title, mainPalette.colors );
 
-    // Reset the localPalette's activeColorPanelIdx if it was set to a panel that no longer
+    // Reset the mainPalette's activeColorPanelIdx if it was set to a panel that no longer
     // exists (because a new palette has fewer colors than the old one)
-    if (!localPalette.activeStyle()) {
-        localPalette.activeColorPanelIdx( 0 );
+    if (!mainPalette.activeStyle()) {
+        mainPalette.activeColorPanelIdx( 0 );
     }
 
     // Now make the already selected one pink.
-    panel = $( pageSelector + ' .' + colorPanels.getDOMElmntClass( localPalette.activeColorPanelIdx()) );
+    panel = $( pageSelector + ' .' + colorPanels.getDOMElmntClass( mainPalette.activeColorPanelIdx()) );
     this.highlightElement( panel );
 
     // Add the event listeners.
     this.addEventListeners( colorPanels, function( element, i ) {
 
-        // Update localPalette and currentBrush.
-        localPalette.activeColorPanelIdx( i );
-        currentBrush.style = localPalette.activeStyle();
+        // Update mainPalette and currentBrush.
+        mainPalette.activeColorPanelIdx( i );
+        currentBrush.style = mainPalette.activeStyle();
 
         // Turn the selected one pink.
         colorPanelsController.highlightElement( element );
@@ -788,12 +788,12 @@ palettesColumnController.init = function() {
     // Add the event handlers.
     this.addEventListeners( palettesColumn, function( element, i ) {
 
-        // Load the localPalette with the new colors.
+        // Load the mainPalette with the new colors.
         var title = paletteList.data[i].title;
         var colors = paletteList.data[i].colors;
-        localPalette.load( title, colors );
+        mainPalette.load( title, colors );
         colorPanelsController.init();
-        currentBrush.style = localPalette.activeStyle();
+        currentBrush.style = mainPalette.activeStyle();
 
         // Turn the selected one pink.
         palettesColumnController.highlightElement( element, ".palette-image" );
