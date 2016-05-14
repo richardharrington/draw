@@ -324,7 +324,6 @@ Canvas.prototype.startStroke = function( dot ) {
 
 Canvas.prototype.stroke = function( seg ) {
     var c = this._context;
-    var r;
 
     var ix = seg.ix,
         iy = seg.iy,
