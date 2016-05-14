@@ -25,69 +25,66 @@ function Palette( args ) {
     this.activeColorPanelIdx( args.activeColorPanelIdx );
 }
 
-Palette.prototype = {
+// Load in a new set of colors with their title.
 
-    // Load in a new set of colors with their title.
+Palette.prototype.load = function( title, colors ) {
 
-    load: function( title, colors ) {
+    this.colors = colors;
+    this.title = title;
 
-        this.colors = colors;
-        this.title = title;
+    // brushStyles alternate between small brushes and large brushes,
+    // so create an array with twice as many elements as the colors array.
 
-        // brushStyles alternate between small brushes and large brushes,
-        // so create an array with twice as many elements as the colors array.
+    this.brushStyles = _.flatten(_.map(colors, function(color) {
+        return [
+            { color: color, width: this._smallBrushWidth },
+            { color: color, width: this._largeBrushWidth }
+        ];
+    }, this));
+};
 
-        this._brushStyles = _.flatten(_.map(colors, function(color) {
-            return [
-                { color: color, width: this._smallBrushWidth },
-                { color: color, width: this._largeBrushWidth }
-            ];
-        }, this));
-    },
+// styleIdx is a number that has two values
+// for every one that colorPanelIdx has,
+// because styleIdx takes into account
+// whether a brush is small or large.
 
-    // styleIdx is a number that has two values
-    // for every one that colorPanelIdx has,
-    // because styleIdx takes into account
-    // whether a brush is small or large.
+// activeSize and activeColorPanelIdx are overloaded as both
+// getters and setters, depending on the number of arguments.
 
-    // activeSize and activeColorPanelIdx are overloaded as both
-    // getters and setters, depending on the number of arguments.
+// activeStyle is just a getter.
 
-    // activeStyle is just a getter.
+Palette.prototype.activeStyle = function( size, colorPanelIdx ) {
+    return this.brushStyles[ this._styleIdx ];
+};
 
-    activeStyle: function( size, colorPanelIdx ) {
-        return this._brushStyles[ this._styleIdx ];
-    },
+Palette.prototype.activeSize = function( size /* optional */) {
+    var styleIdx = this._styleIdx || 0;
+    var oldSize = (styleIdx % 2) ? "large" : "small";
 
-    activeSize: function( size /* optional */) {
-        var styleIdx = this._styleIdx || 0;
-        var oldSize = (styleIdx % 2) ? "large" : "small";
+    // get
+    if (arguments.length === 0) {
+        return oldSize;
 
-        // get
-        if (arguments.length === 0) {
-            return oldSize;
+    // set
+    } else {
+        styleIdx += (oldSize === size) ? 0 :
+                    (size === "small") ? -1 : 1;
+        this._styleIdx = styleIdx;
+    }
+};
 
-        // set
-        } else {
-            styleIdx += (oldSize === size) ? 0 :
-                        (size === "small") ? -1 : 1;
-            this._styleIdx = styleIdx;
-        }
-    },
+Palette.prototype.activeColorPanelIdx = function( colorPanelIdx /* optional */) {
+    var styleIdx = this._styleIdx || 0;
+    var oldColorPanelIdx = Math.floor( styleIdx / 2 );
 
-    activeColorPanelIdx: function( colorPanelIdx /* optional */) {
-        var styleIdx = this._styleIdx || 0;
-        var oldColorPanelIdx = Math.floor( styleIdx / 2 );
+    // get
+    if (arguments.length === 0) {
+        return oldColorPanelIdx;
 
-        // get
-        if (arguments.length === 0) {
-            return oldColorPanelIdx;
-
-        // set
-        } else {
-            styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
-            this._styleIdx = styleIdx;
-        }
+    // set
+    } else {
+        styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
+        this._styleIdx = styleIdx;
     }
 };
 
@@ -134,58 +131,56 @@ var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 
 function PaletteList() {}
 
-PaletteList.prototype = {
+// This function loads data from the colourlovers website
+// into the paletteList object.
 
-    // This function loads data from the colourlovers website
-    // into the paletteList object.
+PaletteList.prototype.load = function( data ) {
+    if (!data || data.length === 0) {
+        return false;
+    }
 
-    load: function( data ) {
-        if (!data || data.length === 0) {
-            return false;
+    this.data = _.map(data, function(entry) {
+        var newPalette = _.pick(entry,
+            "colors",
+            "imageUrl",
+            "title",
+            "userName",
+            "description",
+            "dateCreated"
+        );
+
+        // Now make "dateCreated" a more readable string.
+
+        var parseSQLDate = function(str) {
+            // Split timestamp into [ Y, M, D, h, m, s ]
+            var t = str.split(/[- :]/);
+
+            // Apply each element to the Date function
+            var date = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
+
+            return date;
         }
 
-        this.data = _.map(data, function(entry) {
-            var newPalette = _.pick(entry,
-                "colors",
-                "imageUrl",
-                "title",
-                "userName",
-                "description",
-                "dateCreated"
-            );
-
-            // Now make "dateCreated" a more readable string.
-
-            var parseSQLDate = function(str) {
-                // Split timestamp into [ Y, M, D, h, m, s ]
-                var t = str.split(/[- :]/);
-
-                // Apply each element to the Date function
-                var date = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
-
-                return date;
-            }
-
-            var date = parseSQLDate( newPalette.dateCreated );
-            newPalette.dateCreated = MONTHS[date.getMonth()] + " " +
-                                     date.getDate() + ", " +
-                                     date.getFullYear();
+        var date = parseSQLDate( newPalette.dateCreated );
+        newPalette.dateCreated = MONTHS[date.getMonth()] + " " +
+                                 date.getDate() + ", " +
+                                 date.getFullYear();
 
 
-            // Many of the descriptions on colourlovers.com
-            // are long garbage strings of html, so exclude those
-            // by checking if the string is too long.
+        // Many of the descriptions on colourlovers.com
+        // are long garbage strings of html, so exclude those
+        // by checking if the string is too long.
 
-            if (newPalette.description.length > 200) {
-                newPalette.description = "";
-            }
+        if (newPalette.description.length > 200) {
+            newPalette.description = "";
+        }
 
-            return newPalette;
-        });
+        return newPalette;
+    });
 
-        return true;
-    }
+    return true;
 };
+
 
 // -- MODULE INTERFACE -- //
 
@@ -255,7 +250,7 @@ function Canvas( DOMElement, width, height, backgroundColor ) {
 
     // Stored as we go along so we don't have to constantly
     // change brush styles
-    this._brushStyle = null;
+    this.brushStyle = null;
 
     // Possibly make these configurable in the future.
     this._context.lineCap = 'round';
@@ -279,83 +274,82 @@ function Canvas( DOMElement, width, height, backgroundColor ) {
     this.clear();
 }
 
-Canvas.prototype = {
-    getPos: function( event ) {
-        event = event || window.event; // This is for IE's global window.event
+Canvas.prototype.getPos = function( event ) {
+    event = event || window.event; // This is for IE's global window.event
 
-        var r = this.DOMElement.getBoundingClientRect();
-        var coords = {
-          // No attempt to cater to IE here (I've heard they don't support
-          // pageX/YOffset). We'll try to do that later.
-          // But actually this seems to work in IE9.
+    var r = this.DOMElement.getBoundingClientRect();
+    var coords = {
+      // No attempt to cater to IE here (I've heard they don't support
+      // pageX/YOffset). We'll try to do that later.
+      // But actually this seems to work in IE9.
 
-          x : parseInt(event.pageX - (r.left + window.pageXOffset) - this._border, 10),
-          y : parseInt(event.pageY - (r.top + window.pageYOffset) - this._border, 10)
-        };
-        return coords;
-    },
-
-    _applyStyle: function( style ) {
-        var c = this._context;
-
-        c.lineWidth = style.width;
-        c.strokeStyle = "#" + style.color;
-
-        // Don't know why I have to do this here with
-        // these parameters that are already set, but
-        // if I figure it out I can tell paper.js how to
-        // similarly fix their stuff.
-        c.lineCap = 'round';
-        c.lineJoin = 'round';
-    },
-
-    startStroke: function( dot ) {
-        var c = this._context,
-            r,
-            x = dot.x,
-            y = dot.y;
-
-        if (this._brushStyle !== dot.brushStyle) {
-            this._applyStyle( dot.brushStyle );
-            this._brushStyle = dot.brushStyle;
-        }
-
-        // Draw a dot.
-        r = c.lineWidth / 2;
-        c.fillStyle = c.strokeStyle;
-        c.beginPath();
-        c.arc( x, y, r, 0, Math.PI * 2 );
-        c.fill();
-    },
-
-    stroke: function( seg ) {
-        var c = this._context;
-        var r;
-
-        var ix = seg.ix,
-            iy = seg.iy,
-            fx = seg.fx,
-            fy = seg.fy;
-
-        if (this._brushStyle !== seg.brushStyle) {
-            this._applyStyle( seg.brushStyle );
-            this._brushStyle = seg.brushStyle;
-        }
-
-        // Make it so, Number One.
-        c.beginPath();
-        c.moveTo( ix, iy );
-        c.lineTo( fx, fy );
-        c.stroke();
-    },
-
-    clear: function() {
-        var c = this._context;
-
-        c.fillStyle = "#" + this._backgroundColor;
-        c.fillRect( 0, 0, this._width, this._height );
-    }
+      x : parseInt(event.pageX - (r.left + window.pageXOffset) - this._border, 10),
+      y : parseInt(event.pageY - (r.top + window.pageYOffset) - this._border, 10)
+    };
+    return coords;
 };
+
+Canvas.prototype.applyStyle = function( style ) {
+    var c = this._context;
+
+    c.lineWidth = style.width;
+    c.strokeStyle = "#" + style.color;
+
+    // Don't know why I have to do this here with
+    // these parameters that are already set, but
+    // if I figure it out I can tell paper.js how to
+    // similarly fix their stuff.
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+};
+
+Canvas.prototype.startStroke = function( dot ) {
+    var c = this._context,
+        r,
+        x = dot.x,
+        y = dot.y;
+
+    if (this.brushStyle !== dot.brushStyle) {
+        this.applyStyle( dot.brushStyle );
+        this.brushStyle = dot.brushStyle;
+    }
+
+    // Draw a dot.
+    r = c.lineWidth / 2;
+    c.fillStyle = c.strokeStyle;
+    c.beginPath();
+    c.arc( x, y, r, 0, Math.PI * 2 );
+    c.fill();
+};
+
+Canvas.prototype.stroke = function( seg ) {
+    var c = this._context;
+    var r;
+
+    var ix = seg.ix,
+        iy = seg.iy,
+        fx = seg.fx,
+        fy = seg.fy;
+
+    if (this.brushStyle !== seg.brushStyle) {
+        this.applyStyle( seg.brushStyle );
+        this.brushStyle = seg.brushStyle;
+    }
+
+    // Make it so, Number One.
+    c.beginPath();
+    c.moveTo( ix, iy );
+    c.lineTo( fx, fy );
+    c.stroke();
+};
+
+Canvas.prototype.clear = function() {
+    var c = this._context;
+
+    c.fillStyle = "#" + this._backgroundColor;
+    c.fillRect( 0, 0, this._width, this._height );
+};
+
 
 // -------------------- wrapper for DOM color panels --------------------------
 
@@ -367,51 +361,50 @@ function ColorPanels( DOMContainer, DOMTitleSpan, title, colors ) {
     this.populate( title, colors );
 }
 
-ColorPanels.prototype = {
-    getDOMElmntClass: function( colorPanelIdx ) {
-        return 'color-' + colorPanelIdx;
-    },
-
-    populate:function( title, colors ) {
-        var i, len;
-        var newLength, oldLength;
-        var newColorPanels;
-        var DOMElmntClassObjects = [];
-        var newDOMElmntClassObjects;
-
-        var jQContainer = $( this.DOMContainer );
-        var jQTitleSpan = $( this.DOMTitleSpan );
-
-        // Make the array of new DOM classes.
-        for (i = 0, len = colors.length; i < len; i++) {
-            DOMElmntClassObjects.push( {klass: 'color-' + i} );
-        }
-
-        // Set the title for this palette of colors.
-        jQTitleSpan.text( title );
-
-        oldLength = jQContainer.children().length;
-        newLength = DOMElmntClassObjects.length;
-
-        // Take away some if needed.
-        for (i = oldLength; i > newLength; i--) {
-            jQContainer.children(':last-child').remove();
-        }
-
-        // Add some if needed. (Will automatically be transparent.)
-        var template = this.template;
-        newDOMElmntClassObjects = DOMElmntClassObjects.slice(oldLength, newLength);
-        var html = _.map(newDOMElmntClassObjects, function(classObject) {
-            return template(classObject);
-        }).join('\n');
-        jQContainer.append(html);
-
-        // Now go through and set the new colors.
-        jQContainer.children().each( function( i ) {
-            this.style.backgroundColor = '#' + colors[i];
-        });
-    }
+ColorPanels.prototype.getDOMElmntClass = function( colorPanelIdx ) {
+    return 'color-' + colorPanelIdx;
 };
+
+ColorPanels.prototype.populate = function( title, colors ) {
+    var i, len;
+    var newLength, oldLength;
+    var newColorPanels;
+    var DOMElmntClassObjects = [];
+    var newDOMElmntClassObjects;
+
+    var jQContainer = $( this.DOMContainer );
+    var jQTitleSpan = $( this.DOMTitleSpan );
+
+    // Make the array of new DOM classes.
+    for (i = 0, len = colors.length; i < len; i++) {
+        DOMElmntClassObjects.push( {klass: 'color-' + i} );
+    }
+
+    // Set the title for this palette of colors.
+    jQTitleSpan.text( title );
+
+    oldLength = jQContainer.children().length;
+    newLength = DOMElmntClassObjects.length;
+
+    // Take away some if needed.
+    for (i = oldLength; i > newLength; i--) {
+        jQContainer.children(':last-child').remove();
+    }
+
+    // Add some if needed. (Will automatically be transparent.)
+    var template = this.template;
+    newDOMElmntClassObjects = DOMElmntClassObjects.slice(oldLength, newLength);
+    var html = _.map(newDOMElmntClassObjects, function(classObject) {
+        return template(classObject);
+    }).join('\n');
+    jQContainer.append(html);
+
+    // Now go through and set the new colors.
+    jQContainer.children().each( function( i ) {
+        this.style.backgroundColor = '#' + colors[i];
+    });
+};
+
 
 
 // -------------------- wrapper for DOM palettes column --------------------------
