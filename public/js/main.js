@@ -469,9 +469,8 @@ var views = {
 
 var paletteList;
 var localPalette;
-var localBrush;
+var Brush;
 var brushes;
-var currentBrush;
 
 // DOM stuff
 
@@ -498,18 +497,14 @@ var instantiateData = function(config) {
         activeColorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX
     });
 
-    // Initialize localBrush.
-    localBrush = new models.Brush(
+    // Initialize currentBrush.
+    currentBrush = new models.Brush(
         localPalette.activeStyle()
     );
 
     // Initialize the hash of brushes that will be used
     // by all the users on the canvas
     brushes = {};
-
-    // Initialize currentBrush which is used to compare
-    // to brushStyle ids that come down from the server.
-    currentBrush = { id: 0 };
 
 };
 
@@ -637,15 +632,12 @@ var setMiscellaneousUserControls = function() {
     instructionBox.init();
 
     $( pageSelector ).on('click', '.clear-canvas', function( event ) {
-        socket.emit('requestClear');
+        canvas.clear();
     });
 
     $( pageSelector + ' .brush-size' ).change( function() {
         localPalette.activeSize( this.value );
-        localBrush.style = localPalette.activeStyle();
-        socket.emit('registerBrushStyle', localBrush.style, function(id) {
-            localBrush.id = id;
-        });
+        currentBrush.style = localPalette.activeStyle();
     });
 
     $( pageSelector + ' .brush-size' ).on('mousedown', function(event) {
@@ -664,91 +656,7 @@ var setMiscellaneousUserControls = function() {
     });
 };
 
-var socket;
-var clearConfirmPending;
 
-var setSocketIO = function () {
-
-    var drawDot = function( dot ) {
-        var id = dot.id;
-        var brush = brushes[id];
-
-        // Pass the brush into to the canvas as part of the dot object,
-        // and then update the currentBrush.
-        dot.brushStyle = brush.style;
-        currentBrush = brush;
-
-        canvas.startStroke( dot );
-        brush.x = dot.x;
-        brush.y = dot.y;
-    };
-    var strokeSegment = function( segment ) {
-        var id = segment.id;
-        var brush = brushes[id];
-
-        // Similar to last one.
-        segment.brushStyle = brush.style;
-        currentBrush = brush;
-
-        // Pass along the last coordinates of this brush.
-        // We draw in tiny pieces, starting a new segment each
-        // time, because that's better than re-stroking the path
-        // with every little move.
-        segment.ix = brush.x;
-        segment.iy = brush.y;
-
-        canvas.stroke( segment );
-        brush.x = segment.fx;
-        brush.y = segment.fy;
-    };
-
-    var drawHistory = function( history ) {
-        // Check for the existence of el.fx (a final x-coordinate)
-        // to find out if we should stroke a path or just make a dot.
-
-        history.forEach(function(historyItem) {
-            var action = historyItem.hasOwnProperty("fx") ? strokeSegment : drawDot;
-            action(historyItem);
-        });
-    };
-
-    socket = io.connect();
-
-    socket.on('dot', drawDot);
-    socket.on('seg', strokeSegment);
-
-    socket.on('newBrushStyle', function( brushStyle ) {
-        var brush = brushes[brushStyle.id] = {};
-        brush.style = {};
-        brush.style.color = brushStyle.color;
-        brush.style.width = brushStyle.width;
-        brush.id = brushStyle.id;
-        // x and y coordinates will be added to
-        // brushes[brushStyle.id] when it's first used
-    });
-
-    // Clear canvas
-    socket.on('clear', function() {
-        canvas.clear();
-    });
-
-    // Init
-    socket.emit('init', function(response) {
-        var history = response.strokeHistory;
-        var brushStyles = response.brushStyles;
-
-        for (var id in brushStyles) {
-            brushes[id] = {};
-            brushes[id].style = brushStyles[id];
-        }
-        drawHistory( history );
-
-        // Register the first brush.
-        socket.emit('registerBrushStyle', localBrush.style, function(id) {
-            localBrush.id = id;
-        });
-    });
-};
 
 // ------------- DRAWING FUNCTIONS, FOLLOWED BY EVENT LISTENERS FOR THEM. -----------
 
@@ -757,13 +665,11 @@ var startDraw = function( event ) {
     var x = p.x;
     var y = p.y;
 
-    // Draw the first draft before sending info to the server.
-    canvas.startStroke({ x: x, y: y, brushStyle: localBrush.style });
+    canvas.startStroke({ x: x, y: y, brushStyle: currentBrush.style });
 
-    socket.emit('start', {x: x, y: y, id: localBrush.id} );
-    localBrush.x = x;
-    localBrush.y = y;
-    localBrush.drawing = true;
+    currentBrush.x = x;
+    currentBrush.y = y;
+    currentBrush.drawing = true;
 };
 
 
@@ -772,22 +678,20 @@ var continueDraw = function( event ) {
     var fx = p.x;
     var fy = p.y;
 
-    // Draw the first draft before sending info to the server.
-    var ix = localBrush.x;
-    var iy = localBrush.y;
-    canvas.stroke({ ix: ix, iy: iy, fx: fx, fy: fy, brushStyle: localBrush.style });
+    var ix = currentBrush.x;
+    var iy = currentBrush.y;
+    canvas.stroke({ ix: ix, iy: iy, fx: fx, fy: fy, brushStyle: currentBrush.style });
 
-    socket.emit('move', {fx: fx, fy: fy, id: localBrush.id} );
-    localBrush.x = fx;
-    localBrush.y = fy;
+    currentBrush.x = fx;
+    currentBrush.y = fy;
 }
 
 var stopDraw = function() {
-    localBrush.drawing = false;
+    currentBrush.drawing = false;
 }
 
 var toggleDraw = function( event ) {
-    if (localBrush.drawing) {
+    if (currentBrush.drawing) {
         stopDraw();
     } else {
         startDraw( event );
@@ -812,7 +716,7 @@ var setMouseEventListeners = function() {
         }
     });
      $(document).on('mousemove', function( event ) {
-        if (localBrush.drawing) {
+        if (currentBrush.drawing) {
             continueDraw( event );
         }
     });
@@ -873,14 +777,9 @@ colorPanelsController.init = function() {
     // Add the event listeners.
     this.addEventListeners( colorPanels, function( element, i ) {
 
-        // Update localPalette and localBrush.
+        // Update localPalette and currentBrush.
         localPalette.activeColorPanelIdx( i );
-        localBrush.style = localPalette.activeStyle();
-
-        // Tell the server about it.
-        socket.emit('registerBrushStyle', localBrush.style, function(id) {
-            localBrush.id = id;
-        });
+        currentBrush.style = localPalette.activeStyle();
 
         // Turn the selected one pink.
         colorPanelsController.highlightElement( element );
@@ -903,7 +802,6 @@ palettesColumnController.init = function() {
     // Widen the left column.
     $( palettesColumn.DOMContainer ).parent().css( {'width': '220px', 'margin-left': '15px'} );
 
-
     // Slide the main box over.
     $( pageSelector + ' .main-box-wrapper' ).css ( 'margin-left', 240 );
 
@@ -915,12 +813,7 @@ palettesColumnController.init = function() {
         var colors = paletteList.data[i].colors;
         localPalette.load( title, colors );
         colorPanelsController.init();
-        localBrush.style = localPalette.activeStyle();
-
-        // Tell the server about it.
-        socket.emit('registerBrushStyle', localBrush.style, function(id) {
-            localBrush.id = id;
-        });
+        currentBrush.style = localPalette.activeStyle();
 
         // Turn the selected one pink.
         palettesColumnController.highlightElement( element, ".palette-image" );
@@ -937,10 +830,7 @@ var initialize = function() {
     colorPanelsController.init();
     setMiscellaneousUserControls();
     setErrorControls();
-
     setMouseEventListeners();
-
-    setSocketIO();
 };
 
 // Make it so.
