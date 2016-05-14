@@ -1,7 +1,6 @@
 var config = {
     PAGE_ID: 'mainPage',
     DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
-    MAX_COLORS: 10,
     DEFAULT_PALETTE_TITLE: "default palette",
     DEFAULT_COLOR_PANEL_INDEX: 0,
     LARGE_BRUSH_WIDTH: 25,
@@ -31,7 +30,6 @@ var util = {
 // --- Set up the Palette constructor.
 
 function Palette( args ) {
-    this._maxColors = args.maxColors;
     this._smallBrushWidth = args.smallBrushWidth;
     this._largeBrushWidth = args.largeBrushWidth;
 
@@ -46,9 +44,7 @@ Palette.prototype = {
 
     load: function( title, colors ) {
 
-        // We can only fit this.maxColors number of panels,
-        // so truncate the array if necessary.
-        this.colors = colors.slice( 0, this._maxColors );
+        this.colors = colors;
         this.title = title;
 
         // brushStyles alternate between small brushes and large brushes,
@@ -490,7 +486,6 @@ var instantiateData = function(config) {
     localPalette = new models.Palette({
         title:               config.DEFAULT_PALETTE_TITLE,
         colors:              config.DEFAULT_PALETTE_COLORS,
-        maxColors:           config.MAX_COLORS,
         smallBrushWidth:     config.SMALL_BRUSH_WIDTH,
         largeBrushWidth:     config.LARGE_BRUSH_WIDTH,
         activeSize:          config.DEFAULT_BRUSH_SIZE,
