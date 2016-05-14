@@ -23,18 +23,6 @@ var util = {
         return date;
     },
 
-    // Are we on a touch-screen device?
-    isTouchSupported: function() {
-        var el = document.createElement('div');
-        var eventName = 'ontouchstart';
-        var isSupported = (eventName in el);
-        if (!isSupported) {
-            el.setAttribute(eventName, 'return;');
-            isSupported = typeof el[eventName] === 'function';
-        }
-        el = null;
-        return isSupported;
-    }
 };
 
 
@@ -815,11 +803,6 @@ var setMouseEventListeners = function() {
     // and exiting the canvas. We have to have access to the click and move
     // events just off the canvas anyway, when people are drawing really quickly.
 
-    // Note: we cannot do this for touch events, because we don't want to
-    // prevent the default behavior of scrolling around the screen, when the user
-    // is outside the canvas. But this is not as much of an issue, because
-    // the touch events weren't messing up the drawing like the mouse events were.
-
     $(document).on('mousedown', function( event ) {
         // Don't treat this as a drawing click if
         // someone just clicked the clear button.
@@ -838,30 +821,6 @@ var setMouseEventListeners = function() {
             stopDraw();
         }
     });
-};
-
-var setTouchEventListeners = function() {
-    var canvasEl = canvas.DOMElement;
-
-    canvasEl.addEventListener('touchstart', function( event ) {
-
-        // Don't want to disable pinch and zoom.
-        if (event.touches.length === 1) {
-            startDraw( event.touches[0] );
-            event.preventDefault();
-        } else {
-            stopDraw();
-        }
-    }, false);
-    canvasEl.addEventListener('touchmove', function( event ) {
-        if (localBrush.drawing && event.touches.length === 1) {
-            continueDraw( event.changedTouches[0] );
-            event.preventDefault();
-        }
-    }, false);
-    canvasEl.addEventListener('touchend', function( event ) {
-        stopDraw();
-    }, false);
 };
 
 // Now set up the controllers for the color panels and the palettes column,
@@ -979,11 +938,7 @@ var initialize = function() {
     setMiscellaneousUserControls();
     setErrorControls();
 
-    if (util.isTouchSupported()) {
-        setTouchEventListeners();
-    } else {
-        setMouseEventListeners();
-    }
+    setMouseEventListeners();
 
     setSocketIO();
 };
