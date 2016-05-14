@@ -35,12 +35,12 @@ Palette.prototype.load = function( title, colors ) {
     // brushStyles alternate between small brushes and large brushes,
     // so create an array with twice as many elements as the colors array.
 
-    this.brushStyles = _.flatten(_.map(colors, function(color) {
-        return [
-            { color: color, width: this.smallBrushWidth },
-            { color: color, width: this.largeBrushWidth }
-        ];
-    }, this));
+    var brushStyles = [];
+    for (var i = 0; i < colors.length; i++) {
+        brushStyles.push({ color: colors[i], width: this.smallBrushWidth });
+        brushStyles.push({ color: colors[i], width: this.largeBrushWidth });
+    }
+    this.brushStyles = brushStyles;
 };
 
 // styleIdx is a number that has two values
@@ -139,7 +139,7 @@ PaletteList.prototype.load = function( data ) {
         return false;
     }
 
-    this.data = _.map(data, function(entry) {
+    this.data = data.map(function(entry) {
         var newPalette = _.pick(entry,
             "colors",
             "imageUrl",
