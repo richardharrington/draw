@@ -1,31 +1,14 @@
 <!DOCTYPE html>
 
-<!-- license: https://github.com/richardharrington/draw/blob/master/README.md -->
-
-<!--[if lt IE 9 ]> <html lang="en-US" class="ie"> <![endif]-->
-<!--[if (gte IE 9)|!(IE)]><!--> <html lang="en-US"> <!--<![endif]-->
+<html lang="en-US">
 
 <head>
     <link rel="stylesheet" href="draw.css" />
     <meta charset="utf-8">
     <title>draw</title>
-    <!-- Google analytics -->
-    <script type="text/javascript">
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-31077878-1']);
-      _gaq.push(['_trackPageview']);
-
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-    </script>
-
-</head>
+ </head>
 <body>
 
-<!-- the main section, which will only be shown to people who are using modern browsers -->
 <div class="page" id="mainPage">
 
     <div class="left-column">
@@ -99,18 +82,6 @@
 </div><!-- page -->
 
 
-<!-- section which will only be shown to IE8 and below users -->
-<div class="ie8-and-below">
-    <p>Hello.</p>
-    <p>This collaborative drawing app is a work in progress. One of the things we're working on making progress in is supporting versions of Internet Explorer older than IE9.</p>
-    <p>It looks like you're using one of these older versions of IE. We could load the site for you, but it would look sad, like this sandwich.</p>
-    <div class="picture">
-      <img id="sad_sandwich" alt="It's even sadder than we thought. You'll need JavaScript turned on to see the sandwich." />
-    </div>
-    <p>We're sorry to disappoint you. We know how it feels to see a notice like this when you just wanted to start drawing. But there's a solution: if you want to draw now, you can download <a href="http://www.microsoft.com/download/en/details.aspx?id=13950">IE9</a>, or IE10 when it comes out, or any recent version of <a href="https://www.google.com/chrome">Chrome</a>, <a href="http://www.apple.com/safari/download/">Safari</a>, <a href="http://www.mozilla.org/en-US/firefox/new/">Firefox</a> or <a href="http://www.opera.com/download/">Opera</a>.</p>
-    <p>Thank you very much and have a nice day.</p>
-</div>
-
 <!-- templates -->
 
 <script id="colorPanelsTemplate" type="text/html-tmpl">
@@ -128,30 +99,8 @@
     </div>
 </script>
 
-<!-- We want none of these big scripts to run if it's a version of IE earlier than 9. Just so people won't get those
-     annoying script failure messages, in addition to having such sad browsers to begin with. So the two scripts that
-     are the heart of the app are placed inside an IE conditional tag: -->
-
-<!--[if (gte IE 9)|!(IE)]><!-->
-
 <script src="/socket.io/socket.io.js"></script>
 <script data-main="js/main" src="js/libs/require.js"></script>
-
-<!--<![endif]-->
-
-
-<!-- In the case of ID < 9 we just want to run the following, which loads the picture of the sad sandwich.
-     No need to load it otherwise.  Come to think of it, the subtle background picture is
-     something we don't really need on mobile phones and might as well not download. TODO. -->
-
-
-<!--[if (lt IE 9)]>
-<script>
-  window.onload = function() {
-      document.getElementById('sad_sandwich').src = "images/sad_sandwich_drawing.png";
-  }
-</script>
-<![endif]-->
 
 </body>
 </html>
