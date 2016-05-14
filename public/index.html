@@ -2,105 +2,105 @@
 
 <html lang="en-US">
 
-<head>
-    <link rel="stylesheet" href="draw.css" />
-    <meta charset="utf-8">
-    <title>draw</title>
- </head>
-<body>
+    <head>
+        <link rel="stylesheet" href="draw.css" />
+        <meta charset="utf-8">
+        <title>draw</title>
+    </head>
+    <body>
 
-<div class="page" id="mainPage">
+        <div class="page" id="mainPage">
 
-    <div class="left-column">
-        <p class="palettes-found">Pick a palette from among those found for the search term(s) "
-            <span class="successful-keywords"></span>":
-        </p>
-        <div class="palette-list"></div>
-    </div>
-
-    <div class="main-box-wrapper">
-        <div class="main-box">
-            <div class="header">
-                <h1>Draw (a collective doodle pad)</h1>
-
-           </div>
-
-            <div class="canvas-container">
-
-                <canvas class="canvas">No CANVAS support!!</canvas>
-
-
-
-                <div class="canvas-controls">
-                    <span class="brush-size-label">Brush size:</span>
-                    <select class="brush-size">
-                        <option value="small">Small</option>
-                        <option value="large">Large</option>
-                    </select>
-                    <input type="button" class="clear-canvas" value="Clear canvas" />
-                    <a class="instructions-link">Instructions</a>
-                    <!-- instruction box absolutely positioned -->
-                    <div class="instructions">
-                        <ol>
-                            <li>Click and drag to draw.</li>
-                            <li>Option-click (alt-click in Windows) to toggle drawing on and off.</li>
-                            <li>Make sure to share the URL for this page with your friends! It's much more fun when you draw with other people.</li>
-                        </ol>
-                        <!-- close box absolutely positioned -->
-                        <a class="close">Close [x]</a>
-                    </div>
-
-                </div>
-
-                <div class="color-panels-container-wrapper">
-                        <div class="color-panels">
-                            <div class="color-panel color-0"></div>
-                            <div class="color-panel color-1"></div>
-                            <div class="color-panel color-2"></div>
-                            <div class="color-panel color-3"></div>
-                            <div class="color-panel color-4"></div>
-                        </div>
-                        <p class="current-palette-header">Current palette: <span class="current-palette-title">default palette</span></p>
-
-                </div>
-                <div>
-                    <p class="search-label">For more palettes, search colourlovers.com (try a season or a color):
-                        <input type="text" class="search-field"></input>
-                        <input type="button" class="search-button" value="search">
-                    </p>
-                </div>
-
-                <!-- a placeholder for spacing:  -->
-                <p class="status-report">&nbsp;</p>
-
+            <div class="left-column">
+                <p class="palettes-found">Pick a palette from among those found for the search term(s) "
+                    <span class="successful-keywords"></span>":
+                </p>
+                <div class="palette-list"></div>
             </div>
-        </div>
-    </div>
-    <!-- instruction box -->
+
+            <div class="main-box-wrapper">
+                <div class="main-box">
+                    <div class="header">
+                        <h1>Draw (a collective doodle pad)</h1>
+
+                   </div>
+
+                    <div class="canvas-container">
+
+                        <canvas class="canvas">No CANVAS support!!</canvas>
 
 
-</div><!-- page -->
+
+                        <div class="canvas-controls">
+                            <span class="brush-size-label">Brush size:</span>
+                            <select class="brush-size">
+                                <option value="small">Small</option>
+                                <option value="large">Large</option>
+                            </select>
+                            <input type="button" class="clear-canvas" value="Clear canvas" />
+                            <a class="instructions-link">Instructions</a>
+                            <!-- instruction box absolutely positioned -->
+                            <div class="instructions">
+                                <ol>
+                                    <li>Click and drag to draw.</li>
+                                    <li>Option-click (alt-click in Windows) to toggle drawing on and off.</li>
+                                    <li>Make sure to share the URL for this page with your friends! It's much more fun when you draw with other people.</li>
+                                </ol>
+                                <!-- close box absolutely positioned -->
+                                <a class="close">Close [x]</a>
+                            </div>
+
+                        </div>
+
+                        <div class="color-panels-container-wrapper">
+                                <div class="color-panels">
+                                    <div class="color-panel color-0"></div>
+                                    <div class="color-panel color-1"></div>
+                                    <div class="color-panel color-2"></div>
+                                    <div class="color-panel color-3"></div>
+                                    <div class="color-panel color-4"></div>
+                                </div>
+                                <p class="current-palette-header">Current palette: <span class="current-palette-title">default palette</span></p>
+
+                        </div>
+                        <div>
+                            <p class="search-label">For more palettes, search colourlovers.com (try a season or a color):
+                                <input type="text" class="search-field"></input>
+                                <input type="button" class="search-button" value="search">
+                            </p>
+                        </div>
+
+                        <!-- a placeholder for spacing:  -->
+                        <p class="status-report">&nbsp;</p>
+
+                    </div>
+                </div>
+            </div>
+            <!-- instruction box -->
 
 
-<!-- templates -->
+        </div><!-- page -->
 
-<script id="colorPanelsTemplate" type="text/html-tmpl">
-    <div class="color-panel <%= klass %>"></div>
-</script>
 
-<script id="paletteListTemplate" type="text/html-tmpl">
-    <div class="palette-container">
-        <img class="palette-image" src="<%= imageUrl %>" width="180" />
-        <p class="palette-title"><%= title %></p>
-        <p class="palette-info">created on <%= dateCreated %> by <%= userName %>.</p>
-        <% if (description) { %>
-            <p class="palette-description"><%= description %></p>
-        <% } %>
-    </div>
-</script>
+        <!-- templates -->
 
-<script src="/socket.io/socket.io.js"></script>
-<script data-main="js/main" src="js/libs/require.js"></script>
+        <script id="colorPanelsTemplate" type="text/html-tmpl">
+            <div class="color-panel <%= klass %>"></div>
+        </script>
 
-</body>
+        <script id="paletteListTemplate" type="text/html-tmpl">
+            <div class="palette-container">
+                <img class="palette-image" src="<%= imageUrl %>" width="180" />
+                <p class="palette-title"><%= title %></p>
+                <p class="palette-info">created on <%= dateCreated %> by <%= userName %>.</p>
+                <% if (description) { %>
+                    <p class="palette-description"><%= description %></p>
+                <% } %>
+            </div>
+        </script>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script data-main="js/main" src="js/libs/require.js"></script>
+
+    </body>
 </html>
