@@ -17,8 +17,8 @@ var config = {
 // --- Set up the Palette constructor.
 
 function Palette( args ) {
-    this._smallBrushWidth = args.smallBrushWidth;
-    this._largeBrushWidth = args.largeBrushWidth;
+    this.smallBrushWidth = args.smallBrushWidth;
+    this.largeBrushWidth = args.largeBrushWidth;
 
     this.load( args.title, args.colors );
     this.activeSize( args.activeSize );
@@ -37,8 +37,8 @@ Palette.prototype.load = function( title, colors ) {
 
     this.brushStyles = _.flatten(_.map(colors, function(color) {
         return [
-            { color: color, width: this._smallBrushWidth },
-            { color: color, width: this._largeBrushWidth }
+            { color: color, width: this.smallBrushWidth },
+            { color: color, width: this.largeBrushWidth }
         ];
     }, this));
 };
@@ -54,11 +54,11 @@ Palette.prototype.load = function( title, colors ) {
 // activeStyle is just a getter.
 
 Palette.prototype.activeStyle = function( size, colorPanelIdx ) {
-    return this.brushStyles[ this._styleIdx ];
+    return this.brushStyles[ this.styleIdx ];
 };
 
 Palette.prototype.activeSize = function( size /* optional */) {
-    var styleIdx = this._styleIdx || 0;
+    var styleIdx = this.styleIdx || 0;
     var oldSize = (styleIdx % 2) ? "large" : "small";
 
     // get
@@ -69,12 +69,12 @@ Palette.prototype.activeSize = function( size /* optional */) {
     } else {
         styleIdx += (oldSize === size) ? 0 :
                     (size === "small") ? -1 : 1;
-        this._styleIdx = styleIdx;
+        this.styleIdx = styleIdx;
     }
 };
 
 Palette.prototype.activeColorPanelIdx = function( colorPanelIdx /* optional */) {
-    var styleIdx = this._styleIdx || 0;
+    var styleIdx = this.styleIdx || 0;
     var oldColorPanelIdx = Math.floor( styleIdx / 2 );
 
     // get
@@ -84,7 +84,7 @@ Palette.prototype.activeColorPanelIdx = function( colorPanelIdx /* optional */) 
     // set
     } else {
         styleIdx += (colorPanelIdx - oldColorPanelIdx) * 2;
-        this._styleIdx = styleIdx;
+        this.styleIdx = styleIdx;
     }
 };
 
@@ -199,40 +199,40 @@ var models = {
 // doesn't like that. I forget which one.)
 
 function TheStatus( element ) {
-    this._jQElement = $( element );
+    this.$element = $( element );
 }
 
 TheStatus.prototype.report = function( str ) {
 
     // If we've got something to report
     if (arguments.length) {
-        this._jQElement.text( str );
+        this.$element.text( str );
 
     // No news is good news.
     } else {
-        this._jQElement.html( '&nbsp;' );
+        this.$element.html( '&nbsp;' );
     }
 };
 
 function PopupBox( linkEl, displayEl, closeEl ) {
-    this._jQLink = $(linkEl);
-    this._jQDisplay = $(displayEl);
-    this._jQClose = $(closeEl);
+    this.$link = $(linkEl);
+    this.$display = $(displayEl);
+    this.$close = $(closeEl);
 }
 
 PopupBox.prototype.init = function() {
     var self = this;
-    var box = this._jQDisplay;
-    this._jQLink.on('click', function( event ) {
-        self._jQDisplay.css("display", "block");
+    var box = this.$display;
+    this.$link.on('click', function( event ) {
+        self.$display.css("display", "block");
         setTimeout(function() {
-            self._jQDisplay.css("opacity", "1");
+            self.$display.css("opacity", "1");
         }, 50);
     });
-    this._jQClose.on('click', function() {
-        self._jQDisplay.css("opacity", "0");
+    this.$close.on('click', function() {
+        self.$display.css("opacity", "0");
         setTimeout(function() {
-            self._jQDisplay.css("display", "none");
+            self.$display.css("display", "none");
         }, 550);
     });
 };
@@ -246,27 +246,26 @@ function Canvas( DOMElement, width, height, backgroundColor ) {
                         DOMElement.currentStyle.border; // TODO: check in IE6, IE7, IE8
 
     this.DOMElement = DOMElement;
-    this._context = DOMElement.getContext( "2d" );
+    this.context = DOMElement.getContext( "2d" );
 
     // Stored as we go along so we don't have to constantly
     // change brush styles
     this.brushStyle = null;
 
     // Possibly make these configurable in the future.
-    this._context.lineCap = 'round';
-    this._context.lineJoin = 'round';
+    this.context.lineCap = 'round';
+    this.context.lineJoin = 'round';
 
-    this._width = width;
-    this._height = height;
-    this._backgroundColor = backgroundColor;
-    this._history = [];
+    this.width = width;
+    this.height = height;
+    this.backgroundColor = backgroundColor;
 
     // We may make lineCap & lineJoin configurable at some
     // point in the future, but not now.
-    this._context.lineCap = 'round';
-    this._context.lineJoin = 'round';
+    this.context.lineCap = 'round';
+    this.context.lineJoin = 'round';
 
-    this._border = (borderLeftPx) ? parseInt(borderLeftPx, 10) : 16;
+    this.border = (borderLeftPx) ? parseInt(borderLeftPx, 10) : 16;
 
     $( DOMElement ).attr( 'width', width );
     $( DOMElement ).attr( 'height', height );
@@ -283,14 +282,14 @@ Canvas.prototype.getPos = function( event ) {
       // pageX/YOffset). We'll try to do that later.
       // But actually this seems to work in IE9.
 
-      x : parseInt(event.pageX - (r.left + window.pageXOffset) - this._border, 10),
-      y : parseInt(event.pageY - (r.top + window.pageYOffset) - this._border, 10)
+      x : parseInt(event.pageX - (r.left + window.pageXOffset) - this.border, 10),
+      y : parseInt(event.pageY - (r.top + window.pageYOffset) - this.border, 10)
     };
     return coords;
 };
 
 Canvas.prototype.applyStyle = function( style ) {
-    var c = this._context;
+    var c = this.context;
 
     c.lineWidth = style.width;
     c.strokeStyle = "#" + style.color;
@@ -304,7 +303,7 @@ Canvas.prototype.applyStyle = function( style ) {
 };
 
 Canvas.prototype.startStroke = function( dot ) {
-    var c = this._context,
+    var c = this.context,
         r,
         x = dot.x,
         y = dot.y;
@@ -323,7 +322,7 @@ Canvas.prototype.startStroke = function( dot ) {
 };
 
 Canvas.prototype.stroke = function( seg ) {
-    var c = this._context;
+    var c = this.context;
 
     var ix = seg.ix,
         iy = seg.iy,
@@ -343,10 +342,10 @@ Canvas.prototype.stroke = function( seg ) {
 };
 
 Canvas.prototype.clear = function() {
-    var c = this._context;
+    var c = this.context;
 
-    c.fillStyle = "#" + this._backgroundColor;
-    c.fillRect( 0, 0, this._width, this._height );
+    c.fillStyle = "#" + this.backgroundColor;
+    c.fillRect( 0, 0, this.width, this.height );
 };
 
 
@@ -371,8 +370,8 @@ ColorPanels.prototype.populate = function( title, colors ) {
     var DOMElmntClassObjects = [];
     var newDOMElmntClassObjects;
 
-    var jQContainer = $( this.DOMContainer );
-    var jQTitleSpan = $( this.DOMTitleSpan );
+    var $container = $( this.DOMContainer );
+    var $titleSpan = $( this.DOMTitleSpan );
 
     // Make the array of new DOM classes.
     for (i = 0, len = colors.length; i < len; i++) {
@@ -380,14 +379,14 @@ ColorPanels.prototype.populate = function( title, colors ) {
     }
 
     // Set the title for this palette of colors.
-    jQTitleSpan.text( title );
+    $titleSpan.text( title );
 
-    oldLength = jQContainer.children().length;
+    oldLength = $container.children().length;
     newLength = DOMElmntClassObjects.length;
 
     // Take away some if needed.
     for (i = oldLength; i > newLength; i--) {
-        jQContainer.children(':last-child').remove();
+        $container.children(':last-child').remove();
     }
 
     // Add some if needed. (Will automatically be transparent.)
@@ -396,10 +395,10 @@ ColorPanels.prototype.populate = function( title, colors ) {
     var html = _.map(newDOMElmntClassObjects, function(classObject) {
         return template(classObject);
     }).join('\n');
-    jQContainer.append(html);
+    $container.append(html);
 
     // Now go through and set the new colors.
-    jQContainer.children().each( function( i ) {
+    $container.children().each( function( i ) {
         this.style.backgroundColor = '#' + colors[i];
     });
 };
@@ -419,19 +418,19 @@ PalettesColumn.prototype.populate = function( paletteList ) {
     // In the left column, show the heading with the keywords, and all the palettes below it,
     // along with their click handlers for loading colors into the drawing program.
 
-    var jQContainer = $( this.DOMContainer );
-    var jQTitleSpan = $( this.DOMTitleSpan );
+    var $container = $( this.DOMContainer );
+    var $titleSpan = $( this.DOMTitleSpan );
 
-    jQTitleSpan.text( paletteList.keywords );
+    $titleSpan.text( paletteList.keywords );
 
     var template = this.template;
     var html = _.map(paletteList.data, function(palette) {
         return template(palette);
     }).join('\n');
-    jQContainer.empty().append(html);
+    $container.empty().append(html);
 
     // Show it.
-    jQContainer.parent()[0].style.display = 'block';
+    $container.parent()[0].style.display = 'block';
 };
 
 // -- MODULE INTERFACE -- //
@@ -780,8 +779,8 @@ palettesColumnController.init = function() {
 
     // Adjust its height based on the height of the canvas.
     // TODO: Find a way to have this not happen, using CSS.
-    // For one thing, we're 'illegally' using the private property canvas._height
-    $( palettesColumn.DOMContainer ).parent().css( 'height', '' + (305 + canvas._height) );
+    // For one thing, we're 'illegally' using the private property canvas.height
+    $( palettesColumn.DOMContainer ).parent().css( 'height', '' + (305 + canvas.height) );
 
     // Widen the left column.
     $( palettesColumn.DOMContainer ).parent().css( {'width': '220px', 'margin-left': '15px'} );
