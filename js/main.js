@@ -307,10 +307,8 @@ Canvas.prototype.startStroke = function( dot ) {
         x = dot.x,
         y = dot.y;
 
-    if (this.brushStyle !== dot.brushStyle) {
-        this.applyStyle( dot.brushStyle );
-        this.brushStyle = dot.brushStyle;
-    }
+    this.applyStyle( dot.brushStyle );
+    this.brushStyle = dot.brushStyle;
 
     // Draw a dot.
     r = c.lineWidth / 2;
