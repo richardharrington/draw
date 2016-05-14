@@ -1,3 +1,17 @@
+var config = {
+    PAGE_ID: 'mainPage',
+    DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
+    MAX_COLORS: 10,
+    DEFAULT_PALETTE_TITLE: "default palette",
+    DEFAULT_COLOR_PANEL_INDEX: 0,
+    LARGE_BRUSH_WIDTH: 25,
+    SMALL_BRUSH_WIDTH: 10,
+    DEFAULT_BRUSH_SIZE: "large",
+    CANVAS_WIDTH: 900,
+    CANVAS_HEIGHT: 500,
+    CANVAS_BACKGROUND_COLOR: "EEE"
+};
+
 var util = {
     parseSQLDate: function(str) {
         // Split timestamp into [ Y, M, D, h, m, s ]
@@ -27,12 +41,10 @@ var util = {
 
 require([
     'models',
-    'views',
-    'config'
+    'views'
 ], function(
     models,
-    views,
-    config
+    views
 ) {
 
     // Data
