@@ -25,20 +25,11 @@ var util = {
 
 
 
-require.config({
-    paths: {
-        'jquery': 'libs/jquery-1.8.3.min',
-        'lodash': 'libs/lodash.min'
-    }
-});
-
 require([
-    'jquery',
     'models',
     'views',
     'config'
 ], function(
-    $,
     models,
     views,
     config

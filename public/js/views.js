@@ -24,13 +24,7 @@ var util = {
 };
 
 
-define([
-    'jquery',
-    'lodash'
-], function(
-    $,
-    _
-) {
+define([], function() {
 
 
     // ------------------ Status reporting mechanism. --------------------------
