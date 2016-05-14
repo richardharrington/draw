@@ -16,13 +16,15 @@ var config = {
 
 // --- Set up the Palette constructor.
 
-function Palette( args ) {
-    this.smallBrushWidth = args.smallBrushWidth;
-    this.largeBrushWidth = args.largeBrushWidth;
+function Palette( title, colors, smallBrushWidth, 
+                  largeBrushWidth, activeSize, 
+                  activeColorPanelIdx ) {
 
-    this.load( args.title, args.colors );
-    this.activeSize( args.activeSize );
-    this.activeColorPanelIdx( args.activeColorPanelIdx );
+    this.smallBrushWidth = smallBrushWidth;
+    this.largeBrushWidth = largeBrushWidth;
+    this.load( title, colors );
+    this.activeSize( activeSize );
+    this.activeColorPanelIdx( activeColorPanelIdx );
 }
 
 // Load in a new set of colors with their title.
@@ -468,14 +470,14 @@ var instantiateData = function(config) {
     paletteList = new models.PaletteList();
 
     // Initialize mainPalette.
-    mainPalette = new models.Palette({
-        title:               config.DEFAULT_PALETTE_TITLE,
-        colors:              config.DEFAULT_PALETTE_COLORS,
-        smallBrushWidth:     config.SMALL_BRUSH_WIDTH,
-        largeBrushWidth:     config.LARGE_BRUSH_WIDTH,
-        activeSize:          config.DEFAULT_BRUSH_SIZE,
-        activeColorPanelIdx: config.DEFAULT_COLOR_PANEL_INDEX
-    });
+    mainPalette = new models.Palette(
+        config.DEFAULT_PALETTE_TITLE,
+        config.DEFAULT_PALETTE_COLORS,
+        config.SMALL_BRUSH_WIDTH,
+        config.LARGE_BRUSH_WIDTH,
+        config.DEFAULT_BRUSH_SIZE,
+        config.DEFAULT_COLOR_PANEL_INDEX
+    );
 
     // Initialize currentBrush.
     currentBrush = new models.Brush(
