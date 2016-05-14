@@ -140,14 +140,17 @@ PaletteList.prototype.load = function( data ) {
     }
 
     this.data = data.map(function(entry) {
-        var newPalette = _.pick(entry,
-            "colors",
-            "imageUrl",
-            "title",
-            "userName",
-            "description",
-            "dateCreated"
-        );
+        // We only want newPalette to contain SOME
+        // of the ton of stuff that comes down from
+        // the colorlovers api
+        var newPalette = {
+            colors:      entry.colors,
+            imageUrl:    entry.imageUrl,
+            title:       entry.title,
+            userName:    entry.userName,
+            description: entry.description,
+            dateCreated: entry.dateCreated
+        };
 
         // Now make "dateCreated" a more readable string.
 
@@ -392,7 +395,7 @@ ColorPanels.prototype.populate = function( title, colors ) {
     // Add some if needed. (Will automatically be transparent.)
     var template = this.template;
     newDOMElmntClassObjects = DOMElmntClassObjects.slice(oldLength, newLength);
-    var html = _.map(newDOMElmntClassObjects, function(classObject) {
+    var html = newDOMElmntClassObjects.map(function(classObject) {
         return template(classObject);
     }).join('\n');
     $container.append(html);
@@ -424,7 +427,7 @@ PalettesColumn.prototype.populate = function( paletteList ) {
     $titleSpan.text( paletteList.keywords );
 
     var template = this.template;
-    var html = _.map(paletteList.data, function(palette) {
+    var html = paletteList.data.map(function(palette) {
         return template(palette);
     }).join('\n');
     $container.empty().append(html);
