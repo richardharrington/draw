@@ -11,19 +11,6 @@ var config = {
     CANVAS_BACKGROUND_COLOR: "EEE"
 };
 
-var util = {
-    parseSQLDate: function(str) {
-        // Split timestamp into [ Y, M, D, h, m, s ]
-        var t = str.split(/[- :]/);
-
-        // Apply each element to the Date function
-        var date = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
-
-        return date;
-    },
-
-};
-
 
 //////// MODELS //////////
 
@@ -169,7 +156,17 @@ PaletteList.prototype = {
 
             // Now make "dateCreated" a more readable string.
 
-            var date = util.parseSQLDate( newPalette.dateCreated );
+            var parseSQLDate = function(str) {
+                // Split timestamp into [ Y, M, D, h, m, s ]
+                var t = str.split(/[- :]/);
+
+                // Apply each element to the Date function
+                var date = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
+
+                return date;
+            }
+
+            var date = parseSQLDate( newPalette.dateCreated );
             newPalette.dateCreated = MONTHS[date.getMonth()] + " " +
                                      date.getDate() + ", " +
                                      date.getFullYear();
