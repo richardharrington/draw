@@ -152,22 +152,16 @@ PaletteList.prototype.load = function( data ) {
             dateCreated: entry.dateCreated
         };
 
-        // Now make "dateCreated" a more readable string.
-
-        var parseSQLDate = function(str) {
-            // Split timestamp into [ Y, M, D, h, m, s ]
-            var t = str.split(/[- :]/);
-
-            // Apply each element to the Date function
-            var date = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
-
-            return date;
-        }
-
-        var date = parseSQLDate( newPalette.dateCreated );
-        newPalette.dateCreated = MONTHS[date.getMonth()] + " " +
-                                 date.getDate() + ", " +
-                                 date.getFullYear();
+        // Now make "dateCreated" a more readable string
+        // by parsing the SQL-formatted date into 
+        // [ Y, M, D, h, m, s ]
+        var sqlDateParts = newPalette.dateCreated.split(/[- :]/);
+        var jsDate = new Date(sqlDateParts[0], sqlDateParts[1] - 1, 
+                              sqlDateParts[2], sqlDateParts[3], 
+                              sqlDateParts[4], sqlDateParts[5]);
+        newPalette.dateCreated = MONTHS[jsDate.getMonth()] + " " +
+                                 jsDate.getDate() + ", " +
+                                 jsDate.getFullYear();
 
 
         // Many of the descriptions on colourlovers.com
