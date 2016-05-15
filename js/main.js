@@ -1,5 +1,4 @@
 var config = {
-    PAGE_ID: 'mainPage',
     DEFAULT_PALETTE_COLORS: ['B04141', '85224A', 'EBE3B2', '1A4F6B', '042B4F'],
     DEFAULT_PALETTE_TITLE: "default palette",
     DEFAULT_COLOR_PANEL_INDEX: 0,
@@ -460,7 +459,6 @@ var instructionBox;
 var canvas;
 var colorPanels;
 var palettesColumn;
-var pageId;
 
 var instantiateData = function(config) {
 
@@ -489,36 +487,33 @@ var instantiateData = function(config) {
 };
 
 var instantiateDOMStuff = function(config) {
-
-    pageId = config.PAGE_ID;
-    var pageSelector = '#' + pageId;
-
-    var statusReportElement =   $( pageSelector + ' .status-report' )[0],
-        canvasElement =         $( pageSelector + ' .canvas' )[0],
-        colorPanelsElement =    $( pageSelector + ' .color-panels' )[0],
-        colorsTitleElement =    $( pageSelector + ' .current-palette-title' )[0],
-        palettesColumnElement = $( pageSelector + ' .palette-list' )[0],
-        palettesTitleElement =  $( pageSelector + ' .successful-keywords' )[0],
-        instructionsLink =      $( pageSelector + ' .instructions-link' )[0],
-        instructionsElement =   $( pageSelector + ' .instructions' )[0],
-        instructionsClose =     $( pageSelector + ' .close' )[0];
+    var q = document.querySelector.bind(document);
+    var statusReportEl =    q('.status-report'),
+        canvasEl =          q('.canvas'),
+        colorPanelsEl =     q('.color-panels'),
+        colorsTitleEl =     q('.current-palette-title'),
+        palettesColumnEl =  q('.palette-list'),
+        palettesTitleEl =   q('.successful-keywords'),
+        instructionsLink =  q('.instructions-link'),
+        instructionsEl =    q('.instructions'),
+        instructionsClose = q('.close');
 
     // Initialize status reporting.
-    theStatus = new views.TheStatus( statusReportElement );
+    theStatus = new views.TheStatus( statusReportEl );
 
     // Initialize instruction box.
-    instructionBox = new views.PopupBox( instructionsLink, instructionsElement, instructionsClose );
+    instructionBox = new views.PopupBox( instructionsLink, instructionsEl, instructionsClose );
 
     // Initialize canvas.
-    canvas = new views.Canvas( canvasElement, config.CANVAS_WIDTH, config.CANVAS_HEIGHT,
+    canvas = new views.Canvas( canvasEl, config.CANVAS_WIDTH, config.CANVAS_HEIGHT,
                              config.CANVAS_BACKGROUND_COLOR );
 
     // Load the colors into the DOM.
-    colorPanels = new views.ColorPanels ( colorPanelsElement, colorsTitleElement,
+    colorPanels = new views.ColorPanels ( colorPanelsEl, colorsTitleEl,
                                         config.DEFAULT_PALETTE_TITLE, config.DEFAULT_PALETTE_COLORS );
 
     // Initialize empty palettesColumn object.
-    palettesColumn = new views.PalettesColumn( palettesColumnElement, palettesTitleElement );
+    palettesColumn = new views.PalettesColumn( palettesColumnEl, palettesTitleEl );
 
 };
 
@@ -529,8 +524,7 @@ var requestFromColourloversAPI = function() {
     var colourLoversScript;
     var searchURL;
 
-    var pageSelector = '#' + pageId;
-    var searchField = $( pageSelector + ' .search-field' );
+    var searchField = $('.search-field' );
     var keywords = searchField.val();
 
     // if the user typed anything
@@ -543,8 +537,8 @@ var requestFromColourloversAPI = function() {
         // First overwrite any previous script tags with the class 'colourLoversUrl',
         // than create the new one that makes the next http request to colourlovers.com.
 
-        if ( $( pageSelector + ' .colourLoversUrl' ).length > 0 ) {
-            $( pageSelector + ' .colourLoversUrl' ).remove();
+        if ( $('.colourLoversUrl').length > 0 ) {
+            $('.colourLoversUrl').remove();
         }
         colourLoversScript = document.createElement( 'script' );
         $( colourLoversScript ).addClass( 'colourLoversUrl' );
@@ -582,8 +576,7 @@ var setErrorControls = function() {
     // (using jQuery .delegate()).
 
     var keywords;
-    var pageSelector = '#' + pageId;
-    $( pageSelector ).delegate(' .colourLoversUrl', 'error', function () {
+    $('.colourLoversUrl').on('error', function () {
 
         // extract the search string from the colourlovers.com request url.
         keywords = $( this ).attr( 'src' ).replace( /(.*?keywords=search\+)(.*?)(&.*)/, '$2' );
@@ -597,12 +590,10 @@ var setErrorControls = function() {
 };
 
 var setMiscellaneousUserControls = function() {
-    var pageSelector = '#' + pageId;
-    var code;
 
     // Set active brush size HTML select element,
     // because Firefox preserves state even when it's refreshed.
-    $( pageSelector + ' .brush-size' ).val( mainPalette.activeSize() );
+    $('.brush-size').val( mainPalette.activeSize() );
 
     // bind the event handlers for toggling the brush size and
     // entering search keywords. Also for toggling the clear and
@@ -611,23 +602,23 @@ var setMiscellaneousUserControls = function() {
 
     instructionBox.init();
 
-    $( pageSelector ).on('click', '.clear-canvas', function( event ) {
+    $('.clear-canvas').on('click', function( event ) {
         canvas.clear();
     });
 
-    $( pageSelector + ' .brush-size' ).change( function() {
+    $('.brush-size').change( function() {
         mainPalette.activeSize( this.value );
         currentBrush.style = mainPalette.activeStyle();
     });
 
-    $( pageSelector + ' .brush-size' ).on('mousedown', function(event) {
+    $('.brush-size').on('mousedown', function(event) {
         event.stopPropagation();
     });
 
-    $( pageSelector + ' .search-button' ).click( function( event ) {
+    $('.search-button').click( function( event ) {
         requestFromColourloversAPI();
     });
-    $( pageSelector + ' .search-field' ).keydown( function( event ) {
+    $('.search-field').keydown( function( event ) {
         var code = event.which;
         if (code == 13) {
             event.preventDefault();
@@ -739,7 +730,6 @@ var colorPanelsController = new ElementsController();
 
 colorPanelsController.init = function() {
     var panel;
-    var pageSelector = '#' + pageId;
 
     // Populate the color panels.
     colorPanels.populate( mainPalette.title, mainPalette.colors );
@@ -751,7 +741,7 @@ colorPanelsController.init = function() {
     }
 
     // Now make the already selected one pink.
-    panel = $( pageSelector + ' .' + colorPanels.getDOMElmntClass( mainPalette.activeColorPanelIdx()) );
+    panel = $( '.' + colorPanels.getDOMElmntClass( mainPalette.activeColorPanelIdx()) );
     this.highlightElement( panel );
 
     // Add the event listeners.
@@ -769,8 +759,6 @@ colorPanelsController.init = function() {
 var palettesColumnController = new ElementsController();
 
 palettesColumnController.init = function() {
-    var pageSelector = '#' + pageId;
-
     // Populate the palettes column.
     palettesColumn.populate( paletteList );
 
@@ -783,7 +771,7 @@ palettesColumnController.init = function() {
     $( palettesColumn.DOMContainer ).parent().css( {'width': '220px', 'margin-left': '15px'} );
 
     // Slide the main box over.
-    $( pageSelector + ' .main-box-wrapper' ).css ( 'margin-left', 240 );
+    $( '.main-box-wrapper' ).css ( 'margin-left', 240 );
 
     // Add the event handlers.
     this.addEventListeners( palettesColumn, function( element, i ) {
