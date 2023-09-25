@@ -1,4 +1,4 @@
-var app = require('http').createServer(handler).listen(3000),
+var app = require('http').createServer(handler).listen(process.env.PORT || 3000),
     io = require('socket.io').listen(app),
     fs = require('fs'),
     parse = require('url').parse,
